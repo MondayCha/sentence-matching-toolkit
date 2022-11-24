@@ -3,48 +3,46 @@
  * @see {@link https://dribbble.com/shots/17411788-File-and-asset-management-Untitled-UI}
  * @see {@link https://dribbble.com/shots/18191030-In-Secure-Cloud-storage-dashboard}
  */
-import { useState } from "react";
-import { useNavigate } from "react-router-dom";
-import reactLogo from "../../assets/no-file.svg";
-import { open } from "@tauri-apps/api/dialog";
-import { invoke } from "@tauri-apps/api/tauri";
-import clsx from "clsx";
-import log from "../../middleware/logger";
-import { showMessage } from "../../middleware/message";
-import { checkCsvAvailability } from "../../api/core";
-import moment from "moment";
-import IconLoadFile from "./load-file";
+import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import reactLogo from '../../assets/no-file.svg';
+import { open } from '@tauri-apps/api/dialog';
+import { invoke } from '@tauri-apps/api/tauri';
+import clsx from 'clsx';
+import log from '../../middleware/logger';
+import { showMessage } from '../../middleware/message';
+import { checkCsvAvailability } from '../../api/core';
+import moment from 'moment';
+import IconLoadFile from './load-file';
 
 const Home = () => {
   const navigate = useNavigate();
-  const [filename, setFilename] = useState("");
-  const [today] = useState(moment().format("MM-DD"));
+  const [filename, setFilename] = useState('');
+  const [today] = useState(moment().format('MM-DD'));
 
   const selectFile = async () => {
     const selected = await open({
       multiple: false,
       filters: [
         {
-          name: "CSV",
-          extensions: ["csv", "CSV"],
+          name: 'CSV',
+          extensions: ['csv', 'CSV'],
         },
       ],
     });
 
-    let fullPath = "";
+    let fullPath = '';
     if (Array.isArray(selected)) {
       fullPath = selected[0];
     } else if (selected === null) {
       // showMessage("没有选择文件", "warning");
-      setFilename("");
+      setFilename('');
       return;
     } else {
       fullPath = selected;
     }
 
-    const fileName = decodeURIComponent(
-      new URL(fullPath).pathname.split("/").pop() ?? ""
-    );
+    const fileName = decodeURIComponent(new URL(fullPath).pathname.split('/').pop() ?? '');
     log.info(`File selected: ${fileName}`);
 
     checkCsvAvailability(fullPath)
@@ -55,7 +53,7 @@ const Home = () => {
       })
       .catch((err) => {
         log.error(err);
-        setFilename("");
+        setFilename('');
       });
   };
 
@@ -90,9 +88,7 @@ const Home = () => {
             </div>
           </div>
         </div>
-        {filename.length > 0 && (
-          <button className="mdc-btn-primary">开始统计</button>
-        )}
+        {filename.length > 0 && <button className="mdc-btn-primary">开始统计</button>}
       </div>
     </div>
   );

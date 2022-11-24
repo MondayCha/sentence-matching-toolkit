@@ -1,7 +1,7 @@
-import clsx from "clsx";
-import type { FC, ReactNode } from "react";
-import { useState } from "react";
-import ListItem from "./ListItem";
+import clsx from 'clsx';
+import type { FC, ReactNode } from 'react';
+import { useState } from 'react';
+import ListItem from './ListItem';
 
 const ListItemButton: FC<{
   index: number;

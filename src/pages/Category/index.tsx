@@ -1,15 +1,15 @@
 /**
  * suspense fallback component
  */
-import clsx from "clsx";
-import type { FC } from "react";
-import { useState } from "react";
+import clsx from 'clsx';
+import type { FC } from 'react';
+import { useState } from 'react';
 
 const Category: FC = () => {
   const [count, setCount] = useState(0);
   const [countSeem, setCountSeem] = useState(0);
   return (
-    <div className={clsx("mdc-paper")}>
+    <div className={clsx('mdc-paper')}>
       <div className="mdc-header">
         <h1 className="mdc-title pb-1.5">单位匹配</h1>
         <p className="mdc-text-sm">

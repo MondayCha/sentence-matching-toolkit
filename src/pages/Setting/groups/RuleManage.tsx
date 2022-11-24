@@ -1,7 +1,7 @@
-import clsx from "clsx";
-import type { FC } from "react";
-import ListItemButton from "../../../components/ListItemButton";
-import { Agreement, OneKey, TwoKey } from "@icon-park/react";
+import clsx from 'clsx';
+import type { FC } from 'react';
+import ListItemButton from '../../../components/ListItemButton';
+import { Agreement, OneKey, TwoKey } from '@icon-park/react';
 
 const RuleManage: FC = () => {
   return (

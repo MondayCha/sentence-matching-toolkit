@@ -1,8 +1,8 @@
-import clsx from "clsx";
-import type { FC } from "react";
-import ListItem from "../../../components/ListItem";
-import { History, Data, DownloadComputer } from "@icon-park/react";
-import ListItemButton from "../../../components/ListItemButton";
+import clsx from 'clsx';
+import type { FC } from 'react';
+import ListItem from '../../../components/ListItem';
+import { History, Data, DownloadComputer } from '@icon-park/react';
+import ListItemButton from '../../../components/ListItemButton';
 
 const DataStorage: FC = () => {
   return (

@@ -1,20 +1,17 @@
-import clsx from "clsx";
-import type { FC } from "react";
-import { BookOne, FileSettingsOne } from "@icon-park/react";
-import { store } from "@/routes/RouterView";
-import { useState, useLayoutEffect } from "react";
-import ListItemToggle from "@/components/ListItemToggle";
-import ListItemButton from "@/components/ListItemButton";
-import { useLocalStorage } from "usehooks-ts";
-import log from "@/middleware/logger";
+import clsx from 'clsx';
+import type { FC } from 'react';
+import { BookOne, FileSettingsOne } from '@icon-park/react';
+import { store } from '@/routes/RouterView';
+import { useState, useLayoutEffect } from 'react';
+import ListItemToggle from '@/components/ListItemToggle';
+import ListItemButton from '@/components/ListItemButton';
+import { useLocalStorage } from 'usehooks-ts';
+import log from '@/middleware/logger';
 
-const DICT_SETTING_KEY = "dictionary";
+const DICT_SETTING_KEY = 'dictionary';
 
 const DictManage: FC = () => {
-  const [dictStatusCache, setDictStatusCache] = useLocalStorage<boolean>(
-    "dictEnabled",
-    true
-  );
+  const [dictStatusCache, setDictStatusCache] = useLocalStorage<boolean>('dictEnabled', true);
   const [dictEnabled, setDictEnabled] = useState<boolean>(dictStatusCache);
 
   const readDictStatus = async () => {
@@ -23,9 +20,9 @@ const DictManage: FC = () => {
   };
 
   useLayoutEffect(() => {
-    log.info("DictManage useEffect");
+    log.info('DictManage useEffect');
     readDictStatus().then((val) => {
-      log.info("DictManage useEffect readDictStatus", val);
+      log.info('DictManage useEffect readDictStatus', val);
       if (val !== dictStatusCache) {
         setDictEnabled(val);
         setDictStatusCache(val);
@@ -35,7 +32,7 @@ const DictManage: FC = () => {
 
   const checkDictStatus = async () => {
     const val = await store.get(DICT_SETTING_KEY);
-    log.info("DictManage checkDictStatus", val);
+    log.info('DictManage checkDictStatus', val);
   };
 
   const changeHandler = async (index: number, state: boolean) => {

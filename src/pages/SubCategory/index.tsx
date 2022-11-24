@@ -1,10 +1,10 @@
-import type { FC } from "react";
-import log from "@/middleware/logger";
-import clsx from "clsx";
+import type { FC } from 'react';
+import log from '@/middleware/logger';
+import clsx from 'clsx';
 
 const SubCategory: FC = () => {
   return (
-    <div className={clsx("mdc-paper")}>
+    <div className={clsx('mdc-paper')}>
       <div className="mdc-header">
         <h1 className="mdc-title pb-1.5">班级匹配</h1>
         <p className="mdc-text-sm">

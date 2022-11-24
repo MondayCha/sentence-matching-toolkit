@@ -1,11 +1,11 @@
-import { ReactNode, useEffect } from "react";
-import { useState } from "react";
-import clsx from "clsx";
+import { ReactNode, useEffect } from 'react';
+import { useState } from 'react';
+import clsx from 'clsx';
 // import { invoke } from "@tauri-apps/api/tauri";
 // import { closeSplashscreen } from "../../api/core";
-import NavButton from "./components/NavButton";
-import { useNavigate } from "react-router-dom";
-import { useLocalStorage } from "usehooks-ts";
+import NavButton from './components/NavButton';
+import { useNavigate } from 'react-router-dom';
+import { useLocalStorage } from 'usehooks-ts';
 // svg
 import {
   FileAddition,
@@ -14,12 +14,12 @@ import {
   FolderDownload,
   BuildingFour,
   BranchOne,
-} from "@icon-park/react";
-import settingFilled from "@/assets/setting-filled.svg";
-import infoFilled from "@/assets/info-filled.svg";
-import downloadFilled from "@/assets/download-filled.svg";
-import additionFilled from "@/assets/addition-filled.svg";
-import buildingFilled from "@/assets/building-filled.svg";
+} from '@icon-park/react';
+import settingFilled from '@/assets/setting-filled.svg';
+import infoFilled from '@/assets/info-filled.svg';
+import downloadFilled from '@/assets/download-filled.svg';
+import additionFilled from '@/assets/addition-filled.svg';
+import buildingFilled from '@/assets/building-filled.svg';
 
 const enum NavIndex {
   Upload = 0,
@@ -32,9 +32,7 @@ const enum NavIndex {
 
 const Navibar = ({ children }: { children: ReactNode }) => {
   const [currentIndex, setCurrentIndex] =
-    process.env.NODE_ENV === "development"
-      ? useLocalStorage<number>("nav-index", 0)
-      : useState(0);
+    process.env.NODE_ENV === 'development' ? useLocalStorage<number>('nav-index', 0) : useState(0);
 
   const nevigate = useNavigate();
 
@@ -45,22 +43,22 @@ const Navibar = ({ children }: { children: ReactNode }) => {
   useEffect(() => {
     switch (currentIndex) {
       case NavIndex.Upload:
-        nevigate("/");
+        nevigate('/');
         break;
       case NavIndex.Category:
-        nevigate("/category");
+        nevigate('/category');
         break;
       case NavIndex.SubCategory:
-        nevigate("/subcategory");
+        nevigate('/subcategory');
         break;
       case NavIndex.Download:
-        nevigate("/download");
+        nevigate('/download');
         break;
       case NavIndex.About:
-        nevigate("/about");
+        nevigate('/about');
         break;
       case NavIndex.Setting:
-        nevigate("/setting");
+        nevigate('/setting');
         break;
       default:
         break;
@@ -77,9 +75,7 @@ const Navibar = ({ children }: { children: ReactNode }) => {
             <NavButton
               index={NavIndex.Upload}
               currentIndex={currentIndex}
-              normalIcon={
-                <FileAddition theme="outline" size="24" fill="#f2f2f2" />
-              }
+              normalIcon={<FileAddition theme="outline" size="24" fill="#f2f2f2" />}
               activeIcon={<img src={additionFilled} />}
               text="导入"
               setCurrentIndex={setCurrentIndex}
@@ -87,9 +83,7 @@ const Navibar = ({ children }: { children: ReactNode }) => {
             <NavButton
               index={NavIndex.Category}
               currentIndex={currentIndex}
-              normalIcon={
-                <BuildingFour theme="outline" size="24" fill="#f2f2f2" />
-              }
+              normalIcon={<BuildingFour theme="outline" size="24" fill="#f2f2f2" />}
               activeIcon={<img src={buildingFilled} />}
               text="单位"
               setCurrentIndex={setCurrentIndex}
@@ -97,9 +91,7 @@ const Navibar = ({ children }: { children: ReactNode }) => {
             <NavButton
               index={NavIndex.SubCategory}
               currentIndex={currentIndex}
-              normalIcon={
-                <BranchOne theme="outline" size="24" fill="#f2f2f2" />
-              }
+              normalIcon={<BranchOne theme="outline" size="24" fill="#f2f2f2" />}
               activeIcon={<BranchOne theme="filled" size="24" fill="#21b5ff" />}
               text="班级"
               setCurrentIndex={setCurrentIndex}
@@ -107,9 +99,7 @@ const Navibar = ({ children }: { children: ReactNode }) => {
             <NavButton
               index={NavIndex.Download}
               currentIndex={currentIndex}
-              normalIcon={
-                <FolderDownload theme="outline" size="24" fill="#f2f2f2" />
-              }
+              normalIcon={<FolderDownload theme="outline" size="24" fill="#f2f2f2" />}
               activeIcon={<img src={downloadFilled} />}
               text="导出"
               setCurrentIndex={setCurrentIndex}
@@ -128,9 +118,7 @@ const Navibar = ({ children }: { children: ReactNode }) => {
             <NavButton
               index={NavIndex.Setting}
               currentIndex={currentIndex}
-              normalIcon={
-                <SettingTwo theme="outline" size="24" fill="#f2f2f2" />
-              }
+              normalIcon={<SettingTwo theme="outline" size="24" fill="#f2f2f2" />}
               activeIcon={<img src={settingFilled} />}
               text="设置"
               setCurrentIndex={setCurrentIndex}
@@ -139,9 +127,9 @@ const Navibar = ({ children }: { children: ReactNode }) => {
         </div>
         <div
           className={clsx(
-            "rounded-tl-lg h-full w-full overflow-hidden relative",
-            "bg-neutral-100",
-            "dark:bg-abyss-750"
+            'rounded-tl-lg h-full w-full overflow-hidden relative',
+            'bg-neutral-100',
+            'dark:bg-abyss-750'
           )}
         >
           {children}

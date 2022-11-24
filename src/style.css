@@ -3,55 +3,55 @@
 @tailwind utilities;
 
 @layer components {
-    .mdc-btn-primary {
-        @apply bg-sky-600 hover:bg-sky-500 text-white text-sm font-medium py-1.5 px-12 rounded shadow-md  active:bg-sky-600;
-    }
+  .mdc-btn-primary {
+    @apply bg-sky-600 hover:bg-sky-500 text-white text-sm font-medium py-1.5 px-12 rounded shadow-md  active:bg-sky-600;
+  }
 
-    .mdc-btn-secondary {
-        @apply bg-abyss-600 hover:brightness-110 text-white text-sm font-medium py-1 w-32 rounded shadow-sm  active:brightness-125;
-    }
+  .mdc-btn-secondary {
+    @apply bg-abyss-600 hover:brightness-110 text-white text-sm font-medium py-1 w-32 rounded shadow-sm  active:brightness-125;
+  }
 
-    .mdc-paper {
-        @apply h-full w-full py-6 px-1.5 flex flex-col items-start gap-4 text-abyss-900  dark:text-zinc-100 ;
-    }
+  .mdc-paper {
+    @apply h-full w-full py-6 px-1.5 flex flex-col items-start gap-4 text-abyss-900  dark:text-zinc-100;
+  }
 
-    .mdc-header {
-        @apply px-4 lg:px-6;
-    }
+  .mdc-header {
+    @apply px-4 lg:px-6;
+  }
 
-    .mdc-title {
-        @apply text-2xl font-medium select-none;
-    }
+  .mdc-title {
+    @apply text-2xl font-medium select-none;
+  }
 
-    .mdc-body {
-        @apply w-full px-4 lg:px-6;
-    }
+  .mdc-body {
+    @apply w-full px-4 lg:px-6;
+  }
 
-    .mdc-text-sm {
-        @apply text-sm 2xl:text-base dark:text-zinc-400 leading-relaxed 2xl:leading-7 select-none;
-    }
+  .mdc-text-sm {
+    @apply text-sm 2xl:text-base dark:text-zinc-400 leading-relaxed 2xl:leading-7 select-none;
+  }
 
-    .mdc-text-xs {
-        @apply text-xs 2xl:text-sm dark:text-zinc-400 leading-loose 2xl:leading-7 select-none;
-    }
+  .mdc-text-xs {
+    @apply text-xs 2xl:text-sm dark:text-zinc-400 leading-loose 2xl:leading-7 select-none;
+  }
 
-    .mdc-text-heightlight {
-        @apply text-sky-500 mx-0.5;
-    }
+  .mdc-text-heightlight {
+    @apply text-sky-500 mx-0.5;
+  }
 
-    .mdc-link {
-        @apply mdc-text-xs py-0.5 px-1 rounded hover:bg-abyss-700 active:brightness-105;
-    }
+  .mdc-link {
+    @apply mdc-text-xs py-0.5 px-1 rounded hover:bg-abyss-700 active:brightness-105;
+  }
 
-    .mdc-list {
-        @apply mdc-body pr-6 lg:pr-8 grid grid-flow-row gap-6 grid-cols-1 overflow-x-hidden overflow-y-scroll scrollbar-thin scrollbar-thumb-blue-700 scrollbar-track-blue-300 dark:scrollbar-thumb-zinc-500 dark:scrollbar-track-abyss-900 scrollbar-thumb-rounded-full scrollbar-track-rounded-full;
-    }
+  .mdc-list {
+    @apply mdc-body pr-6 lg:pr-8 grid grid-flow-row gap-6 grid-cols-1 overflow-x-hidden overflow-y-scroll scrollbar-thin scrollbar-thumb-blue-700 scrollbar-track-blue-300 dark:scrollbar-thumb-zinc-500 dark:scrollbar-track-abyss-900 scrollbar-thumb-rounded-full scrollbar-track-rounded-full;
+  }
 
-    .mdc-item {
-        @apply w-full rounded border px-4 py-3.5 dark:border-abyss-600 dark:bg-abyss-700 dark:border-opacity-50;
-    }
+  .mdc-item {
+    @apply w-full rounded border px-4 py-3.5 dark:border-abyss-600 dark:bg-abyss-700 dark:border-opacity-50;
+  }
 
-    .mdc-item-group {
-        @apply grid grid-flow-row gap-2.5 grid-cols-1 justify-items-end;
-    }
+  .mdc-item-group {
+    @apply grid grid-flow-row gap-2.5 grid-cols-1 justify-items-end;
+  }
 }

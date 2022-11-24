@@ -1,17 +1,17 @@
 // import { Suspense, lazy } from "react";
-import { Navigate, RouteObject } from "react-router-dom";
+import { Navigate, RouteObject } from 'react-router-dom';
 // import type { FC } from "react";
 
 /**
  * Suspense fallback components
  */
 // import Loading from "../pages/Loading";
-import Upload from "../pages/Upload";
-import Category from "../pages/Category";
-import SubCategory from "../pages/SubCategory";
-import Download from "../pages/Download";
-import About from "../pages/About";
-import Setting from "../pages/Setting";
+import Upload from '../pages/Upload';
+import Category from '../pages/Category';
+import SubCategory from '../pages/SubCategory';
+import Download from '../pages/Download';
+import About from '../pages/About';
+import Setting from '../pages/Setting';
 
 /**
  * Lazy loading components.
@@ -45,31 +45,31 @@ import Setting from "../pages/Setting";
  */
 export const routerConfig: RouteObject[] = [
   {
-    path: "/",
+    path: '/',
     element: <Upload />,
   },
   {
-    path: "/category",
+    path: '/category',
     element: <Category />,
   },
   {
-    path: "/subcategory",
+    path: '/subcategory',
     element: <SubCategory />,
   },
   {
-    path: "/download",
+    path: '/download',
     element: <Download />,
   },
   {
-    path: "/about",
+    path: '/about',
     element: <About />,
   },
   {
-    path: "/setting",
+    path: '/setting',
     element: <Setting />,
   },
   {
-    path: "*",
+    path: '*',
     element: <Navigate to="/" replace />,
   },
 ];
