@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Loading</title>
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+      }
+      html,
+      body {
+        height: 100%;
+      }
+      .content {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        flex-direction: column;
+        height: 100%;
+        background: #fafafa;
+        color: #202020;
+        position: relative;
+        border-radius: 16px;
+      }
+      h2 {
+        margin-bottom: 20px;
+      }
+      .content span {
+        font-size: 12px;
+        position: absolute;
+        right: 20px;
+        bottom: 20px;
+      }
+      .titlebar {
+        height: 30px;
+        background: #fafafa;
+        user-select: none;
+        display: flex;
+        justify-content: flex-end;
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+      }
+    </style>
+  </head>
+  <body>
+    <div data-tauri-drag-region class="titlebar"></div>
+    <div class="content">
+      <h2>短文本分类工具</h2>
+      <span>Powered by Mondaycha</span>
+    </div>
+  </body>
+</html>
