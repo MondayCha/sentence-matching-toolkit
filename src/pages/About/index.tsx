@@ -9,7 +9,7 @@ const About: FC = () => {
     <div className={clsx('mdc-paper')}>
       <div className="mdc-header">
         <h1 className="mdc-title pb-3">关于软件</h1>
-        <p className="mdc-text-xs">短文本分类工具 | Youth Big Study Statistical Tool</p>
+        <p className="mdc-text-xs">短文本匹配工具 | Sentence Matching Toolkit</p>
         <p className="mdc-text-xs">版本 0.0.1</p>
         <p className="mdc-text-xs">Build 20221123114514</p>
         <p className="mdc-text-xs">© 2022 Mondaycha</p>

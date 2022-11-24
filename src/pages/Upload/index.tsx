@@ -60,7 +60,7 @@ const Home = () => {
   return (
     <div className="mdc-paper">
       <div className="mdc-header">
-        <h1 className="mdc-title pb-1.5">短文本分类工具</h1>
+        <h1 className="mdc-title pb-1.5">短文本匹配工具</h1>
         <p className="mdc-text-sm">
           输入本周待统计的全市数据（例如：
           <span className="mr-0.5">{today} 山南.csv</span>
