@@ -1,3 +1,6 @@
+/**
+ * @see {@link https://flowbite.com/docs/forms/toggle/}
+ */
 import clsx from 'clsx';
 import type { Dispatch, FC, ReactNode, SetStateAction } from 'react';
 import { useState } from 'react';

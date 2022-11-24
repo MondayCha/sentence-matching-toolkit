@@ -7,7 +7,7 @@ mod commands;
 use std::collections::HashMap;
 use tauri::Manager;
 
-use commands::{check_csv_headers, close_splashscreen};
+use commands::{check_csv_headers, close_splashscreen, start_category_matching};
 use tauri_plugin_store::{PluginBuilder, StoreBuilder};
 
 fn main() {
@@ -25,7 +25,8 @@ fn main() {
     tauri::Builder::default()
         .invoke_handler(tauri::generate_handler![
             close_splashscreen,
-            check_csv_headers
+            check_csv_headers,
+            start_category_matching
         ])
         .plugin(PluginBuilder::default().stores([settings]).freeze().build())
         .setup(|app| {

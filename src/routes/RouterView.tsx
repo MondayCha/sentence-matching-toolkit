@@ -5,19 +5,19 @@ import { BrowserRouter, useRoutes } from 'react-router-dom';
 import routerConfig from './router.config';
 import log from '@/middleware/logger';
 import Navibar from './Navibar';
-import { Store } from 'tauri-plugin-store-api';
+import { RecoilRoot } from 'recoil';
 
 function RouterView() {
   const AppRoutes = () => useRoutes(routerConfig);
   return (
-    <BrowserRouter>
-      <Navibar>
-        <AppRoutes />
-      </Navibar>
-    </BrowserRouter>
+    <RecoilRoot>
+      <BrowserRouter>
+        <Navibar>
+          <AppRoutes />
+        </Navibar>
+      </BrowserRouter>
+    </RecoilRoot>
   );
 }
-
-export const store = new Store('.settings.dat');
 
 export default RouterView;

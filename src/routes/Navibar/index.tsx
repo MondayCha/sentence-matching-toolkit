@@ -1,11 +1,7 @@
-import { ReactNode, useEffect } from 'react';
-import { useState } from 'react';
+import type { ReactNode } from 'react';
+import { useState, useEffect } from 'react';
+import { useRecoilState, useRecoilValueLoadable } from 'recoil';
 import clsx from 'clsx';
-// import { invoke } from "@tauri-apps/api/tauri";
-// import { closeSplashscreen } from "../../api/core";
-import NavButton from './components/NavButton';
-import { useNavigate } from 'react-router-dom';
-import { useLocalStorage } from 'usehooks-ts';
 // svg
 import {
   FileAddition,
@@ -20,20 +16,18 @@ import infoFilled from '@/assets/info-filled.svg';
 import downloadFilled from '@/assets/download-filled.svg';
 import additionFilled from '@/assets/addition-filled.svg';
 import buildingFilled from '@/assets/building-filled.svg';
-
-const enum NavIndex {
-  Upload = 0,
-  Category,
-  SubCategory,
-  Download,
-  About,
-  Setting,
-}
+// import { invoke } from "@tauri-apps/api/tauri";
+// import { closeSplashscreen } from "../../api/core";
+import NavButton from './components/NavButton';
+import { useNavigate } from 'react-router-dom';
+import { navIndexState, NavIndex, dictState } from '@/middleware/store';
 
 const Navibar = ({ children }: { children: ReactNode }) => {
-  const [currentIndex, setCurrentIndex] =
-    process.env.NODE_ENV === 'development' ? useLocalStorage<number>('nav-index', 0) : useState(0);
+  // preload tauri store
+  const preloadDict = useRecoilValueLoadable(dictState);
 
+  // navibar state
+  const [currentIndex, setCurrentIndex] = useRecoilState(navIndexState);
   const nevigate = useNavigate();
 
   // useEffect(() => {
@@ -120,6 +114,9 @@ const Navibar = ({ children }: { children: ReactNode }) => {
               currentIndex={currentIndex}
               normalIcon={<SettingTwo theme="outline" size="24" fill="#f2f2f2" />}
               activeIcon={<img src={settingFilled} />}
+              iconClassName={clsx({
+                'animate-spin-slow': preloadDict.state !== 'hasValue',
+              })}
               text="设置"
               setCurrentIndex={setCurrentIndex}
             />

@@ -12,8 +12,9 @@ const NavButton: FC<{
   normalIcon: ReactNode;
   activeIcon: ReactNode;
   text: string;
+  iconClassName?: string;
   setCurrentIndex: (index: number) => void;
-}> = ({ index, currentIndex, normalIcon, activeIcon, text, setCurrentIndex }) => {
+}> = ({ index, currentIndex, normalIcon, activeIcon, text, iconClassName, setCurrentIndex }) => {
   return (
     <button
       className={clsx(
@@ -27,9 +28,7 @@ const NavButton: FC<{
       onClick={() => setCurrentIndex(index)}
     >
       {/* TODO: currently no animation */}
-      <div className=" transition-transform">
-        {currentIndex === index ? activeIcon : normalIcon}
-      </div>
+      <div className={iconClassName}>{currentIndex === index ? activeIcon : normalIcon}</div>
       {currentIndex !== index && <p className=" text-xs text-white">{text}</p>}
     </button>
   );

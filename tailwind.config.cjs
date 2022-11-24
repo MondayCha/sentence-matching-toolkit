@@ -22,6 +22,9 @@ module.exports = {
       spacing: {
         15: '3.75rem',
       },
+      animation: {
+        'spin-slow': 'spin 3s linear infinite',
+      },
     },
   },
   plugins: [require('tailwind-scrollbar')({ nocompatible: true })],

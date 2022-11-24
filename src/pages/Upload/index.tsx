@@ -1,24 +1,19 @@
-/**
- * Home page for the application.
- * @see {@link https://dribbble.com/shots/17411788-File-and-asset-management-Untitled-UI}
- * @see {@link https://dribbble.com/shots/18191030-In-Secure-Cloud-storage-dashboard}
- */
-import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import reactLogo from '../../assets/no-file.svg';
+import { useState, useMemo } from 'react';
+import type { FC } from 'react';
 import { open } from '@tauri-apps/api/dialog';
-import { invoke } from '@tauri-apps/api/tauri';
 import clsx from 'clsx';
-import log from '../../middleware/logger';
-import { showMessage } from '../../middleware/message';
-import { checkCsvAvailability } from '../../api/core';
+import log from '@/middleware/logger';
+import { showMessage } from '@/middleware/message';
+import { checkCsvAvailability } from '@/api/core';
 import moment from 'moment';
 import IconLoadFile from './load-file';
+import { useRecoilState, useSetRecoilState } from 'recoil';
+import { navIndexState, NavIndex, sourceFilePathState } from '@/middleware/store';
 
-const Home = () => {
-  const navigate = useNavigate();
-  const [filename, setFilename] = useState('');
+const Home: FC = () => {
+  const [sourcePath, setSourcePath] = useRecoilState(sourceFilePathState);
   const [today] = useState(moment().format('MM-DD'));
+  const setNavIndex = useSetRecoilState(navIndexState);
 
   const selectFile = async () => {
     const selected = await open({
@@ -36,25 +31,35 @@ const Home = () => {
       fullPath = selected[0];
     } else if (selected === null) {
       // showMessage("没有选择文件", "warning");
-      setFilename('');
+      setSourcePath('');
       return;
     } else {
       fullPath = selected;
     }
 
-    const fileName = decodeURIComponent(new URL(fullPath).pathname.split('/').pop() ?? '');
-    log.info(`File selected: ${fileName}`);
-
     checkCsvAvailability(fullPath)
       .then((res) => {
         const data = res as string;
         log.info(data);
-        setFilename(fileName);
+        setSourcePath(fullPath);
       })
       .catch((err) => {
         log.error(err);
-        setFilename('');
+        setSourcePath('');
       });
+  };
+
+  const sourceBaseName = useMemo(
+    () => sourcePath && decodeURIComponent(new URL(sourcePath).pathname.split('/').pop() ?? ''),
+    [sourcePath]
+  );
+
+  const navigateToCatrgory = () => {
+    if (sourcePath === '') {
+      showMessage('请先选择文件', 'warning');
+      return;
+    }
+    setNavIndex(NavIndex.Category);
   };
 
   return (
@@ -62,17 +67,11 @@ const Home = () => {
       <div className="mdc-header">
         <h1 className="mdc-title pb-1.5">短文本匹配工具</h1>
         <p className="mdc-text-sm">
-          输入本周待统计的全市数据（例如：
+          输入待统计的数据（例如：
           <span className="mr-0.5">{today} 山南.csv</span>
           ）。
         </p>
-        <p className="mdc-text-sm">
-          软件将根据配置文件
-          {filename && <span className="mdc-text-heightlight">{filename}</span>}
-          ，输出
-          <span className="mdc-text-heightlight">山南市职业技术学校</span>
-          的详细学习情况。
-        </p>
+        <p className="mdc-text-sm">软件将根据规则配置文件 ，输出匹配结果。</p>
       </div>
       <div className="mdc-body grow flex flex-col gap-4 overflow-hidden justify-between items-end">
         <div className="mdc-item py-12 grow">
@@ -83,12 +82,22 @@ const Home = () => {
             <IconLoadFile />
             <div>
               <p className="mdc-text-sm text-center">
-                点击这里，导入需要统计的文件（支持 *.csv 格式）
+                {sourceBaseName.length > 0 ? (
+                  <>
+                    已导入「<span className="mdc-text-heightlight">{sourceBaseName}</span>」
+                  </>
+                ) : (
+                  '点击这里，导入需要统计的文件（支持 *.csv 格式）'
+                )}
               </p>
             </div>
           </div>
         </div>
-        {filename.length > 0 && <button className="mdc-btn-primary">开始统计</button>}
+        {sourceBaseName.length > 0 && (
+          <button className="mdc-btn-primary" onClick={navigateToCatrgory}>
+            开始统计
+          </button>
+        )}
       </div>
     </div>
   );
