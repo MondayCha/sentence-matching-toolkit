@@ -43,8 +43,12 @@
     @apply mdc-text-xs py-0.5 px-1 rounded hover:bg-abyss-700 active:brightness-105;
   }
 
+  .mdc-scroolbar {
+    @apply scrollbar-thin scrollbar-thumb-blue-700 scrollbar-track-blue-300 dark:scrollbar-thumb-zinc-500 dark:scrollbar-track-abyss-900 scrollbar-thumb-rounded-full scrollbar-track-rounded-full;
+  }
+
   .mdc-list {
-    @apply mdc-body pr-6 lg:pr-8 grid grid-flow-row gap-6 grid-cols-1 overflow-x-hidden overflow-y-scroll scrollbar-thin scrollbar-thumb-blue-700 scrollbar-track-blue-300 dark:scrollbar-thumb-zinc-500 dark:scrollbar-track-abyss-900 scrollbar-thumb-rounded-full scrollbar-track-rounded-full;
+    @apply mdc-body mdc-scroolbar pr-6 lg:pr-8 grid grid-flow-row gap-6 grid-cols-1 overflow-x-hidden overflow-y-scroll;
   }
 
   .mdc-item {

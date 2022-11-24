@@ -3,6 +3,7 @@ import { Sleep } from '@icon-park/react';
 import { atom, selector } from 'recoil';
 import { Store } from 'tauri-plugin-store-api';
 import log from '@/middleware/logger';
+import { getBaseFilenameFromPath } from './utils';
 
 // Tauri FileSystem Store
 export const store = new Store('.settings.dat');
@@ -43,6 +44,14 @@ export const dictState = atom({
 export const sourceFilePathState = atom({
   key: 'sourceFilePathState',
   default: '',
+});
+
+export const getSourceFilename = selector({
+  key: 'sourceFilePathState/filename',
+  get: ({ get }) => {
+    const path = get(sourceFilePathState);
+    return getBaseFilenameFromPath(path);
+  },
 });
 
 // Call Category Matching API

@@ -7,6 +7,8 @@ specifiers:
   '@types/node': ^18.7.10
   '@types/react': ^18.0.15
   '@types/react-dom': ^18.0.6
+  '@types/react-virtualized-auto-sizer': ^1.0.1
+  '@types/react-window': ^1.8.5
   '@vitejs/plugin-react': ^2.0.0
   autoprefixer: ^10.4.13
   clsx: ^1.2.1
@@ -20,6 +22,8 @@ specifiers:
   react: ^18.2.0
   react-dom: ^18.2.0
   react-router-dom: ^6.4.3
+  react-virtualized-auto-sizer: ^1.0.7
+  react-window: ^1.8.8
   recoil: ^0.7.6
   tailwind-scrollbar: ^2.0.1
   tailwindcss: ^3.2.4
@@ -36,6 +40,8 @@ dependencies:
   react: 18.2.0
   react-dom: 18.2.0_react@18.2.0
   react-router-dom: 6.4.3_biqbaboplfbrettd7655fr4n2y
+  react-virtualized-auto-sizer: 1.0.7_biqbaboplfbrettd7655fr4n2y
+  react-window: 1.8.8_biqbaboplfbrettd7655fr4n2y
   recoil: 0.7.6_biqbaboplfbrettd7655fr4n2y
   tauri-plugin-store-api: github.com/tauri-apps/tauri-plugin-store/9bd993aa67766596638bbfd91e79a1bf8f632014
   usehooks-ts: 2.9.1_biqbaboplfbrettd7655fr4n2y
@@ -45,6 +51,8 @@ devDependencies:
   '@types/node': 18.11.9
   '@types/react': 18.0.25
   '@types/react-dom': 18.0.9
+  '@types/react-virtualized-auto-sizer': 1.0.1
+  '@types/react-window': 1.8.5
   '@vitejs/plugin-react': 2.2.0_vite@3.2.4
   autoprefixer: 10.4.13_postcss@8.4.19
   clsx: 1.2.1
@@ -419,6 +427,16 @@ packages:
       '@babel/plugin-syntax-jsx': 7.18.6_@babel+core@7.20.2
       '@babel/types': 7.20.2
     dev: true
+
+  /@babel/runtime/7.20.1:
+    resolution:
+      {
+        integrity: sha512-mrzLkl6U9YLF8qpqI7TB82PESyEGjm/0Ly91jG575eVxMMlb8fYfOXFZIJ8XfLrJZQbm7dlKry2bJmXBUEkdFg==,
+      }
+    engines: { node: '>=6.9.0' }
+    dependencies:
+      regenerator-runtime: 0.13.11
+    dev: false
 
   /@babel/template/7.18.10:
     resolution:
@@ -800,6 +818,24 @@ packages:
         integrity: sha512-qnVvHxASt/H7i+XG1U1xMiY5t+IHcPGUK7TDMDzom08xa7e86eCeKOiLZezwCKVxJn6NEiiy2ekgX8aQssjIKg==,
         registry: https://registry.npm.taobao.org/,
         tarball: https://registry.npm.taobao.org/@types/react-dom/-/react-dom-18.0.9.tgz,
+      }
+    dependencies:
+      '@types/react': 18.0.25
+    dev: true
+
+  /@types/react-virtualized-auto-sizer/1.0.1:
+    resolution:
+      {
+        integrity: sha512-GH8sAnBEM5GV9LTeiz56r4ZhMOUSrP43tAQNSRVxNexDjcNKLCEtnxusAItg1owFUFE6k0NslV26gqVClVvong==,
+      }
+    dependencies:
+      '@types/react': 18.0.25
+    dev: true
+
+  /@types/react-window/1.8.5:
+    resolution:
+      {
+        integrity: sha512-V9q3CvhC9Jk9bWBOysPGaWy/Z0lxYcTXLtLipkt2cnRj1JOSFNF7wqGpkScSXMgBwC+fnVRg/7shwgddBG5ICw==,
       }
     dependencies:
       '@types/react': 18.0.25
@@ -2043,6 +2079,13 @@ packages:
       sourcemap-codec: 1.4.8
     dev: true
 
+  /memoize-one/5.2.1:
+    resolution:
+      {
+        integrity: sha512-zYiwtZUcYyXKo/np96AGZAckk+FWWsUdJ3cHGGmld7+AhvcWmQyGCYUh1hc4Q/pkOhb65dQR/pqCyK0cOaHz4Q==,
+      }
+    dev: false
+
   /merge-stream/2.0.0:
     resolution:
       {
@@ -2479,6 +2522,36 @@ packages:
       react: 18.2.0
     dev: false
 
+  /react-virtualized-auto-sizer/1.0.7_biqbaboplfbrettd7655fr4n2y:
+    resolution:
+      {
+        integrity: sha512-Mxi6lwOmjwIjC1X4gABXMJcKHsOo0xWl3E3ugOgufB8GJU+MqrtY35aBuvCYv/razQ1Vbp7h1gWJjGjoNN5pmA==,
+      }
+    engines: { node: '>8.0.0' }
+    peerDependencies:
+      react: ^15.3.0 || ^16.0.0-alpha || ^17.0.0 || ^18.0.0-rc
+      react-dom: ^15.3.0 || ^16.0.0-alpha || ^17.0.0 || ^18.0.0-rc
+    dependencies:
+      react: 18.2.0
+      react-dom: 18.2.0_react@18.2.0
+    dev: false
+
+  /react-window/1.8.8_biqbaboplfbrettd7655fr4n2y:
+    resolution:
+      {
+        integrity: sha512-D4IiBeRtGXziZ1n0XklnFGu7h9gU684zepqyKzgPNzrsrk7xOCxni+TCckjg2Nr/DiaEEGVVmnhYSlT2rB47dQ==,
+      }
+    engines: { node: '>8.0.0' }
+    peerDependencies:
+      react: ^15.0.0 || ^16.0.0 || ^17.0.0 || ^18.0.0
+      react-dom: ^15.0.0 || ^16.0.0 || ^17.0.0 || ^18.0.0
+    dependencies:
+      '@babel/runtime': 7.20.1
+      memoize-one: 5.2.1
+      react: 18.2.0
+      react-dom: 18.2.0_react@18.2.0
+    dev: false
+
   /react/18.2.0:
     resolution:
       {
@@ -2532,6 +2605,13 @@ packages:
       hamt_plus: 1.0.2
       react: 18.2.0
       react-dom: 18.2.0_react@18.2.0
+    dev: false
+
+  /regenerator-runtime/0.13.11:
+    resolution:
+      {
+        integrity: sha512-kY1AZVr2Ra+t+piVaJ4gxaFaReZVH40AKNo7UCX6W+dEwBo/2oZJzqfuN1qLq1oL45o56cPaTXELwrTh8Fpggg==,
+      }
     dev: false
 
   /resolve/1.22.1:
@@ -3042,7 +3122,9 @@ packages:
   github.com/tauri-apps/tauri-plugin-store/9bd993aa67766596638bbfd91e79a1bf8f632014:
     resolution:
       {
-        tarball: https://codeload.github.com/tauri-apps/tauri-plugin-store/tar.gz/9bd993aa67766596638bbfd91e79a1bf8f632014,
+        commit: 9bd993aa67766596638bbfd91e79a1bf8f632014,
+        repo: git+ssh://git@github.com/tauri-apps/tauri-plugin-store.git,
+        type: git,
       }
     name: tauri-plugin-store-api
     version: 0.1.0

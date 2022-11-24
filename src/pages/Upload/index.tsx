@@ -7,13 +7,19 @@ import { showMessage } from '@/middleware/message';
 import { checkCsvAvailability } from '@/api/core';
 import moment from 'moment';
 import IconLoadFile from './load-file';
-import { useRecoilState, useSetRecoilState } from 'recoil';
-import { navIndexState, NavIndex, sourceFilePathState } from '@/middleware/store';
+import { useRecoilState, useRecoilValue, useSetRecoilState } from 'recoil';
+import {
+  navIndexState,
+  NavIndex,
+  sourceFilePathState,
+  getSourceFilename,
+} from '@/middleware/store';
 
 const Home: FC = () => {
   const [sourcePath, setSourcePath] = useRecoilState(sourceFilePathState);
   const [today] = useState(moment().format('MM-DD'));
   const setNavIndex = useSetRecoilState(navIndexState);
+  const sourceBaseName = useRecoilValue(getSourceFilename);
 
   const selectFile = async () => {
     const selected = await open({
@@ -49,11 +55,6 @@ const Home: FC = () => {
       });
   };
 
-  const sourceBaseName = useMemo(
-    () => sourcePath && decodeURIComponent(new URL(sourcePath).pathname.split('/').pop() ?? ''),
-    [sourcePath]
-  );
-
   const navigateToCatrgory = () => {
     if (sourcePath === '') {
       showMessage('请先选择文件', 'warning');
@@ -82,19 +83,19 @@ const Home: FC = () => {
             <IconLoadFile />
             <div>
               <p className="mdc-text-sm text-center">
-                {sourceBaseName.length > 0 ? (
+                {!sourceBaseName ? (
+                  '点击这里，导入需要统计的文件（支持 *.csv 格式）'
+                ) : (
                   <>
                     已导入「<span className="mdc-text-heightlight">{sourceBaseName}</span>」
                   </>
-                ) : (
-                  '点击这里，导入需要统计的文件（支持 *.csv 格式）'
                 )}
               </p>
             </div>
           </div>
         </div>
-        {sourceBaseName.length > 0 && (
-          <button className="mdc-btn-primary" onClick={navigateToCatrgory}>
+        {!!sourceBaseName && (
+          <button className="mdc-btn-primary p-1 w-32" onClick={navigateToCatrgory}>
             开始统计
           </button>
         )}
