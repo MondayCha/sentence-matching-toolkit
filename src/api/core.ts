@@ -10,12 +10,35 @@ export const checkCsvAvailability = (path: string) => invoke('check_csv_headers'
 
 // export const startCategoryMatching = (dict: boolean) => invoke('start_category_matching', { dict });
 export interface SourceRecord {
-  序号: number;
-  提交时间: string;
-  请选择单位所在地: string;
-  姓名: string;
-  单位: string;
+  index: number;
+  timestamp: string;
+  location: string;
+  name: string;
+  company: string;
+  info: string;
+  infoT2s: string;
+  infoJieba: string[];
 }
 
-export const startCategoryMatching = async (path: string, enableDict: boolean) =>
-  invoke('start_category_matching', { path, enableDict });
+export interface SourceRecordGroup {
+  acceptedRecords: SourceRecord[];
+  rejectedRecords: SourceRecord[];
+  suspectedRecords: SourceRecord[];
+}
+
+export const startCategoryMatching = async (path: string, uuid: string, enableDict: boolean) =>
+  (await invoke('start_category_matching', { path, uuid, enableDict })) as SourceRecordGroup;
+
+export const importDictionary = (path: string) => invoke('import_dictionary', { path });
+
+// open_history_dir
+export const openHistoryDir = () => invoke('open_history_dir');
+
+// open_cache_dir
+export const openCacheDir = () => invoke('open_cache_dir');
+
+// get_dict_size
+export const getDictSize = () => invoke('get_dict_size');
+
+// get_dict_path
+export const getDictPath = () => invoke('get_dict_path');

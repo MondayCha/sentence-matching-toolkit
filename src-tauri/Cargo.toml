@@ -20,6 +20,8 @@ tauri = {version = "1.2", features = ["dialog-all", "fs-all", "path-all", "shell
 csv = "1.1"
 jieba-rs = "0.6"
 strsim = "0.10"
+rust-embed="6.4.2"
+chrono = "0.4.23"
 
 [dependencies.tauri-plugin-store]
 git = "https://github.com/tauri-apps/tauri-plugin-store"

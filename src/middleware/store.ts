@@ -1,7 +1,8 @@
-import { SourceRecord, startCategoryMatching } from '@/api/core';
-import { Sleep } from '@icon-park/react';
+import uuid from 'react-uuid';
 import { atom, selector } from 'recoil';
 import { Store } from 'tauri-plugin-store-api';
+
+import { getDictSize, SourceRecord, startCategoryMatching } from '@/api/core';
 import log from '@/middleware/logger';
 import { getBaseFilenameFromPath } from './utils';
 
@@ -40,12 +41,26 @@ export const dictState = atom({
   }),
 });
 
+// Dictionary State Selector
+export const dictSizeState = atom({
+  key: 'dictionarySizeState',
+  default: selector({
+    key: 'dictionarySizeState/default',
+    get: async ({ get }) => {
+      const path = get(sourceFilePathState);
+      const val = await getDictSize();
+      return val as number;
+    },
+  }),
+});
+
 // Source File Path State
 export const sourceFilePathState = atom({
   key: 'sourceFilePathState',
   default: '',
 });
 
+// Source File Name State
 export const getSourceFilename = selector({
   key: 'sourceFilePathState/filename',
   get: ({ get }) => {
@@ -54,14 +69,24 @@ export const getSourceFilename = selector({
   },
 });
 
+// Uuid State
+export const getUuid = selector({
+  key: 'sourceFilePathState/uuid',
+  get: ({ get }) => {
+    const path = get(sourceFilePathState);
+    return uuid();
+  },
+});
+
 // Call Category Matching API
-export const primaryCategoryState = selector({
+export const getCategory = selector({
   key: 'primaryCategoryState',
   get: async ({ get }) => {
     const path = get(sourceFilePathState);
     const dict = get(dictState);
-    const ans = await startCategoryMatching(path, dict);
-    log.info('primaryCategoryState', ans);
-    return ans as SourceRecord[];
+    const uuid = get(getUuid);
+    const category = startCategoryMatching(path, uuid, dict);
+    log.info('getCategory', category);
+    return category;
   },
 });

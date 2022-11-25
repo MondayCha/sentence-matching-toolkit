@@ -3,17 +3,36 @@
     windows_subsystem = "windows"
 )]
 
-mod commands;
-use std::collections::HashMap;
-use tauri::Manager;
+mod api;
+mod handler;
+mod utils;
 
-use commands::{check_csv_headers, close_splashscreen, start_category_matching};
+use std::collections::HashMap;
+use std::fs;
+use std::io::Result;
+
+use api::*;
+use tauri::{Manager, PathResolver};
 use tauri_plugin_store::{PluginBuilder, StoreBuilder};
+use utils::paths;
+
+fn setup_dirs(path_resolver: &PathResolver) -> Result<()> {
+    let option_cache_dir = paths::cache_dir(path_resolver);
+    if let Some(cache_dir) = option_cache_dir {
+        if !cache_dir.exists() {
+            fs::create_dir_all(&cache_dir)?;
+        }
+    }
+    let option_history_dir = paths::history_dir(path_resolver);
+    if let Some(history_dir) = option_history_dir {
+        if !history_dir.exists() {
+            fs::create_dir_all(&history_dir)?;
+        }
+    }
+    Ok(())
+}
 
 fn main() {
-    // let mut defaults = HashMap::new();
-    // defaults.insert("foo".to_string(), "bar".into());
-    // let builder = StoreBuilder::new("store.bin".parse()?).defaults(defaults);
     let settings = StoreBuilder::new(".settings.dat".parse().unwrap())
         .defaults(HashMap::from([
             ("dictionary".to_string(), true.into()),
@@ -23,13 +42,9 @@ fn main() {
         .build();
 
     tauri::Builder::default()
-        .invoke_handler(tauri::generate_handler![
-            close_splashscreen,
-            check_csv_headers,
-            start_category_matching
-        ])
         .plugin(PluginBuilder::default().stores([settings]).freeze().build())
         .setup(|app| {
+            setup_dirs(&app.path_resolver())?;
             let splashscreen_window = app.get_window("splashscreen").unwrap();
             let main_window = app.get_window("main").unwrap();
             // we perform the initialization code on a new task so the app doesn't freeze
@@ -45,6 +60,16 @@ fn main() {
             });
             Ok(())
         })
+        .invoke_handler(tauri::generate_handler![
+            close_splashscreen,
+            check_csv_headers,
+            start_category_matching,
+            import_dictionary,
+            open_history_dir,
+            open_cache_dir,
+            get_dict_size,
+            get_dict_path
+        ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 }

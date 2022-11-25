@@ -1,9 +1,9 @@
 /**
  * suspense fallback component
  */
-import { getSourceFilename, primaryCategoryState } from '@/middleware/store';
+import { getSourceFilename, getCategory } from '@/middleware/store';
 import clsx from 'clsx';
-import type { FC } from 'react';
+import { FC, useMemo } from 'react';
 import { useState, useEffect } from 'react';
 import { useRecoilValueLoadable, useRecoilValue } from 'recoil';
 import CategorySubtitle from './CategorySubtitle';
@@ -13,10 +13,13 @@ import CategoryWindow, { RowProps } from './CategoryWindow';
 import IconPending from './Pending';
 
 const Category: FC = () => {
-  const categoryLoadable = useRecoilValueLoadable(primaryCategoryState);
+  const categoryLoadable = useRecoilValueLoadable(getCategory);
   const sourceBaseName = useRecoilValue(getSourceFilename);
   const [acceptedList, setAcceptedList] = useState<RowProps[]>([]);
+  const [rejectedList, setRejectedList] = useState<RowProps[]>([]);
+  const [suspectedList, setSuspectedList] = useState<RowProps[]>([]);
   const [recycledList, setRecycledList] = useState<RowProps[]>([]);
+  const [slider, setSlider] = useState('0');
 
   const checkLoadable = () => {
     log.info('categoryLoadable', categoryLoadable.state);
@@ -24,12 +27,26 @@ const Category: FC = () => {
   };
 
   useEffect(() => {
-    if (categoryLoadable.state === 'hasValue') {
+    if (categoryLoadable.state === 'hasValue' && categoryLoadable.contents !== undefined) {
       setAcceptedList(
-        categoryLoadable.contents.map((item) => ({
-          company: item['单位'],
-          name: item['姓名'],
-          index: item['序号'],
+        categoryLoadable.contents.acceptedRecords.map((item) => ({
+          company: item.company,
+          name: item.name,
+          index: item.index,
+        }))
+      );
+      setRejectedList(
+        categoryLoadable.contents.rejectedRecords.map((item) => ({
+          company: item.company,
+          name: item.name,
+          index: item.index,
+        }))
+      );
+      setSuspectedList(
+        categoryLoadable.contents.suspectedRecords.map((item) => ({
+          company: item.company,
+          name: item.name,
+          index: item.index,
         }))
       );
     }
@@ -44,6 +61,21 @@ const Category: FC = () => {
     }
   };
 
+  const displayedList = useMemo(() => {
+    switch (slider) {
+      case '0':
+        return suspectedList;
+      case '1':
+        return acceptedList;
+      case '2':
+        return rejectedList;
+      case '3':
+        return recycledList;
+      default:
+        return acceptedList;
+    }
+  }, [slider, acceptedList, suspectedList, rejectedList, recycledList]);
+
   return (
     <div className={clsx('mdc-paper')}>
       <div className="mdc-header">
@@ -55,8 +87,8 @@ const Category: FC = () => {
             <>
               现有<span className=" mdc-text-heightlight">{acceptedList.length}</span>
               条本单位数据，
-              <span className=" mdc-text-heightlight">80</span>条疑似数据，
-              <span className=" mdc-text-heightlight">7680</span>条其他数据，
+              <span className=" mdc-text-heightlight">{suspectedList.length}</span>条疑似数据，
+              <span className=" mdc-text-heightlight">{rejectedList.length}</span>条其他数据，
               <span className=" mdc-text-heightlight">{recycledList.length}</span>条回收站数据。
             </>
           ) : (
@@ -76,7 +108,17 @@ const Category: FC = () => {
       </div>
       {categoryLoadable.state === 'hasValue' ? (
         <div className="flex flex-col items-end w-full h-full space-y-4">
-          <CategoryWindow records={acceptedList} clickHandler={removeItem} />
+          <input
+            className="mr-6 lg:mr-8"
+            type="range"
+            id="list"
+            name="List"
+            min={0}
+            max={3}
+            value={slider}
+            onChange={(e) => setSlider(e.target.value)}
+          />
+          <CategoryWindow records={displayedList} clickHandler={removeItem} />
           <button className="mdc-btn-primary p-1 w-32 mr-12 lg:mr-14">提交</button>
         </div>
       ) : (
@@ -91,10 +133,14 @@ const Category: FC = () => {
               </div>
             </div>
           ) : (
-            <>
-              已导入「<span className="mdc-text-heightlight">{sourceBaseName}</span>
-              」，正在匹配单位数据...
-            </>
+            <div className="mdc-body grow flex flex-col gap-4 overflow-hidden justify-between items-end">
+              <div className="mdc-item py-12 grow">
+                <div className="flex h-full w-full flex-col items-center justify-center space-y-3 cursor-pointer">
+                  <IconPending />
+                  <p className="mdc-text-sm text-center">正在匹配</p>
+                </div>
+              </div>
+            </div>
           )}
         </>
       )}

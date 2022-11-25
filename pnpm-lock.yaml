@@ -22,6 +22,7 @@ specifiers:
   react: ^18.2.0
   react-dom: ^18.2.0
   react-router-dom: ^6.4.3
+  react-uuid: ^2.0.0
   react-virtualized-auto-sizer: ^1.0.7
   react-window: ^1.8.8
   recoil: ^0.7.6
@@ -40,6 +41,7 @@ dependencies:
   react: 18.2.0
   react-dom: 18.2.0_react@18.2.0
   react-router-dom: 6.4.3_biqbaboplfbrettd7655fr4n2y
+  react-uuid: 2.0.0
   react-virtualized-auto-sizer: 1.0.7_biqbaboplfbrettd7655fr4n2y
   react-window: 1.8.8_biqbaboplfbrettd7655fr4n2y
   recoil: 0.7.6_biqbaboplfbrettd7655fr4n2y
@@ -2522,6 +2524,13 @@ packages:
       react: 18.2.0
     dev: false
 
+  /react-uuid/2.0.0:
+    resolution:
+      {
+        integrity: sha512-FNUH/8WR/FEtx0Bu6gmt1eONfc413hhvrEXFWUSFGvznUhI4dYoVZA09p7JHoTpnM4WC2D/bG2YSxGKXF4oVLg==,
+      }
+    dev: false
+
   /react-virtualized-auto-sizer/1.0.7_biqbaboplfbrettd7655fr4n2y:
     resolution:
       {
@@ -3122,9 +3131,7 @@ packages:
   github.com/tauri-apps/tauri-plugin-store/9bd993aa67766596638bbfd91e79a1bf8f632014:
     resolution:
       {
-        commit: 9bd993aa67766596638bbfd91e79a1bf8f632014,
-        repo: git+ssh://git@github.com/tauri-apps/tauri-plugin-store.git,
-        type: git,
+        tarball: https://codeload.github.com/tauri-apps/tauri-plugin-store/tar.gz/9bd993aa67766596638bbfd91e79a1bf8f632014,
       }
     name: tauri-plugin-store-api
     version: 0.1.0
