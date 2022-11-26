@@ -6,6 +6,9 @@ use std::{
     io::{self, Result, Write},
     path::PathBuf,
 };
+use tauri::PathResolver;
+
+use crate::utils::paths;
 
 /// nr  人名\
 /// ns  地名\
@@ -27,21 +30,32 @@ pub struct DictHandler {
 }
 
 impl DictHandler {
-    pub fn new(dict_handler_path: PathBuf) -> Result<Self> {
-        let dict_handler: Self = if !dict_handler_path.exists() {
-            DictHandler {
-                dict_handler_path,
-                dict: BTreeMap::default(),
-                size: 0,
-            }
-        } else {
-            let dict_handler_file = File::open(&dict_handler_path)?;
-            let mut dict_handler: Self = serde_json::from_reader(dict_handler_file)
-                .map_err(|err| io::Error::new(io::ErrorKind::Other, format!("{:?}", err)))?;
-            dict_handler.dict_handler_path = dict_handler_path;
-            dict_handler
+    pub fn new(path_resolver: &PathResolver) -> Self {
+        let dict_handler_path = paths::dict_handler_path(&path_resolver).unwrap_or_default();
+        let default_dict_handler = DictHandler {
+            dict_handler_path: dict_handler_path.clone(),
+            dict: BTreeMap::default(),
+            size: 0,
         };
-        Ok(dict_handler)
+        if !dict_handler_path.exists() {
+            return default_dict_handler;
+        } else {
+            let dict_handler_file = match File::open(&dict_handler_path) {
+                Ok(file) => file,
+                Err(_) => {
+                    return default_dict_handler;
+                }
+            };
+            let mut dict_handler: Self = match serde_json::from_reader(dict_handler_file) {
+                Ok(dict_handler) => dict_handler,
+                Err(err) => {
+                    println!("dict_handler_file: {:?}", err);
+                    return default_dict_handler;
+                }
+            };
+            dict_handler.dict_handler_path = dict_handler_path;
+            return dict_handler;
+        };
     }
 
     fn save(&self) -> Result<()> {
@@ -60,6 +74,7 @@ impl DictHandler {
         for name in name_list {
             self.add(name, tag);
         }
+        self.size = self.dict.len();
     }
 
     pub fn load_csv(
@@ -76,6 +91,7 @@ impl DictHandler {
                 self.add(name, tag);
             }
         }
+        self.size = self.dict.len();
         Ok(())
     }
 
@@ -93,5 +109,14 @@ impl DictHandler {
         }
         self.save()?;
         Ok(())
+    }
+
+    pub fn can_match_key(&self, info: &str) -> bool {
+        for key in self.dict.keys() {
+            if info.contains(key) {
+                return true;
+            }
+        }
+        false
     }
 }

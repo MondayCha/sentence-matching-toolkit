@@ -1,10 +1,9 @@
-import uuid from 'react-uuid';
 import { atom, selector } from 'recoil';
 import { Store } from 'tauri-plugin-store-api';
 
-import { getDictSize, SourceRecord, startCategoryMatching } from '@/api/core';
+import { getDictSize, getSubCategoryInfo, SourceRecord, startCategoryMatching } from '@/api/core';
 import log from '@/middleware/logger';
-import { getBaseFilenameFromPath } from './utils';
+import { getBaseFilenameFromPath, getTimestamp } from './utils';
 
 // Tauri FileSystem Store
 export const store = new Store('.settings.dat');
@@ -26,7 +25,7 @@ export const navIndexState = atom({
 });
 
 // Dictionary State Key
-export const DICT_SETTING_KEY = 'dictionary';
+export const DICT_SETTING_KEY = 'auto_import_dict';
 
 // Dictionary State Selector
 export const dictState = atom({
@@ -57,14 +56,17 @@ export const dictSizeState = atom({
 // Source File Path State
 export const sourceFilePathState = atom({
   key: 'sourceFilePathState',
-  default: '',
+  default: {
+    path: '',
+    timestamp: getTimestamp(),
+  },
 });
 
 // Source File Name State
 export const getSourceFilename = selector({
   key: 'sourceFilePathState/filename',
   get: ({ get }) => {
-    const path = get(sourceFilePathState);
+    const { path } = get(sourceFilePathState);
     return getBaseFilenameFromPath(path);
   },
 });
@@ -73,8 +75,8 @@ export const getSourceFilename = selector({
 export const getUuid = selector({
   key: 'sourceFilePathState/uuid',
   get: ({ get }) => {
-    const path = get(sourceFilePathState);
-    return uuid();
+    const { timestamp } = get(sourceFilePathState);
+    return timestamp;
   },
 });
 
@@ -82,11 +84,34 @@ export const getUuid = selector({
 export const getCategory = selector({
   key: 'primaryCategoryState',
   get: async ({ get }) => {
-    const path = get(sourceFilePathState);
-    const dict = get(dictState);
+    const { path } = get(sourceFilePathState);
     const uuid = get(getUuid);
-    const category = startCategoryMatching(path, uuid, dict);
+    const category = startCategoryMatching(path, uuid);
     log.info('getCategory', category);
     return category;
   },
+});
+
+// SubCategory Info State
+export const subCategoryInfoState = atom({
+  key: 'subCategoryInfoState',
+  default: selector({
+    key: 'subCategoryInfoState/default',
+    get: async () => {
+      try {
+        const res = await getSubCategoryInfo();
+        log.info('subCategoryInfoState', res);
+        return {
+          available: true,
+          name: res as string,
+        };
+      } catch (err) {
+        log.error('subCategoryInfoState', err);
+        return {
+          available: false,
+          name: '',
+        };
+      }
+    },
+  }),
 });

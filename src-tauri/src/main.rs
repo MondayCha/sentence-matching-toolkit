@@ -35,7 +35,7 @@ fn setup_dirs(path_resolver: &PathResolver) -> Result<()> {
 fn main() {
     let settings = StoreBuilder::new(".settings.dat".parse().unwrap())
         .defaults(HashMap::from([
-            ("dictionary".to_string(), true.into()),
+            ("auto_import_dict".to_string(), true.into()),
             ("language".to_string(), "zh-CN".into()),
             ("rule".to_string(), "snzx".into()),
         ]))
@@ -61,14 +61,17 @@ fn main() {
             Ok(())
         })
         .invoke_handler(tauri::generate_handler![
-            close_splashscreen,
-            check_csv_headers,
-            start_category_matching,
-            import_dictionary,
-            open_history_dir,
-            open_cache_dir,
-            get_dict_size,
-            get_dict_path
+            shell::close_splashscreen,
+            shell::open_history_dir,
+            shell::open_cache_dir,
+            shell::remove_history_and_cache,
+            category::check_csv_headers,
+            category::start_category_matching,
+            category::receive_modified_records,
+            sub_category::get_sub_category_info,
+            dict::import_dictionary,
+            dict::get_dict_size,
+            dict::get_dict_path
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

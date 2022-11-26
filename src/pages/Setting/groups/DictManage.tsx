@@ -2,18 +2,25 @@ import clsx from 'clsx';
 import type { FC } from 'react';
 import { useState, useLayoutEffect, Suspense } from 'react';
 import { BookOne, FileSettingsOne } from '@icon-park/react';
-import { store, dictState, DICT_SETTING_KEY, dictSizeState } from '@/middleware/store';
+import {
+  store,
+  dictState,
+  DICT_SETTING_KEY,
+  dictSizeState,
+  sourceFilePathState,
+} from '@/middleware/store';
 import ListItemToggle from '@/components/ListItemToggle';
 import ListItemButton from '@/components/ListItemButton';
 import log from '@/middleware/logger';
-import { useRecoilState, useRecoilValue } from 'recoil';
+import { useRecoilState, useRecoilValue, useSetRecoilState } from 'recoil';
 import { open as openDialog } from '@tauri-apps/api/dialog';
 import { open as openShell } from '@tauri-apps/api/shell';
 import { importDictionary, getDictPath } from '@/api/core';
+import { getTimestamp } from '@/middleware/utils';
 
 const DictManage: FC = () => {
   const [dictEnabled, setDictEnabled] = useRecoilState(dictState);
-  const dictSize = useRecoilValue(dictSizeState);
+  const [dictSize, setDictSize] = useRecoilState(dictSizeState);
 
   const checkDictStatus = async () => {
     const val = await store.get(DICT_SETTING_KEY);
@@ -46,8 +53,9 @@ const DictManage: FC = () => {
     }
 
     importDictionary(fullPath).then((res) => {
-      const data = res as string;
-      log.info('DictManage selectFile', data);
+      const size = res as number;
+      log.info('DictManage selectFile', size);
+      setDictSize(size);
     });
   };
 
@@ -61,8 +69,8 @@ const DictManage: FC = () => {
     <div className="mdc-item-group">
       <ListItemToggle
         index={0}
-        title="启用词典"
-        subtitle="启用词典功能后，将基于历史记录构建名词表"
+        title="自动导入"
+        subtitle="导出匹配结果时，同时将新名词添加到词典"
         icon={<BookOne theme="outline" size="30" fill="#fff" />}
         toggleState={dictEnabled}
         setToggleState={setDictEnabled}
@@ -86,7 +94,7 @@ const DictManage: FC = () => {
       />
       <div className="mt-1.5 mr-4 flex flex-row space-x-2.5">
         <button className="mdc-btn-primary p-1 w-32" onClick={selectFile}>
-          导入名词
+          导入词典
         </button>
       </div>
     </div>

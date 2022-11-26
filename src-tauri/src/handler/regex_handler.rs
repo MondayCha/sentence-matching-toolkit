@@ -57,7 +57,7 @@ impl RegexMatchHandler {
             re_accept: Regex::new(r"(山南|市)(.*?)((职业技术|职业|技术)学[校院]|职[业校院]|1职)")
                 .unwrap(),
             re_reject: Regex::new(r"2").unwrap(),
-            re_reject_city: Regex::new(r"拉萨|日喀则|林芝|昌都|那曲|阿里").unwrap(),
+            re_reject_city: Regex::new(r"拉萨市|日喀则市|林芝市|昌都市|那曲市|阿里地区").unwrap(),
         }
     }
 

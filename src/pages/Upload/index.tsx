@@ -14,6 +14,7 @@ import {
   sourceFilePathState,
   getSourceFilename,
 } from '@/middleware/store';
+import { getTimestamp } from '@/middleware/utils';
 
 const Home: FC = () => {
   const [sourcePath, setSourcePath] = useRecoilState(sourceFilePathState);
@@ -37,7 +38,10 @@ const Home: FC = () => {
       fullPath = selected[0];
     } else if (selected === null) {
       // showMessage("没有选择文件", "warning");
-      setSourcePath('');
+      setSourcePath({
+        path: '',
+        timestamp: getTimestamp(),
+      });
       return;
     } else {
       fullPath = selected;
@@ -47,16 +51,22 @@ const Home: FC = () => {
       .then((res) => {
         const data = res as string;
         log.info(data);
-        setSourcePath(fullPath);
+        setSourcePath({
+          path: fullPath,
+          timestamp: getTimestamp(),
+        });
       })
       .catch((err) => {
         log.error(err);
-        setSourcePath('');
+        setSourcePath({
+          path: '',
+          timestamp: getTimestamp(),
+        });
       });
   };
 
   const navigateToCatrgory = () => {
-    if (sourcePath === '') {
+    if (sourcePath.path === '') {
       showMessage('请先选择文件', 'warning');
       return;
     }
@@ -67,12 +77,7 @@ const Home: FC = () => {
     <div className="mdc-paper">
       <div className="mdc-header">
         <h1 className="mdc-title pb-1.5">短文本匹配工具</h1>
-        <p className="mdc-text-sm">
-          输入待统计的数据（例如：
-          <span className="mr-0.5">{today} 山南.csv</span>
-          ）。
-        </p>
-        <p className="mdc-text-sm">软件将根据规则配置文件 ，输出匹配结果。</p>
+        <p className="mdc-text-sm">输入待统计的数据，软件将根据规则配置文件，输出匹配结果。</p>
       </div>
       <div className="mdc-body grow flex flex-col gap-4 overflow-hidden justify-between items-end">
         <div className="mdc-item py-12 grow">

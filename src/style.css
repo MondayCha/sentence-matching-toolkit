@@ -8,7 +8,7 @@
   }
 
   .mdc-btn-secondary {
-    @apply bg-abyss-600 hover:brightness-110 text-white text-sm font-medium py-1 w-32 rounded shadow-sm  active:brightness-125;
+    @apply bg-abyss-600 hover:brightness-110 text-white text-sm font-medium py-1 w-32 rounded shadow-sm  active:brightness-125 border-abyss-500 box-border border;
   }
 
   .mdc-paper {

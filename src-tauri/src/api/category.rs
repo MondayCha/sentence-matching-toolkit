@@ -1,30 +1,15 @@
 use std::fs::File;
-use std::io::{BufRead, BufReader};
+use std::io::Write;
 
-use crate::handler::dict_handler::{DictHandler, DictType};
-use crate::handler::jieba_handler::JiebaHandler;
 use crate::handler::t2s_handler::T2SHandler;
 use crate::utils::matches::RecordMatcher;
 use crate::utils::{paths, records::*};
 use csv::Reader;
-use tauri::api::{dialog::message, shell::open};
+use tauri::api::dialog::message;
 use tauri::command;
 use tauri::{AppHandle, Manager, Window};
 
 // Learn more about Tauri commands at https://tauri.app/v1/guides/features/command
-
-/// Close Splashscreen.
-/// This command must be async so that it doesn't run on the main thread.
-/// [Waiting for Rust](https://tauri.app/v1/guides/features/splashscreen#waiting-for-rust).
-#[command]
-pub async fn close_splashscreen(window: Window) {
-    // Close splashscreen
-    if let Some(splashscreen) = window.get_window("splashscreen") {
-        splashscreen.close().unwrap();
-    }
-    // Show main window
-    window.get_window("main").unwrap().show().unwrap();
-}
 
 /// Receive csv file path and check csv availablity.
 #[command]
@@ -70,7 +55,6 @@ pub fn check_csv_headers(path: &str, window: Window) -> Result<String, String> {
 pub fn start_category_matching(
     path: &str,
     uuid: &str,
-    enable_dict: bool,
     window: Window,
     app_handle: AppHandle,
 ) -> Result<IntermediateRecordGroup, String> {
@@ -78,6 +62,20 @@ pub fn start_category_matching(
     let label = window.label();
     let parent_window = window.get_window(label).unwrap();
     let mut err_log = String::new();
+
+    // create folder in APP_DATA/history/uuid (history_uuid_dir)
+    let option_uuid_dir = crate::utils::paths::history_uuid_dir(&app_handle.path_resolver(), uuid);
+    if let Some(uuid_dir) = option_uuid_dir {
+        // !history_uuid_dir.exists() {
+        // std::fs::create_dir_all(&history_uuid_dir).unwrap();
+        if uuid_dir.exists() {
+            return Err("UUID 目录已存在，请检查 UUID 是否重复。".to_string());
+        } else {
+            std::fs::create_dir_all(&uuid_dir).unwrap();
+        }
+    } else {
+        return Err("无法创建历史文件夹".to_string());
+    }
 
     // check if file exists
     if !std::path::Path::new(path).exists() {
@@ -87,7 +85,7 @@ pub fn start_category_matching(
         } else {
             // file might be deleted
             err_log = format!("路径「{}」不存在！", path.to_string());
-            message(Some(&parent_window), "注意", err_log.clone());
+            message(Some(&parent_window), "注意", &err_log);
         }
         return Err(err_log.to_string());
     }
@@ -105,18 +103,38 @@ pub fn start_category_matching(
     // };
     // let jieba_cut = |s: &str| jieba_handler.cut(s);
 
+    // create dict handler
+    let dict_handler = crate::handler::dict_handler::DictHandler::new(&app_handle.path_resolver());
+
     // create matcher
     let record_matcher = RecordMatcher::new();
-    let match_category = |r: &str| record_matcher.match_category(r);
+    let match_category = |r: &str| record_matcher.match_category(r, &dict_handler);
 
     // read csv file
-    let mut rdr = csv::Reader::from_path(path).unwrap();
+    let result_rdr = csv::Reader::from_path(path);
+    let mut rdr = match result_rdr {
+        Ok(rdr) => rdr,
+        Err(e) => {
+            err_log = format!("读取 CSV 文件失败：{}", e.to_string());
+            message(Some(&parent_window), "注意", &err_log);
+            return Err(err_log.to_string());
+        }
+    };
+
     let mut accepted_records = Vec::new();
     let mut suspected_records = Vec::new();
+    let mut in_dict_records = Vec::new();
     let mut rejected_records = Vec::new();
 
     for result in rdr.deserialize() {
-        let source_record: SourceRecord = result.unwrap();
+        let source_record: SourceRecord = match result {
+            Ok(record) => record,
+            Err(e) => {
+                err_log = format!("读取 CSV 行失败：{}", e.to_string());
+                message(Some(&parent_window), "注意", &err_log);
+                return Err(err_log.to_string());
+            }
+        };
         let mut intermediate_record = IntermediateRecord::new(source_record, &t2s_convert);
         let (result, category) = match_category(&intermediate_record.info_t2s);
         intermediate_record.set_parsed_company(category);
@@ -127,6 +145,9 @@ pub fn start_category_matching(
             RecordMatchingResult::Suspected => {
                 suspected_records.push(intermediate_record);
             }
+            RecordMatchingResult::InDict => {
+                in_dict_records.push(intermediate_record);
+            }
             RecordMatchingResult::Rejected => {
                 rejected_records.push(intermediate_record);
             }
@@ -134,100 +155,69 @@ pub fn start_category_matching(
     }
 
     suspected_records.sort_by(|a, b| {
-        let parsed_ordering = a.parsed_company.cmp(&b.parsed_company);
-        if parsed_ordering == std::cmp::Ordering::Equal {
-            b.company.len().cmp(&a.company.len())
-        } else {
-            parsed_ordering
-        }
+        a.company
+            .cmp(&b.company)
+            .then(b.name.len().cmp(&a.name.len()))
     });
-    accepted_records.sort_by(|a, b| b.company.len().cmp(&a.company.len()));
+    in_dict_records.sort_by(|a, b| {
+        a.company
+            .cmp(&b.company)
+            .then(b.name.len().cmp(&a.name.len()))
+    });
+    accepted_records.sort_by(|a, b| {
+        b.company
+            .len()
+            .cmp(&a.company.len())
+            .then(a.company.cmp(&b.company))
+    });
+    rejected_records.sort_by(|a, b| a.company.cmp(&b.company));
 
     if err_log.is_empty() {
-        Ok(IntermediateRecordGroup {
+        let intermediate_record_group = IntermediateRecordGroup {
             accepted_records,
             suspected_records,
             rejected_records,
-        })
+            in_dict_records,
+        };
+
+        let option_record_group_path =
+            crate::utils::paths::history_sorted_path(&app_handle.path_resolver(), uuid);
+        if let Some(record_group_path) = option_record_group_path {
+            let record_group_data = serde_json::to_string(&intermediate_record_group).unwrap();
+            let mut f = File::create(record_group_path).unwrap();
+            f.write_all(record_group_data.as_bytes()).unwrap();
+        }
+
+        Ok(intermediate_record_group)
     } else {
         message(Some(&parent_window), "注意", err_log.clone());
         Err(err_log)
     }
 }
 
-/// Generate dictionary file and save to fs.
 #[command]
-pub fn import_dictionary(path: &str, app_handle: AppHandle) -> Result<String, String> {
-    let output_dict_path = paths::dictionary_path(&app_handle.path_resolver()).unwrap_or_default();
-    println!("output_dict_path: {:?}", output_dict_path);
-    let mut dict_handler =
-        DictHandler::new(paths::dict_handler_path(&app_handle.path_resolver()).unwrap_or_default())
-            .unwrap();
-    dict_handler
-        .load_csv(path, Some(1), Some(DictType::PER))
-        .unwrap();
-    dict_handler.export_dict(&output_dict_path).unwrap();
-    Ok(output_dict_path.into_os_string().into_string().unwrap())
-}
+pub fn receive_modified_records(
+    records: Vec<IntermediateRecord>,
+    uuid: &str,
+    window: Window,
+    app_handle: AppHandle,
+) -> Result<(), String> {
+    let label = window.label();
+    let parent_window = window.get_window(label).unwrap();
+    let mut err_log = String::new();
 
-#[command]
-pub fn open_history_dir(app_handle: AppHandle) {
-    let history_dir = paths::history_dir(&app_handle.path_resolver())
-        .unwrap_or_default()
-        .into_os_string()
-        .into_string()
-        .unwrap();
-    match open(&app_handle.shell_scope(), history_dir, None) {
-        Ok(_) => {}
-        Err(e) => {
-            println!("open cache dir error: {:?}", e);
-        }
+    let option_accepted_records_path =
+        crate::utils::paths::history_accepted_path(&app_handle.path_resolver(), uuid);
+    if let Some(accepted_records_path) = option_accepted_records_path {
+        let data = serde_json::to_string(&records).unwrap();
+        let mut f = File::create(accepted_records_path).unwrap();
+        f.write_all(data.as_bytes()).unwrap();
     }
-}
 
-#[command]
-pub fn open_cache_dir(app_handle: AppHandle) {
-    let cache_dir = paths::cache_dir(&app_handle.path_resolver())
-        .unwrap_or_default()
-        .into_os_string()
-        .into_string()
-        .unwrap();
-    match open(&app_handle.shell_scope(), cache_dir, None) {
-        Ok(_) => {}
-        Err(e) => {
-            println!("open cache dir error: {:?}", e);
-        }
-    }
-}
-
-#[command]
-pub fn get_dict_size(app_handle: AppHandle) -> usize {
-    let dict_file_path = paths::dictionary_path(&app_handle.path_resolver());
-    if let Some(dict_file_path) = dict_file_path {
-        if !dict_file_path.exists() {
-            return 0;
-        }
-        let dict_file = File::open(dict_file_path).unwrap();
-        let reader = BufReader::new(dict_file);
-        let mut count = 0;
-        for _ in reader.lines() {
-            count += 1;
-        }
-        count
+    if err_log.is_empty() {
+        Ok(())
     } else {
-        0
-    }
-}
-
-#[command]
-pub fn get_dict_path(app_handle: AppHandle) -> String {
-    let dict_file_path = paths::dictionary_path(&app_handle.path_resolver());
-    if let Some(dict_file_path) = dict_file_path {
-        if !dict_file_path.exists() {
-            return "".to_string();
-        }
-        dict_file_path.into_os_string().into_string().unwrap()
-    } else {
-        "".to_string()
+        message(Some(&parent_window), "注意", err_log.clone());
+        Err(err_log)
     }
 }

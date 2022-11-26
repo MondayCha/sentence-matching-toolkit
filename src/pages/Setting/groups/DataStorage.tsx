@@ -3,15 +3,26 @@ import type { FC } from 'react';
 import ListItem from '../../../components/ListItem';
 import { History, Data, DownloadComputer } from '@icon-park/react';
 import ListItemButton from '../../../components/ListItemButton';
-import { openHistoryDir, openCacheDir } from '@/api/core';
+import { openHistoryDir, openCacheDir, removeHistoryAndCache } from '@/api/core';
+import { showMessage } from '@/middleware/message';
 
 const DataStorage: FC = () => {
+  const cleanData = () => {
+    removeHistoryAndCache()
+      .then(() => {
+        showMessage('清理成功', 'info');
+      })
+      .catch((err) => {
+        showMessage(err.message as string, 'error');
+      });
+  };
+
   return (
     <div className="mdc-item-group">
       <ListItemButton
         index={0}
         title="历史数据"
-        subtitle="每次统计的结果，可用于数据分析"
+        subtitle="匹配产生的中间文件"
         icon={<History theme="outline" size="30" fill="#fff" />}
         actionText="浏览"
         actionHandler={openHistoryDir}
@@ -25,7 +36,9 @@ const DataStorage: FC = () => {
         actionHandler={openCacheDir}
       />
       <div className="mt-1.5 mr-4 flex flex-row space-x-2.5">
-        <button className="mdc-btn-primary p-1 w-32">清除数据</button>
+        <button className="mdc-btn-primary p-1 w-32" onClick={cleanData}>
+          清除数据
+        </button>
       </div>
     </div>
   );

@@ -65,6 +65,7 @@ impl IntermediateRecord {
 pub enum RecordMatchingResult {
     Accepted,
     Suspected,
+    InDict,
     Rejected,
 }
 
@@ -76,4 +77,6 @@ pub struct IntermediateRecordGroup {
     pub rejected_records: Vec<IntermediateRecord>,
     #[serde(rename = "suspectedRecords")]
     pub suspected_records: Vec<IntermediateRecord>,
+    #[serde(rename = "inDictRecords")]
+    pub in_dict_records: Vec<IntermediateRecord>,
 }

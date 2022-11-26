@@ -1,14 +1,18 @@
 import clsx from 'clsx';
 import type { FC } from 'react';
 import ListItemButton from '../../../components/ListItemButton';
-import { Agreement, OneKey, TwoKey } from '@icon-park/react';
+import { Agreement, Focus, Min } from '@icon-park/react';
+import { useRecoilState } from 'recoil';
+import { subCategoryInfoState } from '@/middleware/store';
 
 const RuleManage: FC = () => {
+  const [subCategoryInfo, setSubCategoryInfo] = useRecoilState(subCategoryInfoState);
+
   return (
     <div className="mdc-item-group">
       <ListItemButton
         index={0}
-        title="当前规则配置"
+        title="当前规则"
         subtitle={
           <p>
             规则「
@@ -22,22 +26,24 @@ const RuleManage: FC = () => {
       />
       <ListItemButton
         index={0}
-        title="一级匹配"
-        subtitle="设置模糊匹配关键词、精确匹配关键词"
-        icon={<OneKey theme="outline" size="30" fill="#fff" />}
-        actionText="浏览"
+        title="班级匹配"
+        subtitle="提供班级列表后，可进一步对人员分组"
+        icon={<Focus theme="outline" size="30" fill="#fff" />}
+        actionText="导入"
         actionHandler={() => {}}
       />
-      <ListItemButton
-        index={0}
-        title="二级匹配"
-        subtitle="请提供二级匹配列表"
-        icon={<TwoKey theme="outline" size="30" fill="#fff" />}
-        actionText="浏览"
-        actionHandler={() => {}}
-      />
+      {subCategoryInfo.available && (
+        <ListItemButton
+          index={0}
+          title="相似阈值"
+          subtitle="设置较低值和较高值，可提高匹配准确率"
+          icon={<Min theme="outline" size="30" fill="#fff" />}
+          actionText="0.25 0.75"
+          actionHandler={() => {}}
+        />
+      )}
       <div className="mt-1.5 mr-4 flex flex-row space-x-2.5">
-        <button className="mdc-btn-primary p-1 w-32">导出配置</button>
+        <button className="mdc-btn-primary p-1 w-32">导出规则</button>
       </div>
     </div>
   );

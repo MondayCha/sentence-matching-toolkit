@@ -1,4 +1,7 @@
-use crate::handler::regex_handler::{RegexMatchHandler, RegexNumHandler};
+use crate::handler::{
+    dict_handler::DictHandler,
+    regex_handler::{RegexMatchHandler, RegexNumHandler},
+};
 
 use super::records::RecordMatchingResult;
 
@@ -15,7 +18,11 @@ impl RecordMatcher {
         }
     }
 
-    pub fn match_category(&self, record: &str) -> (RecordMatchingResult, String) {
+    pub fn match_category(
+        &self,
+        record: &str,
+        dict_handler: &DictHandler,
+    ) -> (RecordMatchingResult, String) {
         let record = self.filter.replace_all(record);
 
         if self.matcher.match_accept(&record) {
@@ -34,7 +41,11 @@ impl RecordMatcher {
                 None => (RecordMatchingResult::Rejected, "".to_string()),
             }
         } else {
-            (RecordMatchingResult::Rejected, "".to_string())
+            if dict_handler.can_match_key(&record) {
+                (RecordMatchingResult::InDict, "".to_string())
+            } else {
+                (RecordMatchingResult::Rejected, "".to_string())
+            }
         }
     }
 }

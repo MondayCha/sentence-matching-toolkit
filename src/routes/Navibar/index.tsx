@@ -20,11 +20,12 @@ import buildingFilled from '@/assets/building-filled.svg';
 // import { closeSplashscreen } from "../../api/core";
 import NavButton from './components/NavButton';
 import { useNavigate } from 'react-router-dom';
-import { navIndexState, NavIndex, dictState } from '@/middleware/store';
+import { navIndexState, NavIndex, dictState, subCategoryInfoState } from '@/middleware/store';
 
 const Navibar = ({ children }: { children: ReactNode }) => {
   // preload tauri store
-  const preloadDict = useRecoilValueLoadable(dictState);
+  const preloadAutoImportDict = useRecoilValueLoadable(dictState);
+  const preloadSubCategoryInfo = useRecoilValueLoadable(subCategoryInfoState);
 
   // navibar state
   const [currentIndex, setCurrentIndex] = useRecoilState(navIndexState);
@@ -82,14 +83,17 @@ const Navibar = ({ children }: { children: ReactNode }) => {
               text="单位"
               setCurrentIndex={setCurrentIndex}
             />
-            <NavButton
-              index={NavIndex.SubCategory}
-              currentIndex={currentIndex}
-              normalIcon={<BranchOne theme="outline" size="24" fill="#f2f2f2" />}
-              activeIcon={<BranchOne theme="filled" size="24" fill="#21b5ff" />}
-              text="班级"
-              setCurrentIndex={setCurrentIndex}
-            />
+            {preloadSubCategoryInfo.state === 'hasValue' &&
+              preloadSubCategoryInfo.contents.available && (
+                <NavButton
+                  index={NavIndex.SubCategory}
+                  currentIndex={currentIndex}
+                  normalIcon={<BranchOne theme="outline" size="24" fill="#f2f2f2" />}
+                  activeIcon={<BranchOne theme="filled" size="24" fill="#21b5ff" />}
+                  text="班级"
+                  setCurrentIndex={setCurrentIndex}
+                />
+              )}
             <NavButton
               index={NavIndex.Download}
               currentIndex={currentIndex}
@@ -115,7 +119,9 @@ const Navibar = ({ children }: { children: ReactNode }) => {
               normalIcon={<SettingTwo theme="outline" size="24" fill="#f2f2f2" />}
               activeIcon={<img src={settingFilled} />}
               iconClassName={clsx({
-                'animate-spin-slow': preloadDict.state !== 'hasValue',
+                'animate-spin-slow':
+                  preloadAutoImportDict.state !== 'hasValue' ||
+                  preloadSubCategoryInfo.state !== 'hasValue',
               })}
               text="设置"
               setCurrentIndex={setCurrentIndex}
