@@ -4,10 +4,10 @@ import log from '@/middleware/logger';
 import clsx from 'clsx';
 
 export const enum ListIndex {
-  Accepted = 0,
-  InDict,
-  Suspected,
-  Rejected,
+  Certainty = 0,
+  Probably,
+  Possibility,
+  Improbability,
   Recycled,
 }
 
@@ -32,9 +32,9 @@ const CategoryButtonGroup: FC<{
     <div className="flex flex-row w-full px-4 2xl:px-6 space-x-1.5">
       <button
         type="button"
-        className={getButtonStyle(ListIndex.Accepted)}
+        className={getButtonStyle(ListIndex.Certainty)}
         onClick={() => {
-          setListIndex(ListIndex.Accepted);
+          setListIndex(ListIndex.Certainty);
         }}
       >
         极大
@@ -42,9 +42,9 @@ const CategoryButtonGroup: FC<{
       {showInDict && (
         <button
           type="button"
-          className={getButtonStyle(ListIndex.InDict)}
+          className={getButtonStyle(ListIndex.Probably)}
           onClick={() => {
-            setListIndex(ListIndex.InDict);
+            setListIndex(ListIndex.Probably);
           }}
         >
           一定
@@ -52,18 +52,18 @@ const CategoryButtonGroup: FC<{
       )}
       <button
         type="button"
-        className={getButtonStyle(ListIndex.Suspected)}
+        className={getButtonStyle(ListIndex.Possibility)}
         onClick={() => {
-          setListIndex(ListIndex.Suspected);
+          setListIndex(ListIndex.Possibility);
         }}
       >
         较小
       </button>
       <button
         type="button"
-        className={getButtonStyle(ListIndex.Rejected)}
+        className={getButtonStyle(ListIndex.Improbability)}
         onClick={() => {
-          setListIndex(ListIndex.Rejected);
+          setListIndex(ListIndex.Improbability);
         }}
       >
         极小

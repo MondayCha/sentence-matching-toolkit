@@ -14,6 +14,18 @@ pub struct SourceRecord {
     company: String,
 }
 
+impl SourceRecord {
+    pub fn from(record: IntermediateRecord) -> Self {
+        SourceRecord {
+            index: record.index,
+            timestamp: record.timestamp,
+            location: record.location,
+            name: record.name,
+            company: record.company,
+        }
+    }
+}
+
 #[derive(Debug, Serialize, Deserialize)]
 pub struct IntermediateRecord {
     pub index: i32,
@@ -63,20 +75,20 @@ impl IntermediateRecord {
 
 #[derive(Debug, Serialize, Deserialize, Clone, Copy)]
 pub enum RecordMatchingResult {
-    Accepted,
-    Suspected,
-    InDict,
-    Rejected,
+    Certainty,
+    Probably,
+    Possibility,
+    Improbability,
 }
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct IntermediateRecordGroup {
-    #[serde(rename = "acceptedRecords")]
-    pub accepted_records: Vec<IntermediateRecord>,
-    #[serde(rename = "rejectedRecords")]
-    pub rejected_records: Vec<IntermediateRecord>,
-    #[serde(rename = "suspectedRecords")]
-    pub suspected_records: Vec<IntermediateRecord>,
-    #[serde(rename = "inDictRecords")]
-    pub in_dict_records: Vec<IntermediateRecord>,
+    #[serde(rename = "certaintyRecords")]
+    pub certainty_records: Vec<IntermediateRecord>,
+    #[serde(rename = "probablyRecords")]
+    pub probably_records: Vec<IntermediateRecord>,
+    #[serde(rename = "possibilityRecords")]
+    pub possibility_records: Vec<IntermediateRecord>,
+    #[serde(rename = "improbabilityRecords")]
+    pub improbability_records: Vec<IntermediateRecord>,
 }

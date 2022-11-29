@@ -41,12 +41,10 @@ pub fn get_dict_path(app_handle: AppHandle) -> String {
 /// Generate dictionary file and save to fs.
 #[command]
 pub fn import_dictionary(path: &str, app_handle: AppHandle) -> Result<usize, String> {
-    let output_dict_path = paths::dictionary_path(&app_handle.path_resolver()).unwrap_or_default();
-    println!("output_dict_path: {:?}", output_dict_path);
     let mut dict_handler = DictHandler::new(&app_handle.path_resolver());
     dict_handler
         .load_csv(path, Some(1), Some(DictType::PER))
         .unwrap();
-    dict_handler.export_dict(&output_dict_path).unwrap();
+    dict_handler.export_dict().unwrap();
     Ok(dict_handler.size)
 }

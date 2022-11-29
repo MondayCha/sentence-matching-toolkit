@@ -20,12 +20,19 @@ import buildingFilled from '@/assets/building-filled.svg';
 // import { closeSplashscreen } from "../../api/core";
 import NavButton from './components/NavButton';
 import { useNavigate } from 'react-router-dom';
-import { navIndexState, NavIndex, dictState, subCategoryInfoState } from '@/middleware/store';
+import {
+  navIndexState,
+  NavIndex,
+  dictState,
+  subCategoryInfoState,
+  matchingRuleState,
+} from '@/middleware/store';
 
 const Navibar = ({ children }: { children: ReactNode }) => {
   // preload tauri store
   const preloadAutoImportDict = useRecoilValueLoadable(dictState);
   const preloadSubCategoryInfo = useRecoilValueLoadable(subCategoryInfoState);
+  const preloadMatchingRule = useRecoilValueLoadable(matchingRuleState);
 
   // navibar state
   const [currentIndex, setCurrentIndex] = useRecoilState(navIndexState);
@@ -121,7 +128,8 @@ const Navibar = ({ children }: { children: ReactNode }) => {
               iconClassName={clsx({
                 'animate-spin-slow':
                   preloadAutoImportDict.state !== 'hasValue' ||
-                  preloadSubCategoryInfo.state !== 'hasValue',
+                  preloadSubCategoryInfo.state !== 'hasValue' ||
+                  preloadMatchingRule.state !== 'hasValue',
               })}
               text="设置"
               setCurrentIndex={setCurrentIndex}

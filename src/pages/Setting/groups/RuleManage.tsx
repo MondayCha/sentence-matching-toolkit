@@ -3,10 +3,46 @@ import type { FC } from 'react';
 import ListItemButton from '../../../components/ListItemButton';
 import { Agreement, Focus, Min } from '@icon-park/react';
 import { useRecoilState } from 'recoil';
-import { subCategoryInfoState } from '@/middleware/store';
+import { subCategoryInfoState, matchingRuleState } from '@/middleware/store';
+import { open as openDialog } from '@tauri-apps/api/dialog';
+import { loadMatchingRule } from '@/api/core';
+import log from '@/middleware/logger';
 
 const RuleManage: FC = () => {
+  const [matchingRule, setMatchingRule] = useRecoilState(matchingRuleState);
   const [subCategoryInfo, setSubCategoryInfo] = useRecoilState(subCategoryInfoState);
+
+  const selectFile = async () => {
+    const selected = await openDialog({
+      multiple: false,
+      filters: [
+        {
+          name: 'JSON',
+          extensions: ['json', 'JSON'],
+        },
+      ],
+    });
+
+    let fullPath = '';
+    if (Array.isArray(selected)) {
+      fullPath = selected[0];
+    } else if (selected === null) {
+      return;
+    } else {
+      fullPath = selected;
+    }
+
+    loadMatchingRule(fullPath)
+      .then((res) => {
+        const name = res as string;
+        setMatchingRule({ name });
+        log.info('Rule selectFile', name);
+      })
+      .catch((err) => {
+        log.error('Rule selectFile', err);
+        setMatchingRule({ name: '' });
+      });
+  };
 
   return (
     <div className="mdc-item-group">
@@ -14,15 +50,21 @@ const RuleManage: FC = () => {
         index={0}
         title="当前规则"
         subtitle={
-          <p>
-            规则「
-            <span className="mdc-text-heightlight">山南市职业技术学校</span>
-            」生效中
-          </p>
+          <>
+            {matchingRule.name.length > 0 ? (
+              <p>
+                规则「
+                <span className="mdc-text-heightlight">{matchingRule.name}</span>
+                」生效中
+              </p>
+            ) : (
+              <p>请导入基本匹配规则，通常由开发者提供</p>
+            )}
+          </>
         }
         icon={<Agreement theme="outline" size="30" fill="#fff" />}
-        actionText="浏览"
-        actionHandler={() => {}}
+        actionText="导入"
+        actionHandler={selectFile}
       />
       <ListItemButton
         index={0}
@@ -36,9 +78,9 @@ const RuleManage: FC = () => {
         <ListItemButton
           index={0}
           title="相似阈值"
-          subtitle="设置较低值和较高值，可提高匹配准确率"
+          subtitle="设置阈值，低于该值的匹配结果将不认为是相似的"
           icon={<Min theme="outline" size="30" fill="#fff" />}
-          actionText="0.25 0.75"
+          actionText="0.25"
           actionHandler={() => {}}
         />
       )}

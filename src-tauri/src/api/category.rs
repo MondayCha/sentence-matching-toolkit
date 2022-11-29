@@ -121,10 +121,10 @@ pub fn start_category_matching(
         }
     };
 
-    let mut accepted_records = Vec::new();
-    let mut suspected_records = Vec::new();
-    let mut in_dict_records = Vec::new();
-    let mut rejected_records = Vec::new();
+    let mut certainty_records = Vec::new();
+    let mut probably_records = Vec::new();
+    let mut possibility_records = Vec::new();
+    let mut improbability_records = Vec::new();
 
     for result in rdr.deserialize() {
         let source_record: SourceRecord = match result {
@@ -139,45 +139,45 @@ pub fn start_category_matching(
         let (result, category) = match_category(&intermediate_record.info_t2s);
         intermediate_record.set_parsed_company(category);
         match result {
-            RecordMatchingResult::Accepted => {
-                accepted_records.push(intermediate_record);
+            RecordMatchingResult::Certainty => {
+                certainty_records.push(intermediate_record);
             }
-            RecordMatchingResult::Suspected => {
-                suspected_records.push(intermediate_record);
+            RecordMatchingResult::Probably => {
+                probably_records.push(intermediate_record);
             }
-            RecordMatchingResult::InDict => {
-                in_dict_records.push(intermediate_record);
+            RecordMatchingResult::Possibility => {
+                possibility_records.push(intermediate_record);
             }
-            RecordMatchingResult::Rejected => {
-                rejected_records.push(intermediate_record);
+            RecordMatchingResult::Improbability => {
+                improbability_records.push(intermediate_record);
             }
         }
     }
 
-    suspected_records.sort_by(|a, b| {
-        a.company
-            .cmp(&b.company)
-            .then(b.name.len().cmp(&a.name.len()))
-    });
-    in_dict_records.sort_by(|a, b| {
-        a.company
-            .cmp(&b.company)
-            .then(b.name.len().cmp(&a.name.len()))
-    });
-    accepted_records.sort_by(|a, b| {
+    certainty_records.sort_by(|a, b| {
         b.company
             .len()
             .cmp(&a.company.len())
             .then(a.company.cmp(&b.company))
     });
-    rejected_records.sort_by(|a, b| a.company.cmp(&b.company));
+    probably_records.sort_by(|a, b| {
+        a.company
+            .cmp(&b.company)
+            .then(b.name.len().cmp(&a.name.len()))
+    });
+    possibility_records.sort_by(|a, b| {
+        a.company
+            .cmp(&b.company)
+            .then(b.name.len().cmp(&a.name.len()))
+    });
+    improbability_records.sort_by(|a, b| a.company.cmp(&b.company));
 
     if err_log.is_empty() {
         let intermediate_record_group = IntermediateRecordGroup {
-            accepted_records,
-            suspected_records,
-            rejected_records,
-            in_dict_records,
+            certainty_records,
+            probably_records,
+            possibility_records,
+            improbability_records,
         };
 
         let option_record_group_path =
@@ -199,25 +199,25 @@ pub fn start_category_matching(
 pub fn receive_modified_records(
     records: Vec<IntermediateRecord>,
     uuid: &str,
-    window: Window,
     app_handle: AppHandle,
 ) -> Result<(), String> {
-    let label = window.label();
-    let parent_window = window.get_window(label).unwrap();
-    let mut err_log = String::new();
-
     let option_accepted_records_path =
-        crate::utils::paths::history_accepted_path(&app_handle.path_resolver(), uuid);
+        paths::history_accepted_path(&app_handle.path_resolver(), uuid);
     if let Some(accepted_records_path) = option_accepted_records_path {
         let data = serde_json::to_string(&records).unwrap();
         let mut f = File::create(accepted_records_path).unwrap();
         f.write_all(data.as_bytes()).unwrap();
     }
 
-    if err_log.is_empty() {
-        Ok(())
-    } else {
-        message(Some(&parent_window), "注意", err_log.clone());
-        Err(err_log)
+    let option_accepted_records_csv_path =
+        paths::history_accepted_csv_path(&app_handle.path_resolver(), uuid);
+    if let Some(accepted_records_csv_path) = option_accepted_records_csv_path {
+        let mut wtr = csv::Writer::from_path(accepted_records_csv_path).unwrap();
+        for record in records {
+            let sr = SourceRecord::from(record);
+            wtr.serialize(sr).unwrap();
+        }
     }
+
+    Ok(())
 }

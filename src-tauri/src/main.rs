@@ -11,7 +11,7 @@ use std::collections::HashMap;
 use std::fs;
 use std::io::Result;
 
-use api::*;
+use api::{rule::AppState, *};
 use tauri::{Manager, PathResolver};
 use tauri_plugin_store::{PluginBuilder, StoreBuilder};
 use utils::paths;
@@ -43,6 +43,7 @@ fn main() {
 
     tauri::Builder::default()
         .plugin(PluginBuilder::default().stores([settings]).freeze().build())
+        .manage(AppState::default())
         .setup(|app| {
             setup_dirs(&app.path_resolver())?;
             let splashscreen_window = app.get_window("splashscreen").unwrap();
@@ -61,6 +62,7 @@ fn main() {
             Ok(())
         })
         .invoke_handler(tauri::generate_handler![
+            rule::load_matching_rule,
             shell::close_splashscreen,
             shell::open_history_dir,
             shell::open_cache_dir,

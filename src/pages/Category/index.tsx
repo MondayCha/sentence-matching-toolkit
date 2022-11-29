@@ -34,24 +34,24 @@ const Category: FC = () => {
   const sourceBaseName = useRecoilValue(getSourceFilename);
   const [isLoading, setIsLoading] = useState(false);
   // List
-  const [listIndex, setListIndex] = useState(ListIndex.Accepted);
-  const [acceptedList, setAcceptedList] = useState<SourceRecord[]>([]);
-  const [rejectedList, setRejectedList] = useState<SourceRecord[]>([]);
-  const [suspectedList, setSuspectedList] = useState<SourceRecord[]>([]);
-  const [inDictList, setInDictList] = useState<SourceRecord[]>([]);
+  const [listIndex, setListIndex] = useState(ListIndex.Certainty);
+  const [certaintyList, setCertaintyList] = useState<SourceRecord[]>([]);
+  const [probablyList, setProbablyList] = useState<SourceRecord[]>([]);
+  const [possibilityList, setPossibilityList] = useState<SourceRecord[]>([]);
+  const [improbabilityList, setImprobabilityList] = useState<SourceRecord[]>([]);
   const [recycledList, setRecycledList] = useState<SourceRecord[]>([]);
 
   useEffect(() => {
     if (categoryLoadable.state === 'hasValue' && categoryLoadable.contents !== undefined) {
-      setAcceptedList(categoryLoadable.contents.acceptedRecords);
-      setSuspectedList(categoryLoadable.contents.suspectedRecords);
+      setCertaintyList(categoryLoadable.contents.certaintyRecords);
+      setPossibilityList(categoryLoadable.contents.possibilityRecords);
       if (subCategoryInfo.available) {
-        setInDictList(categoryLoadable.contents.inDictRecords);
-        setRejectedList(categoryLoadable.contents.rejectedRecords);
+        setProbablyList(categoryLoadable.contents.probablyRecords);
+        setImprobabilityList(categoryLoadable.contents.improbabilityRecords);
       } else {
-        setRejectedList([
-          ...categoryLoadable.contents.inDictRecords,
-          ...categoryLoadable.contents.rejectedRecords,
+        setImprobabilityList([
+          ...categoryLoadable.contents.probablyRecords,
+          ...categoryLoadable.contents.improbabilityRecords,
         ]);
       }
     }
@@ -59,51 +59,56 @@ const Category: FC = () => {
 
   const windowProps: WindowProps = useMemo(() => {
     switch (listIndex) {
-      case ListIndex.Suspected:
+      case ListIndex.Certainty:
         return {
-          displayList: suspectedList,
-          actionTag: '添加',
-          actionHandler: (index) => {
-            const item = suspectedList.find((item) => item.index === index);
-            if (item) {
-              setAcceptedList((prev) => [item, ...prev]);
-              setSuspectedList((prev) => prev.filter((item) => item.index !== index));
-            }
-          },
-        };
-      case ListIndex.InDict:
-        return {
-          displayList: inDictList,
-          actionTag: '添加',
-          actionHandler: (index) => {
-            const item = inDictList.find((item) => item.index === index);
-            if (item) {
-              setAcceptedList((prev) => [item, ...prev]);
-              setInDictList((prev) => prev.filter((item) => item.index !== index));
-            }
-          },
-        };
-      case ListIndex.Accepted:
-        return {
-          displayList: acceptedList,
+          displayList: certaintyList,
           actionTag: '移除',
           actionHandler: (index) => {
-            const item = acceptedList.find((item) => item.index === index);
+            const item = certaintyList.find((item) => item.index === index);
             if (item) {
               setRecycledList([item, ...recycledList]);
-              setAcceptedList((prev) => prev.filter((item) => item.index !== index));
+              setCertaintyList((prev) => prev.filter((item) => item.index !== index));
             }
           },
         };
-      case ListIndex.Rejected:
+      case ListIndex.Probably:
         return {
-          displayList: rejectedList,
+          displayList: probablyList,
           actionTag: '添加',
           actionHandler: (index) => {
-            const item = rejectedList.find((item) => item.index === index);
+            const item = probablyList.find((item) => item.index === index);
             if (item) {
-              setAcceptedList((prev) => [item, ...prev]);
-              setRejectedList((prev) => prev.filter((item) => item.index !== index));
+              item.company = `山南市职业技术学校 ${item.company}`;
+              setCertaintyList((prev) => [item, ...prev]);
+              setProbablyList((prev) => prev.filter((item) => item.index !== index));
+            }
+          },
+        };
+      case ListIndex.Possibility:
+        return {
+          displayList: possibilityList,
+          actionTag: '添加',
+          actionHandler: (index) => {
+            const item = possibilityList.find((item) => item.index === index);
+            if (item) {
+              setCertaintyList((prev) => [item, ...prev]);
+              setPossibilityList((prev) => prev.filter((item) => item.index !== index));
+            }
+          },
+        };
+      case ListIndex.Improbability:
+        return {
+          displayList: improbabilityList,
+          actionTag: '添加',
+          actionHandler: (index) => {
+            const item = improbabilityList.find((item) => item.index === index);
+            if (item) {
+              let modifiedItem: SourceRecord = {
+                ...item,
+                company: `山南市职业技术学校 ${item.company}`,
+              };
+              setCertaintyList((prev) => [modifiedItem, ...prev]);
+              setImprobabilityList((prev) => prev.filter((item) => item.index !== index));
             }
           },
         };
@@ -114,7 +119,7 @@ const Category: FC = () => {
           actionHandler: (index) => {
             const item = recycledList.find((item) => item.index === index);
             if (item) {
-              setAcceptedList((prev) => [item, ...prev]);
+              setCertaintyList((prev) => [item, ...prev]);
               setRecycledList((prev) => prev.filter((item) => item.index !== index));
             }
           },
@@ -126,12 +131,12 @@ const Category: FC = () => {
           actionHandler: () => {},
         };
     }
-  }, [listIndex, acceptedList, suspectedList, rejectedList, recycledList]);
+  }, [listIndex, certaintyList, possibilityList, improbabilityList, recycledList]);
 
   const handleSubmit = async () => {
     setIsLoading(true);
     log.info('submit');
-    receiveModifiedRecords(acceptedList, uuid)
+    receiveModifiedRecords(certaintyList, uuid)
       .then(() => {
         setIsLoading(false);
         if (subCategoryInfo.available) {
@@ -161,15 +166,15 @@ const Category: FC = () => {
         <p className="mdc-text-sm">
           {categoryLoadable.state === 'hasValue' ? (
             <>
-              极大概率匹配<span className=" mdc-text-heightlight">{acceptedList.length}</span>
+              极大概率匹配<span className=" mdc-text-heightlight">{certaintyList.length}</span>
               条，
               {subCategoryInfo.available && (
                 <>
-                  一定概率<span className=" mdc-text-heightlight">{inDictList.length}</span>条，
+                  一定概率<span className=" mdc-text-heightlight">{probablyList.length}</span>条，
                 </>
               )}
-              较小概率<span className=" mdc-text-heightlight">{suspectedList.length}</span>条，
-              极小概率<span className=" mdc-text-heightlight">{rejectedList.length}</span>条，
+              较小概率<span className=" mdc-text-heightlight">{possibilityList.length}</span>条，
+              极小概率<span className=" mdc-text-heightlight">{improbabilityList.length}</span>条，
               回收站<span className=" mdc-text-heightlight">{recycledList.length}</span>条。
             </>
           ) : (

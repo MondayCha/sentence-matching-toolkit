@@ -22,10 +22,10 @@ export interface SourceRecord {
 }
 
 export interface SourceRecordGroup {
-  acceptedRecords: SourceRecord[];
-  rejectedRecords: SourceRecord[];
-  inDictRecords: SourceRecord[];
-  suspectedRecords: SourceRecord[];
+  certaintyRecords: SourceRecord[];
+  probablyRecords: SourceRecord[];
+  possibilityRecords: SourceRecord[];
+  improbabilityRecords: SourceRecord[];
 }
 
 export const startCategoryMatching = async (path: string, uuid: string) =>
@@ -54,3 +54,6 @@ export const getDictPath = () => invoke('get_dict_path');
 
 // get_sub_category_info
 export const getSubCategoryInfo = () => invoke('get_sub_category_info');
+
+// load_matching_rule
+export const loadMatchingRule = (path: string | null) => invoke('load_matching_rule', { path });

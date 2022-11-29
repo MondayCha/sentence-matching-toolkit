@@ -33,18 +33,18 @@ impl RecordMatcher {
                     if self.matcher.match_reject(&category)
                         || self.matcher.match_reject_city(&record)
                     {
-                        (RecordMatchingResult::Suspected, category)
+                        (RecordMatchingResult::Possibility, category)
                     } else {
-                        (RecordMatchingResult::Accepted, category)
+                        (RecordMatchingResult::Certainty, category)
                     }
                 }
-                None => (RecordMatchingResult::Rejected, "".to_string()),
+                None => (RecordMatchingResult::Improbability, "".to_string()),
             }
         } else {
             if dict_handler.can_match_key(&record) {
-                (RecordMatchingResult::InDict, "".to_string())
+                (RecordMatchingResult::Probably, "".to_string())
             } else {
-                (RecordMatchingResult::Rejected, "".to_string())
+                (RecordMatchingResult::Improbability, "".to_string())
             }
         }
     }

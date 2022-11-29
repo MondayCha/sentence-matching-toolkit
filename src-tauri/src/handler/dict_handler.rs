@@ -1,14 +1,13 @@
+use crate::utils::{paths, rules::MatchingRule};
 use csv::Reader;
 use serde::{Deserialize, Serialize};
 use std::{
     collections::BTreeMap,
-    fs::{self, File},
-    io::{self, Result, Write},
+    fs::File,
+    io::{Result, Write},
     path::PathBuf,
 };
 use tauri::PathResolver;
-
-use crate::utils::paths;
 
 /// nr  人名\
 /// ns  地名\
@@ -25,6 +24,7 @@ pub enum DictType {
 pub struct DictHandler {
     #[serde(skip)]
     dict_handler_path: PathBuf,
+    dict_path: PathBuf,
     pub dict: BTreeMap<String, DictType>,
     pub size: usize,
 }
@@ -32,8 +32,10 @@ pub struct DictHandler {
 impl DictHandler {
     pub fn new(path_resolver: &PathResolver) -> Self {
         let dict_handler_path = paths::dict_handler_path(&path_resolver).unwrap_or_default();
+        let output_dict_path = paths::dictionary_path(&path_resolver).unwrap_or_default();
         let default_dict_handler = DictHandler {
             dict_handler_path: dict_handler_path.clone(),
+            dict_path: output_dict_path.clone(),
             dict: BTreeMap::default(),
             size: 0,
         };
@@ -54,6 +56,7 @@ impl DictHandler {
                 }
             };
             dict_handler.dict_handler_path = dict_handler_path;
+            dict_handler.dict_path = output_dict_path;
             return dict_handler;
         };
     }
@@ -77,6 +80,11 @@ impl DictHandler {
         self.size = self.dict.len();
     }
 
+    pub fn load_rule(&mut self, matching_rule: &MatchingRule) -> Result<()> {
+        self.add(&matching_rule.rule_name, Some(DictType::ORG));
+        Ok(())
+    }
+
     pub fn load_csv(
         &mut self,
         csv_path: &str,
@@ -95,8 +103,8 @@ impl DictHandler {
         Ok(())
     }
 
-    pub fn export_dict(&self, output_path: &PathBuf) -> Result<()> {
-        let mut output_file = std::fs::File::create(output_path)?;
+    pub fn export_dict(&self) -> Result<()> {
+        let mut output_file = std::fs::File::create(&self.dict_path)?;
         for (name, tag) in &self.dict {
             match tag {
                 DictType::PER => {

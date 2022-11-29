@@ -67,15 +67,6 @@ const DictManage: FC = () => {
 
   return (
     <div className="mdc-item-group">
-      <ListItemToggle
-        index={0}
-        title="自动导入"
-        subtitle="导出匹配结果时，同时将新名词添加到词典"
-        icon={<BookOne theme="outline" size="30" fill="#fff" />}
-        toggleState={dictEnabled}
-        setToggleState={setDictEnabled}
-        changeHandler={changeHandler}
-      />
       <ListItemButton
         index={0}
         title="词典状态"
@@ -89,8 +80,17 @@ const DictManage: FC = () => {
           </p>
         }
         icon={<FileSettingsOne theme="outline" size="30" fill="#fff" />}
-        actionText="查看"
+        actionText="编辑"
         actionHandler={openDictFolder}
+      />
+      <ListItemToggle
+        index={0}
+        title="自动导入"
+        subtitle="导出匹配结果时，同时将新名词添加到词典"
+        icon={<BookOne theme="outline" size="30" fill="#fff" />}
+        toggleState={dictEnabled}
+        setToggleState={setDictEnabled}
+        changeHandler={changeHandler}
       />
       <div className="mt-1.5 mr-4 flex flex-row space-x-2.5">
         <button className="mdc-btn-primary p-1 w-32" onClick={selectFile}>

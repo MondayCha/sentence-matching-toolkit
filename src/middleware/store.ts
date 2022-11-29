@@ -1,7 +1,13 @@
 import { atom, selector } from 'recoil';
 import { Store } from 'tauri-plugin-store-api';
 
-import { getDictSize, getSubCategoryInfo, SourceRecord, startCategoryMatching } from '@/api/core';
+import {
+  getDictSize,
+  getSubCategoryInfo,
+  SourceRecord,
+  startCategoryMatching,
+  loadMatchingRule,
+} from '@/api/core';
 import log from '@/middleware/logger';
 import { getBaseFilenameFromPath, getTimestamp } from './utils';
 
@@ -22,6 +28,28 @@ export const enum NavIndex {
 export const navIndexState = atom({
   key: 'navIndexState',
   default: NavIndex.Upload,
+});
+
+// Matching Rule Name
+export const matchingRuleState = atom({
+  key: 'matchingRuleState',
+  default: selector({
+    key: 'matchingRuleState/Default',
+    get: async () => {
+      try {
+        const res = await loadMatchingRule(null);
+        log.info('matchingRuleState', res);
+        return {
+          name: res as string,
+        };
+      } catch (err) {
+        log.error('matchingRuleState err', err);
+        return {
+          name: '',
+        };
+      }
+    },
+  }),
 });
 
 // Dictionary State Key
