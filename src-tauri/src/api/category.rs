@@ -9,6 +9,8 @@ use tauri::api::dialog::message;
 use tauri::command;
 use tauri::{AppHandle, Manager, Window};
 
+use super::rule::AppState;
+
 // Learn more about Tauri commands at https://tauri.app/v1/guides/features/command
 
 /// Receive csv file path and check csv availablity.
@@ -55,6 +57,7 @@ pub fn check_csv_headers(path: &str, window: Window) -> Result<String, String> {
 pub fn start_category_matching(
     path: &str,
     uuid: &str,
+    state: tauri::State<'_, AppState>,
     window: Window,
     app_handle: AppHandle,
 ) -> Result<IntermediateRecordGroup, String> {
@@ -107,7 +110,7 @@ pub fn start_category_matching(
     let dict_handler = crate::handler::dict_handler::DictHandler::new(&app_handle.path_resolver());
 
     // create matcher
-    let record_matcher = RecordMatcher::new();
+    let record_matcher = RecordMatcher::new(&state.rule.read().unwrap());
     let match_category = |r: &str| record_matcher.match_category(r, &dict_handler);
 
     // read csv file
@@ -200,14 +203,12 @@ pub fn receive_modified_records(
     records: Vec<IntermediateRecord>,
     uuid: &str,
     app_handle: AppHandle,
-) -> Result<(), String> {
-    let option_accepted_records_path =
-        paths::history_accepted_path(&app_handle.path_resolver(), uuid);
-    if let Some(accepted_records_path) = option_accepted_records_path {
-        let data = serde_json::to_string(&records).unwrap();
-        let mut f = File::create(accepted_records_path).unwrap();
-        f.write_all(data.as_bytes()).unwrap();
-    }
+) -> Result<String, String> {
+    let accepted_records_path =
+        paths::history_accepted_path(&app_handle.path_resolver(), uuid).unwrap();
+    let data = serde_json::to_string(&records).unwrap();
+    let mut f = File::create(&accepted_records_path).unwrap();
+    f.write_all(data.as_bytes()).unwrap();
 
     let option_accepted_records_csv_path =
         paths::history_accepted_csv_path(&app_handle.path_resolver(), uuid);
@@ -219,5 +220,5 @@ pub fn receive_modified_records(
         }
     }
 
-    Ok(())
+    Ok(accepted_records_path.to_str().unwrap().to_string())
 }

@@ -1,13 +1,14 @@
 use crate::{
-    handler::dict_handler::{DictHandler, DictType},
-    utils::{paths, rules::MatchingRule},
+    handler::dict_handler::DictHandler,
+    utils::{classes::SubCategoryRule, paths, rules::MatchingRule},
 };
 use std::path::PathBuf;
 use tauri::AppHandle;
 
 #[derive(Default)]
 pub struct AppState {
-    rule: std::sync::Mutex<MatchingRule>,
+    pub rule: std::sync::RwLock<MatchingRule>,
+    pub sub_category: std::sync::RwLock<SubCategoryRule>,
 }
 
 #[tauri::command]
@@ -27,7 +28,7 @@ pub async fn load_matching_rule(
         dict_handler.export_dict().unwrap();
         // save rule to state
         let name: String = rule.rule_name.clone();
-        *state.rule.lock().unwrap() = rule;
+        *state.rule.write().unwrap() = rule;
         Ok(name)
     } else {
         let mut err_log = "无法导入规则文件，请检查文件是否存在或者文件格式是否正确";

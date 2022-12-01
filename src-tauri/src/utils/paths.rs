@@ -97,7 +97,7 @@ pub fn rule_template_path(path_resolver: &PathResolver) -> Option<PathBuf> {
 }
 
 /// $APP_DATA/sub_category_info.json
-pub fn sub_category_info_path(path_resolver: &PathResolver) -> Option<PathBuf> {
+pub fn sub_category_rule_path(path_resolver: &PathResolver) -> Option<PathBuf> {
     let app_data_dir = path_resolver.app_data_dir()?;
-    Some(app_data_dir.join("sub_category_info.json"))
+    Some(app_data_dir.join("sub_category_rule.json"))
 }

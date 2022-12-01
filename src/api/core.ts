@@ -1,14 +1,14 @@
 import { invoke } from '@tauri-apps/api/tauri';
 import log from '@/middleware/logger';
 
-/**
- * Close Splashscreen, and load the main window.
- */
-export const closeSplashscreen = () => invoke('close_splashscreen');
+export const enum AppStatus {
+  Idle = 0,
+  CanMatch1,
+  CanMatch2,
+  CanExport1,
+  CanExport2,
+}
 
-export const checkCsvAvailability = (path: string) => invoke('check_csv_headers', { path });
-
-// export const startCategoryMatching = (dict: boolean) => invoke('start_category_matching', { dict });
 export interface SourceRecord {
   index: number;
   timestamp: string;
@@ -18,22 +18,42 @@ export interface SourceRecord {
   info: string;
   infoT2s: string;
   infoJieba: string[];
-  parsedCompany: string;
+  parsedCompany: [string, number, number];
 }
 
-export interface SourceRecordGroup {
+export interface CategoryGroup {
   certaintyRecords: SourceRecord[];
   probablyRecords: SourceRecord[];
   possibilityRecords: SourceRecord[];
   improbabilityRecords: SourceRecord[];
 }
 
+export interface SubCategoryItem {
+  index: number;
+  tag: string;
+  records: SourceRecord[];
+}
+
+export interface SubCategoryGroup {
+  groups: SubCategoryItem[];
+}
+
+/**
+ * Close Splashscreen, and load the main window.
+ */
+export const closeSplashscreen = () => invoke('close_splashscreen');
+
+export const checkCsvAvailability = (path: string) => invoke('check_csv_headers', { path });
+
 export const startCategoryMatching = async (path: string, uuid: string) =>
-  (await invoke('start_category_matching', { path, uuid })) as SourceRecordGroup;
+  (await invoke('start_category_matching', { path, uuid })) as CategoryGroup;
+
+export const startSubCategoryMatching = async (path: string, uuid: string) =>
+  (await invoke('start_sub_category_matching', { path, uuid })) as SubCategoryGroup;
 
 // receive_modified_records
-export const receiveModifiedRecords = (records: SourceRecord[], uuid: string) =>
-  invoke('receive_modified_records', { records, uuid });
+export const receiveModifiedRecords = async (records: SourceRecord[], uuid: string) =>
+  (await invoke('receive_modified_records', { records, uuid })) as string;
 
 export const importDictionary = (path: string) => invoke('import_dictionary', { path });
 
@@ -53,7 +73,10 @@ export const getDictSize = () => invoke('get_dict_size');
 export const getDictPath = () => invoke('get_dict_path');
 
 // get_sub_category_info
-export const getSubCategoryInfo = () => invoke('get_sub_category_info');
+export const getSubCategoryInfo = () => invoke('load_sub_category_rule');
+
+// load_sub_category_rule
+export const loadSubCategoryRule = (path: string) => invoke('load_sub_category_rule', { path });
 
 // load_matching_rule
 export const loadMatchingRule = (path: string | null) => invoke('load_matching_rule', { path });

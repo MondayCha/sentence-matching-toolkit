@@ -7,6 +7,8 @@ import {
   SourceRecord,
   startCategoryMatching,
   loadMatchingRule,
+  startSubCategoryMatching,
+  AppStatus,
 } from '@/api/core';
 import log from '@/middleware/logger';
 import { getBaseFilenameFromPath, getTimestamp } from './utils';
@@ -28,6 +30,16 @@ export const enum NavIndex {
 export const navIndexState = atom({
   key: 'navIndexState',
   default: NavIndex.Upload,
+});
+
+export const appStatusState = atom({
+  key: 'appStatusState',
+  default: AppStatus.Idle,
+});
+
+export const tempFilePathState = atom({
+  key: 'tempFilePathState',
+  default: '',
 });
 
 // Matching Rule Name
@@ -117,6 +129,18 @@ export const getCategory = selector({
     const category = startCategoryMatching(path, uuid);
     log.info('getCategory', category);
     return category;
+  },
+});
+
+// Call Sub Category Matching API
+export const getSubCategory = selector({
+  key: 'subCategoryState',
+  get: async ({ get }) => {
+    const { path } = get(sourceFilePathState);
+    const uuid = get(getUuid);
+    const sub_category = startSubCategoryMatching(path, uuid);
+    log.info('getSubCategory', sub_category);
+    return sub_category;
   },
 });
 

@@ -5,14 +5,14 @@ import { Agreement, Focus, Min } from '@icon-park/react';
 import { useRecoilState } from 'recoil';
 import { subCategoryInfoState, matchingRuleState } from '@/middleware/store';
 import { open as openDialog } from '@tauri-apps/api/dialog';
-import { loadMatchingRule } from '@/api/core';
+import { loadMatchingRule, loadSubCategoryRule } from '@/api/core';
 import log from '@/middleware/logger';
 
 const RuleManage: FC = () => {
   const [matchingRule, setMatchingRule] = useRecoilState(matchingRuleState);
   const [subCategoryInfo, setSubCategoryInfo] = useRecoilState(subCategoryInfoState);
 
-  const selectFile = async () => {
+  const loadCategory = async () => {
     const selected = await openDialog({
       multiple: false,
       filters: [
@@ -44,6 +44,38 @@ const RuleManage: FC = () => {
       });
   };
 
+  const loadSubCategory = async () => {
+    const selected = await openDialog({
+      multiple: false,
+      filters: [
+        {
+          name: 'CSV',
+          extensions: ['csv', 'CSV'],
+        },
+      ],
+    });
+
+    let fullPath = '';
+    if (Array.isArray(selected)) {
+      fullPath = selected[0];
+    } else if (selected === null) {
+      return;
+    } else {
+      fullPath = selected;
+    }
+
+    loadSubCategoryRule(fullPath)
+      .then((res) => {
+        const name = res as string;
+        setSubCategoryInfo({ name, available: true });
+        log.info('Rule selectFile', name);
+      })
+      .catch((err) => {
+        log.error('Rule selectFile', err);
+        setSubCategoryInfo({ name: '', available: false });
+      });
+  };
+
   return (
     <div className="mdc-item-group">
       <ListItemButton
@@ -64,15 +96,27 @@ const RuleManage: FC = () => {
         }
         icon={<Agreement theme="outline" size="30" fill="#fff" />}
         actionText="导入"
-        actionHandler={selectFile}
+        actionHandler={loadCategory}
       />
       <ListItemButton
         index={0}
         title="班级匹配"
-        subtitle="提供班级列表后，可进一步对人员分组"
+        subtitle={
+          <>
+            {subCategoryInfo.available ? (
+              <p>
+                列表「
+                <span className="mdc-text-heightlight">{subCategoryInfo.name}</span>
+                」生效中
+              </p>
+            ) : (
+              <p>提供班级列表后，可进一步对人员分组</p>
+            )}
+          </>
+        }
         icon={<Focus theme="outline" size="30" fill="#fff" />}
         actionText="导入"
-        actionHandler={() => {}}
+        actionHandler={loadSubCategory}
       />
       {subCategoryInfo.available && (
         <ListItemButton

@@ -1,5 +1,7 @@
 use tauri::regex::Regex;
 
+use crate::utils::rules::MatchingRule;
+
 pub struct RegexNumHandler {
     re_num_0: Regex,
     re_num_1: Regex,
@@ -52,12 +54,15 @@ pub struct RegexMatchHandler {
 }
 
 impl RegexMatchHandler {
-    pub fn new() -> Self {
+    pub fn new(rule: &MatchingRule) -> Self {
         Self {
-            re_accept: Regex::new(r"(山南|市)(.*?)((职业技术|职业|技术)学[校院]|职[业校院]|1职)")
-                .unwrap(),
-            re_reject: Regex::new(r"2").unwrap(),
-            re_reject_city: Regex::new(r"拉萨市|日喀则市|林芝市|昌都市|那曲市|阿里地区").unwrap(),
+            // re_accept: Regex::new(r"(山南|市)(.*?)((职业技术|职业|技术)学[校院]|职[业校院]|1职)")
+            //     .unwrap(),
+            // re_reject: Regex::new(r"2").unwrap(),
+            // re_reject_city: Regex::new(r"拉萨市|日喀则市|林芝市|昌都市|那曲市|阿里地区").unwrap(),
+            re_accept: Regex::new(&rule.accept_pattern).unwrap(),
+            re_reject: Regex::new(&rule.accept_filter_pattern).unwrap(),
+            re_reject_city: Regex::new(&rule.reject_pattern).unwrap(),
         }
     }
 
@@ -73,7 +78,9 @@ impl RegexMatchHandler {
         self.re_reject_city.is_match(text)
     }
 
-    pub fn find_accept(&self, text: &str) -> Option<String> {
-        self.re_accept.find(text).map(|m| m.as_str().to_string())
+    pub fn find_accept(&self, text: &str) -> Option<(String, usize, usize)> {
+        self.re_accept
+            .find(text)
+            .map(|m| (m.as_str().to_string(), m.start(), m.end()))
     }
 }

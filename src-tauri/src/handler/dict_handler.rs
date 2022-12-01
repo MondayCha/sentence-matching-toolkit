@@ -24,6 +24,7 @@ pub enum DictType {
 pub struct DictHandler {
     #[serde(skip)]
     dict_handler_path: PathBuf,
+    #[serde(skip)]
     dict_path: PathBuf,
     pub dict: BTreeMap<String, DictType>,
     pub size: usize,

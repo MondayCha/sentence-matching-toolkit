@@ -43,7 +43,7 @@ pub struct IntermediateRecord {
     #[serde(rename = "parsedClass")]
     pub parsed_class: Option<String>, // class (parsed)
     #[serde(rename = "parsedCompany")]
-    pub parsed_company: Option<String>, // company (parsed)
+    pub parsed_company: Option<(String, usize, usize)>, // company (parsed)
 }
 
 impl IntermediateRecord {
@@ -68,7 +68,7 @@ impl IntermediateRecord {
         }
     }
 
-    pub fn set_parsed_company(&mut self, company: String) {
+    pub fn set_parsed_company(&mut self, company: (String, usize, usize)) {
         self.parsed_company = Some(company);
     }
 }

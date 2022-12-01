@@ -3,7 +3,7 @@ use crate::handler::{
     regex_handler::{RegexMatchHandler, RegexNumHandler},
 };
 
-use super::records::RecordMatchingResult;
+use super::{records::RecordMatchingResult, rules::MatchingRule};
 
 pub struct RecordMatcher {
     filter: RegexNumHandler,
@@ -11,10 +11,10 @@ pub struct RecordMatcher {
 }
 
 impl RecordMatcher {
-    pub fn new() -> Self {
+    pub fn new(rule: &MatchingRule) -> Self {
         Self {
             filter: RegexNumHandler::new(),
-            matcher: RegexMatchHandler::new(),
+            matcher: RegexMatchHandler::new(rule),
         }
     }
 
@@ -22,29 +22,28 @@ impl RecordMatcher {
         &self,
         record: &str,
         dict_handler: &DictHandler,
-    ) -> (RecordMatchingResult, String) {
+    ) -> (RecordMatchingResult, (String, usize, usize)) {
         let record = self.filter.replace_all(record);
 
         if self.matcher.match_accept(&record) {
-            let suspected_category = self.matcher.find_accept(&record);
-            match suspected_category {
-                Some(category) => {
-                    println!("Matched category: {}", category);
-                    if self.matcher.match_reject(&category)
+            match self.matcher.find_accept(&record) {
+                Some(category_info) => {
+                    println!("Matched category: {}", category_info.0);
+                    if self.matcher.match_reject(&category_info.0)
                         || self.matcher.match_reject_city(&record)
                     {
-                        (RecordMatchingResult::Possibility, category)
+                        (RecordMatchingResult::Possibility, category_info)
                     } else {
-                        (RecordMatchingResult::Certainty, category)
+                        (RecordMatchingResult::Certainty, category_info)
                     }
                 }
-                None => (RecordMatchingResult::Improbability, "".to_string()),
+                None => (RecordMatchingResult::Improbability, ("".to_string(), 0, 0)),
             }
         } else {
             if dict_handler.can_match_key(&record) {
-                (RecordMatchingResult::Probably, "".to_string())
+                (RecordMatchingResult::Probably, ("".to_string(), 0, 0))
             } else {
-                (RecordMatchingResult::Improbability, "".to_string())
+                (RecordMatchingResult::Improbability, ("".to_string(), 0, 0))
             }
         }
     }

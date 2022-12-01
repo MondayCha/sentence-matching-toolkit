@@ -4,8 +4,7 @@ import { open } from '@tauri-apps/api/dialog';
 import clsx from 'clsx';
 import log from '@/middleware/logger';
 import { showMessage } from '@/middleware/message';
-import { checkCsvAvailability } from '@/api/core';
-import moment from 'moment';
+import { AppStatus, checkCsvAvailability } from '@/api/core';
 import IconLoadFile from './load-file';
 import { useRecoilState, useRecoilValue, useSetRecoilState } from 'recoil';
 import {
@@ -13,14 +12,15 @@ import {
   NavIndex,
   sourceFilePathState,
   getSourceFilename,
+  appStatusState,
 } from '@/middleware/store';
 import { getTimestamp } from '@/middleware/utils';
 
 const Home: FC = () => {
-  const [sourcePath, setSourcePath] = useRecoilState(sourceFilePathState);
-  const [today] = useState(moment().format('MM-DD'));
+  const [appStatus, setAppStatus] = useRecoilState(appStatusState);
+  const filename = useRecoilValue(getSourceFilename);
   const setNavIndex = useSetRecoilState(navIndexState);
-  const sourceBaseName = useRecoilValue(getSourceFilename);
+  const setSourcePath = useSetRecoilState(sourceFilePathState);
 
   const selectFile = async () => {
     const selected = await open({
@@ -55,6 +55,7 @@ const Home: FC = () => {
           path: fullPath,
           timestamp: getTimestamp(),
         });
+        setAppStatus(AppStatus.CanMatch1);
       })
       .catch((err) => {
         log.error(err);
@@ -62,11 +63,12 @@ const Home: FC = () => {
           path: '',
           timestamp: getTimestamp(),
         });
+        setAppStatus(AppStatus.Idle);
       });
   };
 
   const navigateToCatrgory = () => {
-    if (sourcePath.path === '') {
+    if (appStatus === AppStatus.Idle) {
       showMessage('请先选择文件', 'warning');
       return;
     }
@@ -88,18 +90,18 @@ const Home: FC = () => {
             <IconLoadFile />
             <div>
               <p className="mdc-text-sm text-center">
-                {!sourceBaseName ? (
+                {!filename ? (
                   '点击这里，导入需要统计的文件（支持 *.csv 格式）'
                 ) : (
                   <>
-                    已导入「<span className="mdc-text-heightlight">{sourceBaseName}</span>」
+                    已导入「<span className="mdc-text-heightlight">{filename}</span>」
                   </>
                 )}
               </p>
             </div>
           </div>
         </div>
-        {!!sourceBaseName && (
+        {!!filename && (
           <button className="mdc-btn-primary p-1 w-32" onClick={navigateToCatrgory}>
             开始统计
           </button>

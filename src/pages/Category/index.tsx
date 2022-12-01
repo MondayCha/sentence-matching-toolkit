@@ -8,17 +8,20 @@ import {
   NavIndex,
   getUuid,
   subCategoryInfoState,
+  matchingRuleState,
+  appStatusState,
+  tempFilePathState,
 } from '@/middleware/store';
 import clsx from 'clsx';
 import { FC, useMemo } from 'react';
 import { useState, useEffect } from 'react';
-import { useRecoilValueLoadable, useRecoilValue, useSetRecoilState } from 'recoil';
+import { useRecoilValueLoadable, useRecoilValue, useSetRecoilState, useRecoilState } from 'recoil';
 import log from '@/middleware/logger';
 import CategoryWindow from './CategoryWindow';
 import IconPending from './Pending';
 import IconSearch from '@/assets/search';
 import CategoryButtonGroup, { ListIndex } from './CategoryButtonGroup';
-import { getSubCategoryInfo, receiveModifiedRecords, SourceRecord } from '@/api/core';
+import { AppStatus, getSubCategoryInfo, receiveModifiedRecords, SourceRecord } from '@/api/core';
 
 interface WindowProps {
   displayList: SourceRecord[];
@@ -27,8 +30,11 @@ interface WindowProps {
 }
 
 const Category: FC = () => {
+  const [appStatus, setAppStatus] = useRecoilState(appStatusState);
+  const setTempFilePath = useSetRecoilState(tempFilePathState);
   const setNavIndex = useSetRecoilState(navIndexState);
   const subCategoryInfo = useRecoilValue(subCategoryInfoState);
+  const matchingRule = useRecoilValue(matchingRuleState);
   const uuid = useRecoilValue(getUuid);
   const categoryLoadable = useRecoilValueLoadable(getCategory);
   const sourceBaseName = useRecoilValue(getSourceFilename);
@@ -78,7 +84,7 @@ const Category: FC = () => {
           actionHandler: (index) => {
             const item = probablyList.find((item) => item.index === index);
             if (item) {
-              item.company = `山南市职业技术学校 ${item.company}`;
+              item.company = `${matchingRule.name} ${item.company}`;
               setCertaintyList((prev) => [item, ...prev]);
               setProbablyList((prev) => prev.filter((item) => item.index !== index));
             }
@@ -105,7 +111,7 @@ const Category: FC = () => {
             if (item) {
               let modifiedItem: SourceRecord = {
                 ...item,
-                company: `山南市职业技术学校 ${item.company}`,
+                company: `${matchingRule.name} ${item.company}`,
               };
               setCertaintyList((prev) => [modifiedItem, ...prev]);
               setImprobabilityList((prev) => prev.filter((item) => item.index !== index));
@@ -134,14 +140,18 @@ const Category: FC = () => {
   }, [listIndex, certaintyList, possibilityList, improbabilityList, recycledList]);
 
   const handleSubmit = async () => {
-    setIsLoading(true);
     log.info('submit');
+    setIsLoading(true);
     receiveModifiedRecords(certaintyList, uuid)
-      .then(() => {
+      .then((path) => {
+        log.info('receive modified records cached path', path);
+        setTempFilePath(path);
         setIsLoading(false);
         if (subCategoryInfo.available) {
+          setAppStatus(AppStatus.CanMatch2);
           setNavIndex(NavIndex.SubCategory);
         } else {
+          setAppStatus(AppStatus.CanExport1);
           setNavIndex(NavIndex.Download);
         }
       })
