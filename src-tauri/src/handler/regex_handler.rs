@@ -1,6 +1,6 @@
 use tauri::regex::Regex;
 
-use crate::utils::rules::MatchingRule;
+use crate::utils::{records::ParsedCompany, rules::MatchingRule};
 
 pub struct RegexNumHandler {
     re_num_0: Regex,
@@ -60,9 +60,9 @@ impl RegexMatchHandler {
             //     .unwrap(),
             // re_reject: Regex::new(r"2").unwrap(),
             // re_reject_city: Regex::new(r"拉萨市|日喀则市|林芝市|昌都市|那曲市|阿里地区").unwrap(),
-            re_accept: Regex::new(&rule.accept_pattern).unwrap(),
-            re_reject: Regex::new(&rule.accept_filter_pattern).unwrap(),
-            re_reject_city: Regex::new(&rule.reject_pattern).unwrap(),
+            re_accept: Regex::new(&rule.category.accept_pattern).unwrap(),
+            re_reject: Regex::new(&rule.category.accept_filter_pattern).unwrap(),
+            re_reject_city: Regex::new(&rule.category.reject_pattern).unwrap(),
         }
     }
 
@@ -78,9 +78,13 @@ impl RegexMatchHandler {
         self.re_reject_city.is_match(text)
     }
 
-    pub fn find_accept(&self, text: &str) -> Option<(String, usize, usize)> {
+    pub fn find_accept(&self, text: &str) -> Option<ParsedCompany> {
         self.re_accept
             .find(text)
-            .map(|m| (m.as_str().to_string(), m.start(), m.end()))
+            .map(|m| (ParsedCompany::new(text, m.as_str(), m.start(), m.end())))
+    }
+
+    pub fn find_accept_range(&self, text: &str) -> Option<(usize, usize)> {
+        self.re_accept.find(text).map(|m| ((m.start(), m.end())))
     }
 }

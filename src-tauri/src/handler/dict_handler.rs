@@ -83,6 +83,19 @@ impl DictHandler {
 
     pub fn load_rule(&mut self, matching_rule: &MatchingRule) -> Result<()> {
         self.add(&matching_rule.rule_name, Some(DictType::ORG));
+        if let Some(sub_category) = &matching_rule.sub_category {
+            for c in sub_category.csv.classes.iter() {
+                if let Some(identity) = &c.identity {
+                    self.add(&identity, Some(DictType::ORG));
+                }
+                if let Some(grade) = &c.grade {
+                    self.add(&grade, Some(DictType::ORG));
+                }
+                if let Some(sequence) = &c.sequence {
+                    self.add(&sequence, Some(DictType::ORG));
+                }
+            }
+        }
         Ok(())
     }
 

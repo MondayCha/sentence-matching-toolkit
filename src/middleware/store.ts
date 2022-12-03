@@ -136,7 +136,7 @@ export const getCategory = selector({
 export const getSubCategory = selector({
   key: 'subCategoryState',
   get: async ({ get }) => {
-    const { path } = get(sourceFilePathState);
+    const path = get(tempFilePathState);
     const uuid = get(getUuid);
     const sub_category = startSubCategoryMatching(path, uuid);
     log.info('getSubCategory', sub_category);
@@ -149,13 +149,15 @@ export const subCategoryInfoState = atom({
   key: 'subCategoryInfoState',
   default: selector({
     key: 'subCategoryInfoState/default',
-    get: async () => {
+    get: async ({ get }) => {
+      // waiting for matching rule loaded.
+      const rule = get(matchingRuleState);
       try {
         const res = await getSubCategoryInfo();
         log.info('subCategoryInfoState', res);
         return {
           available: true,
-          name: res as string,
+          name: res.name,
         };
       } catch (err) {
         log.error('subCategoryInfoState', err);

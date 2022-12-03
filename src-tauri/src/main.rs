@@ -70,7 +70,9 @@ fn main() {
             category::check_csv_headers,
             category::start_category_matching,
             category::receive_modified_records,
-            sub_category::load_sub_category_rule,
+            sub_category::load_class_csv,
+            sub_category::get_sub_category_state,
+            sub_category::start_sub_category_matching,
             dict::import_dictionary,
             dict::get_dict_size,
             dict::get_dict_path

@@ -38,6 +38,10 @@ export interface SubCategoryGroup {
   groups: SubCategoryItem[];
 }
 
+export interface SubCategoyrCSV {
+  name: string;
+}
+
 /**
  * Close Splashscreen, and load the main window.
  */
@@ -48,6 +52,7 @@ export const checkCsvAvailability = (path: string) => invoke('check_csv_headers'
 export const startCategoryMatching = async (path: string, uuid: string) =>
   (await invoke('start_category_matching', { path, uuid })) as CategoryGroup;
 
+// start_sub_category_matching
 export const startSubCategoryMatching = async (path: string, uuid: string) =>
   (await invoke('start_sub_category_matching', { path, uuid })) as SubCategoryGroup;
 
@@ -73,10 +78,11 @@ export const getDictSize = () => invoke('get_dict_size');
 export const getDictPath = () => invoke('get_dict_path');
 
 // get_sub_category_info
-export const getSubCategoryInfo = () => invoke('load_sub_category_rule');
+export const getSubCategoryInfo = async () =>
+  (await invoke('get_sub_category_state')) as SubCategoyrCSV;
 
-// load_sub_category_rule
-export const loadSubCategoryRule = (path: string) => invoke('load_sub_category_rule', { path });
+// load_sub_category_csv
+export const loadSubCategoryCSV = (path: string) => invoke('load_class_csv', { path });
 
 // load_matching_rule
 export const loadMatchingRule = (path: string | null) => invoke('load_matching_rule', { path });

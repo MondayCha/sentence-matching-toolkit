@@ -97,15 +97,6 @@ pub fn start_category_matching(
     let t2s_handler = T2SHandler::new();
     let t2s_convert = |s: &str| t2s_handler.convert(s);
 
-    // create jieba handler
-    // let dict_path = paths::dictionary_path(&app_handle.path_resolver()).unwrap_or_default();
-    // let jieba_handler = if enable_dict && dict_path.exists() {
-    //     JiebaHandler::new(Some(&dict_path))
-    // } else {
-    //     JiebaHandler::new(None)
-    // };
-    // let jieba_cut = |s: &str| jieba_handler.cut(s);
-
     // create dict handler
     let dict_handler = crate::handler::dict_handler::DictHandler::new(&app_handle.path_resolver());
 

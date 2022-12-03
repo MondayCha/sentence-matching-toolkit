@@ -1,6 +1,6 @@
 use crate::{
     handler::dict_handler::DictHandler,
-    utils::{classes::SubCategoryRule, paths, rules::MatchingRule},
+    utils::{paths, rules::MatchingRule},
 };
 use std::path::PathBuf;
 use tauri::AppHandle;
@@ -8,7 +8,6 @@ use tauri::AppHandle;
 #[derive(Default)]
 pub struct AppState {
     pub rule: std::sync::RwLock<MatchingRule>,
-    pub sub_category: std::sync::RwLock<SubCategoryRule>,
 }
 
 #[tauri::command]
