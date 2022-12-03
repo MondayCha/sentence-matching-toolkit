@@ -5,7 +5,7 @@ import { Agreement, Focus, Min } from '@icon-park/react';
 import { useRecoilState } from 'recoil';
 import { subCategoryInfoState, matchingRuleState } from '@/middleware/store';
 import { open as openDialog } from '@tauri-apps/api/dialog';
-import { loadMatchingRule, loadSubCategoryRule } from '@/api/core';
+import { loadMatchingRule, loadSubCategoryCSV } from '@/api/core';
 import log from '@/middleware/logger';
 
 const RuleManage: FC = () => {
@@ -64,7 +64,7 @@ const RuleManage: FC = () => {
       fullPath = selected;
     }
 
-    loadSubCategoryRule(fullPath)
+    loadSubCategoryCSV(fullPath)
       .then((res) => {
         const name = res as string;
         setSubCategoryInfo({ name, available: true });

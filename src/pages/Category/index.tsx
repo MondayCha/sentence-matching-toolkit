@@ -18,7 +18,7 @@ import { useState, useEffect } from 'react';
 import { useRecoilValueLoadable, useRecoilValue, useSetRecoilState, useRecoilState } from 'recoil';
 import log from '@/middleware/logger';
 import CategoryWindow from './CategoryWindow';
-import IconPending from './Pending';
+import IconPending from '@/assets/Pending';
 import IconSearch from '@/assets/search';
 import CategoryButtonGroup, { ListIndex } from './CategoryButtonGroup';
 import { AppStatus, getSubCategoryInfo, receiveModifiedRecords, SourceRecord } from '@/api/core';

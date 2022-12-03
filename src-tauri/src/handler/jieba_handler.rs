@@ -14,14 +14,14 @@ pub struct JiebaHandler {
 }
 
 impl JiebaHandler {
-    pub fn new(dict_path: Option<&PathBuf>) -> Self {
+    pub fn new(dict_path: &PathBuf) -> Self {
         let mut jieba = Jieba::new();
 
         // https://github.com/fxsjy/jieba/issues/14
-        if dict_path.is_some() {
+        if dict_path.exists() {
             let mut dict_str = String::new();
 
-            File::open(dict_path.unwrap())
+            File::open(dict_path)
                 .expect("file not found")
                 .read_to_string(&mut dict_str)
                 .expect("read dict failed");

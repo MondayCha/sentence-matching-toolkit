@@ -25,6 +25,24 @@ impl SourceRecord {
         }
     }
 }
+#[derive(Default, Debug, Serialize, Deserialize)]
+pub struct ParsedCompany {
+    pub all: String,
+    pub name: String,
+    pub start: usize,
+    pub end: usize,
+}
+
+impl ParsedCompany {
+    pub fn new(record: &str, company: &str, start: usize, end: usize) -> Self {
+        ParsedCompany {
+            all: record.to_string(),
+            name: company.to_string(),
+            start,
+            end,
+        }
+    }
+}
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct IntermediateRecord {
@@ -43,7 +61,7 @@ pub struct IntermediateRecord {
     #[serde(rename = "parsedClass")]
     pub parsed_class: Option<String>, // class (parsed)
     #[serde(rename = "parsedCompany")]
-    pub parsed_company: Option<(String, usize, usize)>, // company (parsed)
+    pub parsed_company: Option<ParsedCompany>, // company (parsed)
 }
 
 impl IntermediateRecord {
@@ -68,7 +86,7 @@ impl IntermediateRecord {
         }
     }
 
-    pub fn set_parsed_company(&mut self, company: (String, usize, usize)) {
+    pub fn set_parsed_company(&mut self, company: ParsedCompany) {
         self.parsed_company = Some(company);
     }
 }
