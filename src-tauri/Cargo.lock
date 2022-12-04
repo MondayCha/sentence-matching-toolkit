@@ -1242,6 +1242,7 @@ checksum = "1885e79c1fc4b10f0e172c475f458b7f7b93061064d98c3293e98c5ba0c8b399"
 dependencies = [
  "autocfg",
  "hashbrown",
+ "serde",
 ]
 
 [[package]]
@@ -2492,6 +2493,7 @@ version = "0.0.0"
 dependencies = [
  "chrono",
  "csv",
+ "indexmap",
  "jieba-rs",
  "rust-embed",
  "serde",
