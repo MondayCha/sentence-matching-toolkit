@@ -1,6 +1,6 @@
 use super::paths;
+use indexmap::IndexMap;
 use serde::{Deserialize, Serialize};
-use std::collections::BTreeMap;
 use std::io::Result;
 use std::{fs::File, io::Write, path::PathBuf};
 use tauri::PathResolver;
@@ -43,23 +43,23 @@ impl IntermediateClassInfo {
     }
 }
 
-#[derive(Default, Debug, Serialize, Deserialize)]
+#[derive(Default, Debug, Serialize, Deserialize, Clone)]
 pub struct SubCategoryExtract {
     pub grade: Option<String>,
     pub identity: Option<String>,
     pub sequence: Option<String>,
 }
 
-#[derive(Default, Debug, Serialize, Deserialize)]
+#[derive(Default, Debug, Serialize, Deserialize, Clone)]
 pub struct SubCategoryReplace {
     pub before: Option<String>,
-    pub grade: Option<BTreeMap<String, String>>,
-    pub identity: Option<BTreeMap<String, String>>,
-    pub sequence: Option<BTreeMap<String, String>>,
+    pub grade: Option<IndexMap<String, String>>,
+    pub identity: Option<IndexMap<String, String>>,
+    pub sequence: Option<IndexMap<String, String>>,
     pub after: Option<String>,
 }
 
-#[derive(Default, Debug, Serialize, Deserialize)]
+#[derive(Default, Debug, Serialize, Deserialize, Clone)]
 pub struct SubCategoryRegex {
     pub replace: SubCategoryReplace,
     pub extract: SubCategoryExtract,
@@ -71,7 +71,7 @@ pub struct SubCategoryCSV {
     pub classes: Vec<IntermediateClassInfo>,
 }
 
-#[derive(Default, Debug, Serialize, Deserialize)]
+#[derive(Default, Debug, Serialize, Deserialize, Clone)]
 pub struct SubCategoryRule {
     pub regex: SubCategoryRegex,
     pub csv: SubCategoryCSV,

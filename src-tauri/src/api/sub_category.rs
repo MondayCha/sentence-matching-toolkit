@@ -5,6 +5,7 @@ use crate::utils::classes::SubCategoryCSV;
 use crate::utils::classes::SubCategoryRegex;
 use crate::utils::classes::SubCategoryRule;
 use crate::utils::matches::RecordMatcher;
+use crate::utils::matches::SubCategoryMatcher;
 use crate::utils::paths;
 use crate::utils::records;
 use crate::utils::records::IntermediateRecord;
@@ -15,11 +16,7 @@ use tauri::AppHandle;
 use tauri::Window;
 
 #[command]
-pub fn load_class_csv(
-    path: &str,
-    state: tauri::State<'_, AppState>,
-    app_handle: AppHandle,
-) -> Result<String, String> {
+pub fn load_class_csv(path: &str, state: tauri::State<'_, AppState>) -> Result<String, String> {
     let pathbuf = PathBuf::from(path);
 
     // read class info csv
@@ -92,13 +89,22 @@ pub fn start_sub_category_matching(
     let record_matcher = RecordMatcher::new(&state.rule.read().unwrap());
     let remove_category = |r: &str| record_matcher.remove_category(r);
 
+    let dict_path = paths::dictionary_path(&app_handle.path_resolver()).unwrap_or_default();
+    let sub_category_matcher = match &state.rule.read().unwrap().sub_category {
+        Some(sub_category) => SubCategoryMatcher::new(&sub_category, &dict_path),
+        None => {
+            return Err("未加载分类信息".to_string());
+        }
+    };
+
     for record in accepted_records.iter() {
         // print!("{:?} ", record.info_t2s);
         if let Some(company_info) = record.parsed_company.as_ref() {
             let mut into_cleaned = company_info.all.clone();
             into_cleaned.replace_range(company_info.start..company_info.end, "");
             into_cleaned = remove_category(&into_cleaned);
-            // println!("{:?}", into_cleaned);
+            let splitted_record = sub_category_matcher.replace_and_split(&into_cleaned);
+            println!("{:?}", splitted_record);
         }
     }
 

@@ -9,7 +9,7 @@ use crate::handler::{
 };
 
 use super::{
-    classes::SubCategoryRule,
+    classes::{IntermediateClassInfo, SubCategoryRegex, SubCategoryRule},
     records::{ParsedCompany, RecordMatchingResult},
     rules::MatchingRule,
 };
@@ -73,38 +73,56 @@ impl RecordMatcher {
     }
 }
 
-#[derive(Debug, Serialize, Deserialize)]
-pub struct SubCategoryInfo {
-    pub name: String,
-    pub size: i32,
-    pub times: i32,
-    pub grade: Option<String>,
-    pub identity: Option<String>,
-    pub sequence: Option<String>,
-}
-
 pub struct SubCategoryMatcher {
     jieba: JiebaHandler,
-    categories: Vec<SubCategoryInfo>,
+    categories: Vec<IntermediateClassInfo>,
+    regex: SubCategoryRegex,
 }
 
 impl SubCategoryMatcher {
     pub fn new(rule: &SubCategoryRule, dict_path: &PathBuf) -> Self {
-        let mut categories = vec![];
-        for c in &rule.csv.classes {
-            categories.push(SubCategoryInfo {
-                name: c.name.clone(),
-                size: c.size.clone(),
-                times: 0,
-                grade: None,
-                identity: None,
-                sequence: None,
-            });
-        }
+        let categories = rule.csv.classes.clone();
+        let regex = rule.regex.clone();
         Self {
             jieba: JiebaHandler::new(&dict_path),
             categories,
+            regex,
         }
+    }
+
+    pub fn replace_and_split(&self, record: &str) -> Vec<String> {
+        let mut record = record.to_string();
+        // replace all str in regex.replace.before to empty
+        if let Some(before_strs) = &self.regex.replace.before {
+            for c in before_strs.chars().into_iter() {
+                record = record.replace(c, "");
+            }
+        }
+        // replace str in regex.replace.grade
+        if let Some(grade_map) = &self.regex.replace.grade {
+            for (k, v) in grade_map.iter() {
+                record = record.replace(k, v);
+            }
+        }
+        // replace str in regex.replace.identity
+        if let Some(identity_map) = &self.regex.replace.identity {
+            for (k, v) in identity_map.iter() {
+                record = record.replace(k, v);
+            }
+        }
+        // replace str in regex.replace.sequence
+        if let Some(sequence_map) = &self.regex.replace.sequence {
+            for (k, v) in sequence_map.iter() {
+                record = record.replace(k, v);
+            }
+        }
+        // replace all str in regex.replace.after to empty
+        if let Some(after_strs) = &self.regex.replace.after {
+            for c in after_strs.chars().into_iter() {
+                record = record.replace(c, "");
+            }
+        }
+        self.jieba.cut(&record)
     }
 }
 

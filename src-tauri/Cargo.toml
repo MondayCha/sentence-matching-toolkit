@@ -22,6 +22,7 @@ jieba-rs = "0.6"
 strsim = "0.10"
 rust-embed="6.4.2"
 chrono = "0.4.23"
+indexmap = {version = "1.9.2", features = ["serde-1"] }
 
 [dependencies.tauri-plugin-store]
 git = "https://github.com/tauri-apps/tauri-plugin-store"
