@@ -44,10 +44,29 @@ impl IntermediateClassInfo {
 }
 
 #[derive(Default, Debug, Serialize, Deserialize, Clone)]
+pub struct SubCategoryPattern {
+    pub pattern: String,
+    pub index: usize,
+}
+
+#[derive(Default, Debug, Serialize, Deserialize, Clone)]
+pub struct SubCategoryCsvLabel {
+    pub grade: Option<SubCategoryPattern>,
+    pub identity: Option<SubCategoryPattern>,
+    pub sequence: Option<SubCategoryPattern>,
+}
+
+#[derive(Default, Debug, Serialize, Deserialize, Clone)]
+pub struct SubCategoryRecordLabel {
+    pub grade: Option<SubCategoryPattern>,
+    pub sequence: Option<SubCategoryPattern>,
+    pub swquence_num: Option<SubCategoryPattern>,
+}
+
+#[derive(Default, Debug, Serialize, Deserialize, Clone)]
 pub struct SubCategoryExtract {
-    pub grade: Option<String>,
-    pub identity: Option<String>,
-    pub sequence: Option<String>,
+    pub csv: SubCategoryCsvLabel,
+    pub record: SubCategoryRecordLabel,
 }
 
 #[derive(Default, Debug, Serialize, Deserialize, Clone)]

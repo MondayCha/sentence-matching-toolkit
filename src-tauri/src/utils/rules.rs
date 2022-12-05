@@ -64,33 +64,37 @@ impl MatchingRule {
         if let Some(sub_category) = &mut self.sub_category {
             let csv = &mut sub_category.csv;
             // init regex pattern
-            if let Some(extract_grade) = sub_category.regex.extract.grade.clone() {
-                let re_grade = Regex::new(&extract_grade).unwrap();
+            if let Some(extract_grade) = sub_category.regex.extract.csv.grade.clone() {
+                let re_grade = Regex::new(&extract_grade.pattern).unwrap();
                 for c in &mut csv.classes {
                     for cap in re_grade.captures_iter(&c.name) {
-                        c.grade = cap.get(1).map(|m| m.as_str().to_string());
+                        c.grade = cap.get(extract_grade.index).map(|m| m.as_str().to_string());
                         break;
                     }
                 }
             }
 
             // https://docs.rs/regex/latest/regex/#example-iterating-over-capture-groups
-            if let Some(extract_identity) = sub_category.regex.extract.identity.clone() {
+            if let Some(extract_identity) = sub_category.regex.extract.csv.identity.clone() {
                 println!("extract_identity: {:?}", extract_identity);
-                let re_identity = Regex::new(&extract_identity).unwrap();
+                let re_identity = Regex::new(&extract_identity.pattern).unwrap();
                 for c in &mut csv.classes {
                     for cap in re_identity.captures_iter(&c.name) {
-                        c.identity = cap.get(1).map(|m| m.as_str().to_string());
+                        c.identity = cap
+                            .get(extract_identity.index)
+                            .map(|m| m.as_str().to_string());
                         break;
                     }
                 }
             }
 
-            if let Some(extract_sequence) = sub_category.regex.extract.sequence.clone() {
-                let re_sequence = Regex::new(&extract_sequence).unwrap();
+            if let Some(extract_sequence) = sub_category.regex.extract.csv.sequence.clone() {
+                let re_sequence = Regex::new(&extract_sequence.pattern).unwrap();
                 for c in &mut csv.classes {
                     for cap in re_sequence.captures_iter(&c.name) {
-                        c.sequence = cap.get(1).map(|m| m.as_str().to_string());
+                        c.sequence = cap
+                            .get(extract_sequence.index)
+                            .map(|m| m.as_str().to_string());
                         break;
                     }
                 }

@@ -95,6 +95,7 @@ impl DictHandler {
                     self.add(&sequence, Some(DictType::ORG));
                 }
             }
+            self.add("班", Some(DictType::ORG));
         }
         Ok(())
     }
