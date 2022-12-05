@@ -1,6 +1,7 @@
 use crate::utils::{classes::SubCategoryRule, paths};
 use serde::{Deserialize, Serialize};
 use std::{
+    collections::HashSet,
     fs::File,
     io::{Result, Write},
     path::PathBuf,
@@ -65,13 +66,20 @@ impl MatchingRule {
             let csv = &mut sub_category.csv;
             // init regex pattern
             if let Some(extract_grade) = sub_category.regex.extract.csv.grade.clone() {
+                let mut grade_set = HashSet::new();
                 let re_grade = Regex::new(&extract_grade.pattern).unwrap();
                 for c in &mut csv.classes {
                     for cap in re_grade.captures_iter(&c.name) {
-                        c.grade = cap.get(extract_grade.index).map(|m| m.as_str().to_string());
+                        if let Some(g) =
+                            cap.get(extract_grade.index).map(|m| m.as_str().to_string())
+                        {
+                            grade_set.insert(g.clone());
+                            c.grade = Some(g);
+                        }
                         break;
                     }
                 }
+                csv.available_grade = grade_set.into_iter().collect();
             }
 
             // https://docs.rs/regex/latest/regex/#example-iterating-over-capture-groups
@@ -89,15 +97,21 @@ impl MatchingRule {
             }
 
             if let Some(extract_sequence) = sub_category.regex.extract.csv.sequence.clone() {
+                let mut sequence_set = HashSet::new();
                 let re_sequence = Regex::new(&extract_sequence.pattern).unwrap();
                 for c in &mut csv.classes {
                     for cap in re_sequence.captures_iter(&c.name) {
-                        c.sequence = cap
+                        if let Some(s) = cap
                             .get(extract_sequence.index)
-                            .map(|m| m.as_str().to_string());
+                            .map(|m| m.as_str().to_string())
+                        {
+                            sequence_set.insert(s.clone());
+                            c.sequence = Some(s);
+                        }
                         break;
                     }
                 }
+                csv.available_sequence = sequence_set.into_iter().collect();
             }
         }
         Ok(())
