@@ -98,14 +98,17 @@ pub fn start_sub_category_matching(
     };
 
     for record in accepted_records.iter() {
-        // print!("{:?} ", record.info_t2s);
+        print!("{:?} ", record.info_t2s);
         if let Some(company_info) = record.parsed_company.as_ref() {
             let mut into_cleaned = company_info.all.clone();
             into_cleaned.replace_range(company_info.start..company_info.end, "");
             into_cleaned = remove_category(&into_cleaned);
             let splitted_record = sub_category_matcher.replace_and_split(&into_cleaned);
-            println!("{:?}", splitted_record);
+            // println!("{:?}", splitted_record);
+            let result = sub_category_matcher.match_sub_category(&splitted_record.1);
+            println!("{:?}", result);
         }
+        println!("----------------");
     }
 
     Ok("".to_string())
