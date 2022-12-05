@@ -11,6 +11,9 @@
             "replace": {
                 "before": " 　,:;.，：；。•·་、_\t～~()（）[]【】《》→←↑↓↖↗↘↙〈〉〔〕〖〗〘〙〚〛〝〞〟〰‘’‛“”„‟…‧﹏",
                 "grade": {
+                    "2022": "22",
+                    "2021": "21",
+                    "2020": "20",
                     "22届": "22级",
                     "21届": "21级",
                     "20届": "20级",
@@ -31,6 +34,7 @@
                     "旅遊": "旅游",
                     "导游": "旅游",
                     "旅馆": "旅管",
+                    "洒店": "酒店",
                     "20餐": "20级（中餐）烹饪",
                     "20级餐": "20级（中餐）烹饪",
                     "21级酒店": "21级高星级饭店",
@@ -84,7 +88,7 @@
                         "index": 1
                     },
                     "sequence_num": {
-                        "pattern": "([\\d\\+]+)",
+                        "pattern": "(\\d\\+\\d|\\d+)",
                         "index": 1
                     }
                 }
@@ -92,314 +96,326 @@
         },
         "csv": {
             "name": "班级信息.csv",
+            "available_grade": [
+                "22级",
+                "21级",
+                "20级"
+            ],
+            "available_sequence": [
+                "1",
+                "2",
+                "3+2",
+                "3+3",
+                "3"
+            ],
             "classes": [
                 {
                     "name": "20级学前教育（1）班",
                     "size": 43,
-                    "grade": "20",
+                    "grade": "20级",
                     "identity": "学前教育",
-                    "sequence": "（1）"
+                    "sequence": "1"
                 },
                 {
                     "name": "20级学前教育（2）班",
                     "size": 52,
-                    "grade": "20",
+                    "grade": "20级",
                     "identity": "学前教育",
-                    "sequence": "（2）"
+                    "sequence": "2"
                 },
                 {
                     "name": "20级学前教育（3+2）班",
                     "size": 37,
-                    "grade": "20",
+                    "grade": "20级",
                     "identity": "学前教育",
-                    "sequence": "（3+2）"
+                    "sequence": "3+2"
                 },
                 {
                     "name": "20级畜牧兽医（1）班",
                     "size": 41,
-                    "grade": "20",
+                    "grade": "20级",
                     "identity": "畜牧兽医",
-                    "sequence": "（1）"
+                    "sequence": "1"
                 },
                 {
                     "name": "20级畜牧兽医（2）班",
                     "size": 38,
-                    "grade": "20",
+                    "grade": "20级",
                     "identity": "畜牧兽医",
-                    "sequence": "（2）"
+                    "sequence": "2"
                 },
                 {
                     "name": "20级酒店管理（1）班",
                     "size": 23,
-                    "grade": "20",
+                    "grade": "20级",
                     "identity": "酒店管理",
-                    "sequence": "（1）"
+                    "sequence": "1"
                 },
                 {
                     "name": "20级酒店管理（2）班",
                     "size": 27,
-                    "grade": "20",
+                    "grade": "20级",
                     "identity": "酒店管理",
-                    "sequence": "（2）"
+                    "sequence": "2"
                 },
                 {
                     "name": "20级（中餐）烹饪（1）班",
                     "size": 39,
-                    "grade": "20",
+                    "grade": "20级",
                     "identity": "（中餐）烹饪",
-                    "sequence": "（1）"
+                    "sequence": "1"
                 },
                 {
                     "name": "20级（面点）烹饪（2）班",
                     "size": 33,
-                    "grade": "20",
+                    "grade": "20级",
                     "identity": "（面点）烹饪",
-                    "sequence": "（2）"
+                    "sequence": "2"
                 },
                 {
                     "name": "20级园林绿化班",
                     "size": 33,
-                    "grade": "20",
+                    "grade": "20级",
                     "identity": "园林绿化",
                     "sequence": null
                 },
                 {
                     "name": "20级作物生产精准扶贫班",
                     "size": 21,
-                    "grade": "20",
+                    "grade": "20级",
                     "identity": "作物生产精准扶贫",
                     "sequence": null
                 },
                 {
                     "name": "20级作物生产（3+2）班",
                     "size": 35,
-                    "grade": "20",
+                    "grade": "20级",
                     "identity": "作物生产",
-                    "sequence": "（3+2）"
+                    "sequence": "3+2"
                 },
                 {
                     "name": "20级旅游管理班",
                     "size": 36,
-                    "grade": "20",
+                    "grade": "20级",
                     "identity": "旅游管理",
                     "sequence": null
                 },
                 {
                     "name": "20级汽车维修班",
                     "size": 28,
-                    "grade": "20",
+                    "grade": "20级",
                     "identity": "汽车维修",
                     "sequence": null
                 },
                 {
                     "name": "21级高星级饭店运营与管理（1）班",
                     "size": 34,
-                    "grade": "21",
+                    "grade": "21级",
                     "identity": "高星级饭店运营与管理",
-                    "sequence": "（1）"
+                    "sequence": "1"
                 },
                 {
                     "name": "21级高星级饭店运营与管理（2）班",
                     "size": 39,
-                    "grade": "21",
+                    "grade": "21级",
                     "identity": "高星级饭店运营与管理",
-                    "sequence": "（2）"
+                    "sequence": "2"
                 },
                 {
                     "name": "21级中餐烹饪与营养膳食（1）班",
                     "size": 28,
-                    "grade": "21",
+                    "grade": "21级",
                     "identity": "中餐烹饪与营养膳食",
-                    "sequence": "（1）"
+                    "sequence": "1"
                 },
                 {
                     "name": "21级中餐烹饪与营养膳食（2）班",
                     "size": 29,
-                    "grade": "21",
+                    "grade": "21级",
                     "identity": "中餐烹饪与营养膳食",
-                    "sequence": "（2）"
+                    "sequence": "2"
                 },
                 {
                     "name": "21级旅游服务与管理（1）班",
                     "size": 31,
-                    "grade": "21",
+                    "grade": "21级",
                     "identity": "旅游服务与管理",
-                    "sequence": "（1）"
+                    "sequence": "1"
                 },
                 {
                     "name": "21级旅游服务与管理（2）班",
                     "size": 34,
-                    "grade": "21",
+                    "grade": "21级",
                     "identity": "旅游服务与管理",
-                    "sequence": "（2）"
+                    "sequence": "2"
                 },
                 {
                     "name": "21级幼儿保育（1）班",
                     "size": 45,
-                    "grade": "21",
+                    "grade": "21级",
                     "identity": "幼儿保育",
-                    "sequence": "（1）"
+                    "sequence": "1"
                 },
                 {
                     "name": "21级幼儿保育（2）班",
                     "size": 43,
-                    "grade": "21",
+                    "grade": "21级",
                     "identity": "幼儿保育",
-                    "sequence": "（2）"
+                    "sequence": "2"
                 },
                 {
                     "name": "21级幼儿保育（3）班",
                     "size": 45,
-                    "grade": "21",
+                    "grade": "21级",
                     "identity": "幼儿保育",
-                    "sequence": "（3）"
+                    "sequence": "3"
                 },
                 {
                     "name": "21级汽车运用与维修班",
                     "size": 30,
-                    "grade": "21",
+                    "grade": "21级",
                     "identity": "汽车运用与维修",
                     "sequence": null
                 },
                 {
                     "name": "21级汽车美容与装饰班",
                     "size": 33,
-                    "grade": "21",
+                    "grade": "21级",
                     "identity": "汽车美容与装饰",
                     "sequence": null
                 },
                 {
                     "name": "21级畜牧兽医班",
                     "size": 48,
-                    "grade": "21",
+                    "grade": "21级",
                     "identity": "畜牧兽医",
                     "sequence": null
                 },
                 {
                     "name": "21级计算机（1）班",
                     "size": 40,
-                    "grade": "21",
+                    "grade": "21级",
                     "identity": "计算机",
-                    "sequence": "（1）"
+                    "sequence": "1"
                 },
                 {
                     "name": "21级计算机（2）班",
                     "size": 42,
-                    "grade": "21",
+                    "grade": "21级",
                     "identity": "计算机",
-                    "sequence": "（2）"
+                    "sequence": "2"
                 },
                 {
                     "name": "21级作物生产技术（3+2）班",
                     "size": 31,
-                    "grade": "21",
+                    "grade": "21级",
                     "identity": "作物生产技术",
-                    "sequence": "（3+2）"
+                    "sequence": "3+2"
                 },
                 {
                     "name": "21级园林绿化班",
                     "size": 42,
-                    "grade": "21",
+                    "grade": "21级",
                     "identity": "园林绿化",
                     "sequence": null
                 },
                 {
                     "name": "22级计算机应用班",
                     "size": 40,
-                    "grade": "22",
+                    "grade": "22级",
                     "identity": "计算机应用",
                     "sequence": null
                 },
                 {
                     "name": "22级作物生产技术班",
                     "size": 36,
-                    "grade": "22",
+                    "grade": "22级",
                     "identity": "作物生产技术",
                     "sequence": null
                 },
                 {
                     "name": "22级畜禽生产技术班",
                     "size": 43,
-                    "grade": "22",
+                    "grade": "22级",
                     "identity": "畜禽生产技术",
                     "sequence": null
                 },
                 {
                     "name": "22级酒店管理班",
                     "size": 32,
-                    "grade": "22",
+                    "grade": "22级",
                     "identity": "酒店管理",
                     "sequence": null
                 },
                 {
                     "name": "22级旅游服务与管理（1）班",
                     "size": 36,
-                    "grade": "22",
+                    "grade": "22级",
                     "identity": "旅游服务与管理",
-                    "sequence": "（1）"
+                    "sequence": "1"
                 },
                 {
                     "name": "22级旅游服务与管理（2）班",
                     "size": 36,
-                    "grade": "22",
+                    "grade": "22级",
                     "identity": "旅游服务与管理",
-                    "sequence": "（2）"
+                    "sequence": "2"
                 },
                 {
                     "name": "22级汽车维修（1）班",
                     "size": 38,
-                    "grade": "22",
+                    "grade": "22级",
                     "identity": "汽车维修",
-                    "sequence": "（1）"
+                    "sequence": "1"
                 },
                 {
                     "name": "22级汽车维修（2）班",
                     "size": 36,
-                    "grade": "22",
+                    "grade": "22级",
                     "identity": "汽车维修",
-                    "sequence": "（2）"
+                    "sequence": "2"
                 },
                 {
                     "name": "22级幼儿保育（1）班",
                     "size": 40,
-                    "grade": "22",
+                    "grade": "22级",
                     "identity": "幼儿保育",
-                    "sequence": "（1）"
+                    "sequence": "1"
                 },
                 {
                     "name": "22级幼儿保育（2）班",
                     "size": 41,
-                    "grade": "22",
+                    "grade": "22级",
                     "identity": "幼儿保育",
-                    "sequence": "（2）"
+                    "sequence": "2"
                 },
                 {
                     "name": "22级幼儿保育（3）班",
                     "size": 40,
-                    "grade": "22",
+                    "grade": "22级",
                     "identity": "幼儿保育",
-                    "sequence": "（3）"
+                    "sequence": "3"
                 },
                 {
                     "name": "22级中餐烹饪（1）班",
                     "size": 31,
-                    "grade": "22",
+                    "grade": "22级",
                     "identity": "中餐烹饪",
-                    "sequence": "（1）"
+                    "sequence": "1"
                 },
                 {
                     "name": "22级中餐烹饪（2）班",
                     "size": 30,
-                    "grade": "22",
+                    "grade": "22级",
                     "identity": "中餐烹饪",
-                    "sequence": "（2）"
+                    "sequence": "2"
                 },
                 {
                     "name": "22级酒店管理（3+3）班",
                     "size": 31,
-                    "grade": "22",
+                    "grade": "22级",
                     "identity": "酒店管理",
-                    "sequence": "（3+3）"
+                    "sequence": "3+3"
                 }
             ]
         }

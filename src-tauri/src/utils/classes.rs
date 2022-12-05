@@ -60,7 +60,7 @@ pub struct SubCategoryCsvLabel {
 pub struct SubCategoryRecordLabel {
     pub grade: Option<SubCategoryPattern>,
     pub sequence: Option<SubCategoryPattern>,
-    pub swquence_num: Option<SubCategoryPattern>,
+    pub sequence_num: Option<SubCategoryPattern>,
 }
 
 #[derive(Default, Debug, Serialize, Deserialize, Clone)]
@@ -87,6 +87,8 @@ pub struct SubCategoryRegex {
 #[derive(Default, Debug, Serialize, Deserialize, Clone)]
 pub struct SubCategoryCSV {
     pub name: String,
+    pub available_grade: Vec<String>,
+    pub available_sequence: Vec<String>,
     pub classes: Vec<IntermediateClassInfo>,
 }
 

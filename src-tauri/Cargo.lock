@@ -1550,6 +1550,12 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "e4a24736216ec316047a1fc4252e27dabb04218aa4a3f37c6e7ddbf1f9782b54"
 
 [[package]]
+name = "ngrammatic"
+version = "0.4.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "3c6f2f987e82da7fb8a290e959bba528638bc0e2629e38647591e845ecb5f6fe"
+
+[[package]]
 name = "nodrop"
 version = "0.1.14"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2467,16 +2473,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "simsearch"
-version = "0.2.3"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "ec7c616f4afa8be07117e344990cc90651fbaad06055655f3d8cc4a668675398"
-dependencies = [
- "strsim",
- "triple_accel",
-]
-
-[[package]]
 name = "siphasher"
 version = "0.3.10"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2505,10 +2501,10 @@ dependencies = [
  "csv",
  "indexmap",
  "jieba-rs",
+ "ngrammatic",
  "rust-embed",
  "serde",
  "serde_json",
- "simsearch",
  "tauri",
  "tauri-build",
  "tauri-plugin-store",
@@ -3081,12 +3077,6 @@ checksum = "761e8d5ad7ce14bb82b7e61ccc0ca961005a275a060b9644a2431aa11553c2ff"
 dependencies = [
  "serde_json",
 ]
-
-[[package]]
-name = "triple_accel"
-version = "0.3.4"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "622b09ce2fe2df4618636fb92176d205662f59803f39e70d1c333393082de96c"
 
 [[package]]
 name = "typenum"

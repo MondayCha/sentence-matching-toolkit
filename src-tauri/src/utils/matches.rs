@@ -1,8 +1,7 @@
 use indexmap::IndexMap;
+use ngrammatic::{Corpus, CorpusBuilder, Pad};
 use serde::{Deserialize, Serialize};
-use serde_json::value::Index;
-use simsearch::{SearchOptions, SimSearch};
-use std::{collections::BTreeMap, path::PathBuf};
+use std::path::PathBuf;
 use tauri::regex::Regex;
 
 use crate::handler::{
@@ -12,7 +11,7 @@ use crate::handler::{
 };
 
 use super::{
-    classes::{IntermediateClassInfo, SubCategoryRegex, SubCategoryRule},
+    classes::{IntermediateClassInfo, SubCategoryCSV, SubCategoryRegex, SubCategoryRule},
     records::{ParsedCompany, RecordMatchingResult},
     rules::MatchingRule,
 };
@@ -76,6 +75,13 @@ impl RecordMatcher {
     }
 }
 
+pub enum SubCategoryMatchResult {
+    Normal(f32, IntermediateClassInfo),
+    Incomplete,
+    Suspension,
+    Mismatch,
+}
+
 pub struct SubCategoryExtracter {
     re_grade: Option<Regex>,
     re_sequence: Option<Regex>,
@@ -121,16 +127,14 @@ impl SubCategoryExtracter {
 
     pub fn get_sequence_num(&self, record: &str) -> Option<String> {
         if let Some(re) = &self.re_sequence_num {
-            re.captures(record)
-                .and_then(|cap| cap.get(1))
-                .map(|m| m.as_str().to_string())
+            println!("Before get_sequence_num: {}", record);
+            re.find(record).map(|m| m.as_str().to_string())
         } else {
             None
         }
     }
 
     pub fn remove_all_sequences(&self, record: &str) -> String {
-        println!("Removing all sequences {}", record);
         if let Some(re) = &self.re_sequence {
             re.replace_all(record, "").to_string()
         } else {
@@ -141,10 +145,11 @@ impl SubCategoryExtracter {
 
 pub struct SubCategoryMatcher {
     jieba: JiebaHandler,
+    sub_category_csv: SubCategoryCSV,
     categories: IndexMap<String, Vec<IntermediateClassInfo>>,
     regex: SubCategoryRegex,
     extracter: SubCategoryExtracter,
-    engine: SimSearch<usize>,
+    corpus: Corpus,
 }
 
 impl SubCategoryMatcher {
@@ -162,9 +167,9 @@ impl SubCategoryMatcher {
             }
         }
         let regex = rule.regex.clone();
-        let mut engine: SimSearch<usize> = SimSearch::new_with(SearchOptions::new().threshold(0.0));
+        let mut corpus = CorpusBuilder::new().arity(2).pad_full(Pad::Auto).finish();
         for (i, c) in categories.keys().enumerate() {
-            engine.insert(i, &c);
+            corpus.add_text(c);
         }
         let extracter = SubCategoryExtracter::new(
             regex
@@ -181,17 +186,18 @@ impl SubCategoryMatcher {
                 .map(|s| s.pattern.as_str()),
             regex
                 .extract
-                .csv
-                .sequence
+                .record
+                .sequence_num
                 .as_ref()
                 .map(|s| s.pattern.as_str()),
         );
         Self {
             jieba: JiebaHandler::new(&dict_path),
+            sub_category_csv: rule.csv.clone(),
             categories,
             regex,
             extracter,
-            engine,
+            corpus,
         }
     }
 
@@ -230,62 +236,74 @@ impl SubCategoryMatcher {
         (self.jieba.cut(&record), record)
     }
 
-    pub fn match_sub_category(&self, record: &str) -> Option<IntermediateClassInfo> {
+    pub fn match_sub_category(&self, record: &str) -> SubCategoryMatchResult {
         let option_record_grade = self.extracter.get_grade(record);
         let record_without_grade = self.extracter.remove_all_grades(record);
-        let option_record_sequence = self.extracter.get_sequence(&record_without_grade);
         let option_record_sequence_num = self.extracter.get_sequence_num(&record_without_grade);
         let record_identity = self.extracter.remove_all_sequences(&record_without_grade);
 
-        println!("Matching sub category: {}", &record_identity);
-        let results = self.engine.search(&record_identity);
+        println!(
+            "Matching sub category: {} {:?} {:?}",
+            &record_identity, &option_record_grade, &option_record_sequence_num
+        );
+
+        let results = self.corpus.search(&record_identity, 0.01);
         if results.is_empty() {
-            println!("No matched sub category");
-            return None;
+            if option_record_grade.is_some() || option_record_sequence_num.is_some() {
+                return SubCategoryMatchResult::Incomplete;
+            }
+            return SubCategoryMatchResult::Mismatch;
         }
 
         let mut i = 0;
         while i < results.len() {
-            let index = results[i];
-            println!(
-                "{} Case sub category: {}",
-                i,
-                self.categories.keys().nth(index).unwrap()
-            );
-            let category_list = &self.categories[index];
+            let search_result = &results[i];
+            println!("{} Case sub category: {}", i, &search_result.text);
+            let category_list = &self.categories.get(&search_result.text).unwrap();
             let mut j = 0;
             while j < category_list.len() {
                 let category = &category_list[j];
                 if let Some(record_grade) = &option_record_grade {
-                    if let Some(grade) = &category.grade {
-                        if !grade.eq(record_grade) {
-                            println!("Grade not match: {} != {}", grade, record_grade);
-                            j += 1;
-                            continue;
+                    if self.sub_category_csv.available_grade.contains(record_grade) {
+                        if let Some(grade) = &category.grade {
+                            if !grade.eq(record_grade) {
+                                println!("Grade not match: {} != {}", grade, record_grade);
+                                j += 1;
+                                continue;
+                            }
                         }
                     }
                 }
                 if let Some(record_sequence_num) = &option_record_sequence_num {
-                    if let Some(sequence) = &category.sequence {
-                        if !sequence.eq(record_sequence_num) {
-                            println!(
-                                "Sequence not match: {} != {}",
-                                sequence, record_sequence_num
-                            );
+                    if self
+                        .sub_category_csv
+                        .available_sequence
+                        .contains(record_sequence_num)
+                    {
+                        if let Some(sequence) = &category.sequence {
+                            if !sequence.eq(record_sequence_num) {
+                                println!(
+                                    "Sequence not match: {} != {}",
+                                    sequence, record_sequence_num
+                                );
+                                j += 1;
+                                continue;
+                            }
+                        } else {
+                            println!("Sequence not match: None != {}", record_sequence_num);
                             j += 1;
                             continue;
                         }
-                    } else {
-                        println!("Sequence not match: None != {}", record_sequence_num);
-                        j += 1;
-                        continue;
                     }
                 }
-                return Some(category.clone());
+                return SubCategoryMatchResult::Normal(
+                    search_result.similarity.clone(),
+                    category.clone(),
+                );
             }
             i += 1;
         }
-        None
+        SubCategoryMatchResult::Suspension
     }
 }
 

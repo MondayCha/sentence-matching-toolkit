@@ -5,6 +5,7 @@ use crate::utils::classes::SubCategoryCSV;
 use crate::utils::classes::SubCategoryRegex;
 use crate::utils::classes::SubCategoryRule;
 use crate::utils::matches::RecordMatcher;
+use crate::utils::matches::SubCategoryMatchResult;
 use crate::utils::matches::SubCategoryMatcher;
 use crate::utils::paths;
 use crate::utils::records;
@@ -40,6 +41,8 @@ pub fn load_class_csv(path: &str, state: tauri::State<'_, AppState>) -> Result<S
     let name = pathbuf.file_name().unwrap().to_str().unwrap().to_string();
     let sub_category_csv = SubCategoryCSV {
         name: name.clone(),
+        available_grade: vec![],
+        available_sequence: vec![],
         classes,
     };
     let matching_rule = &mut *state.rule.write().unwrap();
@@ -98,17 +101,29 @@ pub fn start_sub_category_matching(
     };
 
     for record in accepted_records.iter() {
-        print!("{:?} ", record.info_t2s);
+        println!("{:?} ", record.info_t2s);
         if let Some(company_info) = record.parsed_company.as_ref() {
             let mut into_cleaned = company_info.all.clone();
             into_cleaned.replace_range(company_info.start..company_info.end, "");
             into_cleaned = remove_category(&into_cleaned);
             let splitted_record = sub_category_matcher.replace_and_split(&into_cleaned);
             // println!("{:?}", splitted_record);
-            let result = sub_category_matcher.match_sub_category(&splitted_record.1);
-            println!("{:?}", result);
+            match sub_category_matcher.match_sub_category(&splitted_record.1) {
+                SubCategoryMatchResult::Normal(similarity, sub_category) => {
+                    println!("Normal: {} {}", similarity, sub_category.name);
+                }
+                SubCategoryMatchResult::Incomplete => {
+                    println!("Incomplete");
+                }
+                SubCategoryMatchResult::Suspension => {
+                    println!("Suspension");
+                }
+                SubCategoryMatchResult::Mismatch => {
+                    println!("No Match");
+                }
+            }
         }
-        println!("----------------");
+        println!("----------------\n");
     }
 
     Ok("".to_string())
