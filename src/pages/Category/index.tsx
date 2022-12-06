@@ -23,7 +23,7 @@ import IconSearch from '@/assets/search';
 import CategoryButtonGroup, { ListIndex } from './CategoryButtonGroup';
 import { AppStatus, getSubCategoryInfo, receiveModifiedRecords, SourceRecord } from '@/api/core';
 
-interface WindowProps {
+export interface WindowProps {
   displayList: SourceRecord[];
   actionTag: string;
   actionHandler: (id: number) => void;

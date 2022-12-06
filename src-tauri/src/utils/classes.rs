@@ -71,6 +71,7 @@ pub struct SubCategoryExtract {
 
 #[derive(Default, Debug, Serialize, Deserialize, Clone)]
 pub struct SubCategoryReplace {
+    pub ignore: Option<Vec<String>>,
     pub before: Option<String>,
     pub grade: Option<IndexMap<String, String>>,
     pub identity: Option<IndexMap<String, String>>,

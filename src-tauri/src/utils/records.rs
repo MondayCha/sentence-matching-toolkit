@@ -1,5 +1,7 @@
 use serde::{Deserialize, Serialize};
 
+use super::classes::IntermediateClassInfo;
+
 #[derive(Debug, Serialize, Deserialize)]
 pub struct SourceRecord {
     #[serde(rename = "序号")]
@@ -25,7 +27,7 @@ impl SourceRecord {
         }
     }
 }
-#[derive(Default, Debug, Serialize, Deserialize)]
+#[derive(Default, Debug, Serialize, Deserialize, Clone)]
 pub struct ParsedCompany {
     pub all: String,
     pub name: String,
@@ -44,7 +46,7 @@ impl ParsedCompany {
     }
 }
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct IntermediateRecord {
     pub index: i32,
     pub timestamp: String,
@@ -59,7 +61,9 @@ pub struct IntermediateRecord {
     #[serde(rename = "parsedName")]
     pub parsed_name: Option<String>, // name (parsed)
     #[serde(rename = "parsedClass")]
-    pub parsed_class: Option<String>, // class (parsed)
+    pub parsed_class: Option<(f32, String, String)>, // class (parsed)
+    #[serde(rename = "matchedClass")]
+    pub matched_class: Option<String>, // class (matched)
     #[serde(rename = "parsedCompany")]
     pub parsed_company: Option<ParsedCompany>, // company (parsed)
 }
@@ -82,12 +86,24 @@ impl IntermediateRecord {
             info_jieba: vec![],
             parsed_name: None,
             parsed_class: None,
+            matched_class: None,
             parsed_company: None,
         }
     }
 
     pub fn set_parsed_company(&mut self, company: ParsedCompany) {
         self.parsed_company = Some(company);
+    }
+
+    pub fn set_name_and_class(
+        &mut self,
+        name: Option<String>,
+        class: Option<(f32, String, String)>,
+        matched_class: Option<String>,
+    ) {
+        self.parsed_name = name;
+        self.parsed_class = class;
+        self.matched_class = matched_class;
     }
 }
 
@@ -109,4 +125,16 @@ pub struct IntermediateRecordGroup {
     pub possibility_records: Vec<IntermediateRecord>,
     #[serde(rename = "improbabilityRecords")]
     pub improbability_records: Vec<IntermediateRecord>,
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+pub struct SubCategoryRecordGroup {
+    #[serde(rename = "normalRecords")]
+    pub normal_records: Vec<IntermediateRecord>,
+    #[serde(rename = "incompleteRecords")]
+    pub incomplete_records: Vec<IntermediateRecord>,
+    #[serde(rename = "suspensionRecords")]
+    pub suspension_records: Vec<IntermediateRecord>,
+    #[serde(rename = "mismatchRecords")]
+    pub mismatch_records: Vec<IntermediateRecord>,
 }
