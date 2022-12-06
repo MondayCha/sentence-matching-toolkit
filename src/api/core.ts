@@ -18,7 +18,15 @@ export interface SourceRecord {
   info: string;
   infoT2s: string;
   infoJieba: string[];
-  parsedCompany: [string, number, number];
+  parsedName?: string;
+  parsedClass?: [number, string, string];
+  matchedClass?: string;
+  parsedCompany?: {
+    all: string;
+    name: string;
+    start: number;
+    end: number;
+  };
 }
 
 export interface CategoryGroup {
@@ -28,14 +36,11 @@ export interface CategoryGroup {
   improbabilityRecords: SourceRecord[];
 }
 
-export interface SubCategoryItem {
-  index: number;
-  tag: string;
-  records: SourceRecord[];
-}
-
 export interface SubCategoryGroup {
-  groups: SubCategoryItem[];
+  normalRecords: SourceRecord[];
+  incompleteRecords: SourceRecord[];
+  suspensionRecords: SourceRecord[];
+  mismatchRecords: SourceRecord[];
 }
 
 export interface SubCategoyrCSV {

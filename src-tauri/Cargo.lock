@@ -2505,6 +2505,7 @@ dependencies = [
  "rust-embed",
  "serde",
  "serde_json",
+ "strsim",
  "tauri",
  "tauri-build",
  "tauri-plugin-store",

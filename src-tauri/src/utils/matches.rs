@@ -73,6 +73,10 @@ impl RecordMatcher {
         }
         record
     }
+
+    pub fn get_chinese(&self, text: &str) -> String {
+        self.matcher.get_chinese(text)
+    }
 }
 
 pub enum SubCategoryMatchResult {
@@ -201,8 +205,15 @@ impl SubCategoryMatcher {
         }
     }
 
-    pub fn replace_and_split(&self, record: &str) -> (Vec<String>, String) {
+    pub fn replace(&self, record: &str) -> String {
         let mut record = record.to_string();
+        // replace all str in regex.replace.ignore to empty
+        if let Some(ignore_strs) = &self.regex.replace.ignore {
+            for s in ignore_strs.iter() {
+                record = record.replace(s, "");
+            }
+        }
+
         // replace all str in regex.replace.before to empty
         if let Some(before_strs) = &self.regex.replace.before {
             for c in before_strs.chars().into_iter() {
@@ -233,7 +244,7 @@ impl SubCategoryMatcher {
                 record = record.replace(c, "");
             }
         }
-        (self.jieba.cut(&record), record)
+        record
     }
 
     pub fn match_sub_category(&self, record: &str) -> SubCategoryMatchResult {
@@ -304,6 +315,26 @@ impl SubCategoryMatcher {
             i += 1;
         }
         SubCategoryMatchResult::Suspension
+    }
+
+    // split info into name and subcategory
+    pub fn split_name_and_subcategory(&self, info: &str, subcategory: &str) -> (String, String) {
+        let info_vec = self.jieba.cut(info);
+        println!("info_vec: {:?}", info_vec);
+        let mut ans_cadidates = vec![];
+        for split_point in 0..info_vec.len() {
+            let head_candidate = info_vec[0..split_point].join("");
+            let head_sim = strsim::sorensen_dice(&head_candidate, &subcategory);
+            let end_candidate = info_vec[split_point..].join("");
+            let end_sim = strsim::sorensen_dice(&end_candidate, &subcategory);
+            if head_sim > end_sim {
+                ans_cadidates.push((head_sim, end_candidate, head_candidate));
+            } else {
+                ans_cadidates.push((end_sim, head_candidate, end_candidate));
+            }
+        }
+        ans_cadidates.sort_by(|a, b| b.0.partial_cmp(&a.0).unwrap());
+        (ans_cadidates[0].1.clone(), ans_cadidates[0].2.clone())
     }
 }
 
