@@ -1,5 +1,5 @@
 use std::fs::File;
-use std::io::Write;
+use std::io::{Read, Write};
 
 use crate::handler::t2s_handler::T2SHandler;
 use crate::utils::matches::RecordMatcher;
@@ -191,10 +191,38 @@ pub fn start_category_matching(
 
 #[command]
 pub fn receive_modified_records(
-    records: Vec<IntermediateRecord>,
+    mut records: Vec<IntermediateRecord>,
     uuid: &str,
+    with_bom: bool,
+    state: tauri::State<'_, AppState>,
     app_handle: AppHandle,
 ) -> Result<String, String> {
+    // create traditional to simplified handler
+    let t2s_handler = T2SHandler::new();
+    let t2s_convert = |s: &str| t2s_handler.convert(s);
+    // create matcher
+    let record_matcher = RecordMatcher::new(&state.rule.read().unwrap());
+    let get_parsed_company = |r: &str| record_matcher.get_parsed_company(r);
+
+    for record in records.iter_mut() {
+        // record.parsed_company.is_none() || record.parsed_company.is_some_and(|&c| c.all.is_empty())
+        if record.parsed_company.is_none()
+            || (record.parsed_company.is_some()
+                && record.parsed_company.as_ref().unwrap().all.is_empty())
+        {
+            // this record is added by user
+            record.update_info(&t2s_convert);
+            if let Some(category) = get_parsed_company(&record.info_t2s) {
+                record.set_parsed_company(category);
+            } else {
+                return Err(format!("无法识别的组织：{}", &record.company));
+            }
+        } else {
+            // user add record is only in the start of records
+            break;
+        }
+    }
+
     let accepted_records_path =
         paths::history_accepted_path(&app_handle.path_resolver(), uuid).unwrap();
     let data = serde_json::to_string(&records).unwrap();
@@ -204,10 +232,19 @@ pub fn receive_modified_records(
     let option_accepted_records_csv_path =
         paths::history_accepted_csv_path(&app_handle.path_resolver(), uuid);
     if let Some(accepted_records_csv_path) = option_accepted_records_csv_path {
-        let mut wtr = csv::Writer::from_path(accepted_records_csv_path).unwrap();
+        let mut wtr = csv::Writer::from_path(&accepted_records_csv_path).unwrap();
         for record in records {
             let sr = SourceRecord::from(record);
             wtr.serialize(sr).unwrap();
+        }
+        // if params.with_bom is true, reopen csv file, add BOM to the head
+        if with_bom {
+            let mut f = File::open(&accepted_records_csv_path).unwrap();
+            let mut content = String::new();
+            f.read_to_string(&mut content).unwrap();
+            let mut f = File::create(&accepted_records_csv_path).unwrap();
+            f.write_all(b"\xEF\xBB\xBF").unwrap();
+            f.write_all(content.as_bytes()).unwrap();
         }
     }
 

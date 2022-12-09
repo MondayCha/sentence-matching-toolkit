@@ -91,6 +91,12 @@ impl IntermediateRecord {
         }
     }
 
+    pub fn update_info(&mut self, t2s_convert: &dyn Fn(&str) -> String) {
+        let info = format!("{} {}", self.name, self.company);
+        self.info = info;
+        self.info_t2s = t2s_convert(&self.info);
+    }
+
     pub fn set_parsed_company(&mut self, company: ParsedCompany) {
         self.parsed_company = Some(company);
     }

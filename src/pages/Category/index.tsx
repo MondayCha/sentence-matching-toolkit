@@ -11,6 +11,7 @@ import {
   matchingRuleState,
   appStatusState,
   tempFilePathState,
+  platformState,
 } from '@/middleware/store';
 import clsx from 'clsx';
 import { FC, useMemo } from 'react';
@@ -31,6 +32,7 @@ export interface WindowProps {
 
 const Category: FC = () => {
   const [appStatus, setAppStatus] = useRecoilState(appStatusState);
+  const platform = useRecoilValue(platformState);
   const setTempFilePath = useSetRecoilState(tempFilePathState);
   const setNavIndex = useSetRecoilState(navIndexState);
   const subCategoryInfo = useRecoilValue(subCategoryInfoState);
@@ -84,8 +86,11 @@ const Category: FC = () => {
           actionHandler: (index) => {
             const item = probablyList.find((item) => item.index === index);
             if (item) {
-              item.company = `${matchingRule.name} ${item.company}`;
-              setCertaintyList((prev) => [item, ...prev]);
+              let modifiedItem: SourceRecord = {
+                ...item,
+                company: `${matchingRule.name} ${item.company}`,
+              };
+              setCertaintyList((prev) => [modifiedItem, ...prev]);
               setProbablyList((prev) => prev.filter((item) => item.index !== index));
             }
           },
@@ -142,7 +147,7 @@ const Category: FC = () => {
   const handleSubmit = async () => {
     log.info('submit');
     setIsLoading(true);
-    receiveModifiedRecords(certaintyList, uuid)
+    receiveModifiedRecords(certaintyList, uuid, platform === 'win32')
       .then((path) => {
         log.info('receive modified records cached path', path);
         setTempFilePath(path);

@@ -62,8 +62,11 @@ export const startSubCategoryMatching = async (path: string, uuid: string) =>
   (await invoke('start_sub_category_matching', { path, uuid })) as SubCategoryGroup;
 
 // receive_modified_records
-export const receiveModifiedRecords = async (records: SourceRecord[], uuid: string) =>
-  (await invoke('receive_modified_records', { records, uuid })) as string;
+export const receiveModifiedRecords = async (
+  records: SourceRecord[],
+  uuid: string,
+  withBom: boolean
+) => (await invoke('receive_modified_records', { records, uuid, withBom })) as string;
 
 export const importDictionary = (path: string) => invoke('import_dictionary', { path });
 
