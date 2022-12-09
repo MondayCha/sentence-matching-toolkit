@@ -1,5 +1,6 @@
 import { atom, selector } from 'recoil';
 import { Store } from 'tauri-plugin-store-api';
+import { platform } from '@tauri-apps/api/os';
 
 import {
   getDictSize,
@@ -25,6 +26,23 @@ export const enum NavIndex {
   About,
   Setting,
 }
+
+// Platform State
+export const platformState = atom({
+  key: 'platformState',
+  default: selector({
+    key: 'platformState/Default',
+    get: async () => {
+      try {
+        const res = await platform();
+        return res;
+      } catch (err) {
+        log.error('platformState err', err);
+        return 'win32';
+      }
+    },
+  }),
+});
 
 // Navigation Bar State
 export const navIndexState = atom({

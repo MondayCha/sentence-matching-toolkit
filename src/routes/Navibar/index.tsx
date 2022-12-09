@@ -26,13 +26,16 @@ import {
   dictState,
   subCategoryInfoState,
   matchingRuleState,
+  platformState,
 } from '@/middleware/store';
+import { platform } from '@tauri-apps/api/os';
 
 const Navibar = ({ children }: { children: ReactNode }) => {
   // preload tauri store
   const preloadAutoImportDict = useRecoilValueLoadable(dictState);
   const preloadSubCategoryInfo = useRecoilValueLoadable(subCategoryInfoState);
   const preloadMatchingRule = useRecoilValueLoadable(matchingRuleState);
+  const preloadPlatformState = useRecoilValueLoadable(platformState);
 
   // navibar state
   const [currentIndex, setCurrentIndex] = useRecoilState(navIndexState);
@@ -129,7 +132,8 @@ const Navibar = ({ children }: { children: ReactNode }) => {
                 'animate-spin-slow':
                   preloadAutoImportDict.state !== 'hasValue' ||
                   preloadSubCategoryInfo.state !== 'hasValue' ||
-                  preloadMatchingRule.state !== 'hasValue',
+                  preloadMatchingRule.state !== 'hasValue' ||
+                  preloadPlatformState.state !== 'hasValue',
               })}
               text="设置"
               setCurrentIndex={setCurrentIndex}

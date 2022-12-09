@@ -65,6 +65,10 @@ impl RecordMatcher {
         }
     }
 
+    pub fn get_parsed_company(&self, record: &str) -> Option<ParsedCompany> {
+        self.matcher.find_accept(record)
+    }
+
     pub fn remove_category(&self, record: &str) -> String {
         let mut record = record.to_string();
         while let Some((start, end)) = self.matcher.find_accept_range(&record) {
