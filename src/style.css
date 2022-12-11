@@ -4,11 +4,15 @@
 
 @layer components {
   .mdc-btn-primary {
-    @apply bg-sky-600 hover:bg-sky-500 text-white text-sm font-medium py-1.5 px-12 rounded shadow-md  active:bg-sky-600;
+    @apply bg-primary-light hover:brightness-110 active:brightness-100
+    dark:bg-primary-dark
+    text-white text-sm font-medium py-1.5 px-12 rounded shadow-md leading-normal;
   }
 
   .mdc-btn-secondary {
-    @apply bg-abyss-600 hover:brightness-110 text-white text-sm font-medium py-1 w-32 rounded shadow-sm  active:brightness-125 border-abyss-500 box-border border;
+    @apply dark:bg-abyss-600 dark:hover:brightness-110 dark:border-abyss-500 dark:text-white 
+    text-sm font-medium py-1 w-32 rounded shadow-sm
+    active:brightness-125  box-border border;
   }
 
   .mdc-paper {
@@ -28,23 +32,23 @@
   }
 
   .mdc-text-sm {
-    @apply text-sm 2xl:text-base dark:text-zinc-400 leading-relaxed 2xl:leading-7 select-none;
+    @apply text-sm 2xl:text-base dark:text-zinc-200 text-abyss-900 leading-relaxed 2xl:leading-7 select-none;
   }
 
   .mdc-text-xs {
-    @apply text-xs 2xl:text-sm dark:text-zinc-400 leading-loose 2xl:leading-7 select-none;
+    @apply text-xs 2xl:text-sm dark:text-zinc-400 text-zinc-500 leading-loose 2xl:leading-7 select-none;
   }
 
   .mdc-text-heightlight {
-    @apply text-sky-500 mx-0.5;
+    @apply text-primary-light dark:text-primary-dark mx-0.5;
   }
 
   .mdc-link {
-    @apply mdc-text-xs py-0.5 px-1 rounded hover:bg-abyss-700 active:brightness-105;
+    @apply mdc-text-xs py-0.5 px-1 rounded hover:bg-haruki-200 hover:dark:bg-abyss-700 active:brightness-105;
   }
 
   .mdc-scroolbar {
-    @apply scrollbar-thin scrollbar-thumb-blue-700 scrollbar-track-blue-300 dark:scrollbar-thumb-zinc-500 dark:scrollbar-track-abyss-900 scrollbar-thumb-rounded-full scrollbar-track-rounded-full;
+    @apply scrollbar-thin scrollbar-thumb-haruki-400 scrollbar-track-haruki-300 dark:scrollbar-thumb-zinc-500 dark:scrollbar-track-abyss-900 scrollbar-thumb-rounded-full scrollbar-track-rounded-full;
   }
 
   .mdc-list {
@@ -52,7 +56,8 @@
   }
 
   .mdc-item {
-    @apply w-full rounded border px-4 py-3.5 dark:border-abyss-600 dark:bg-abyss-700 dark:border-opacity-50;
+    @apply w-full rounded border px-4 py-3.5 dark:border-abyss-600 dark:bg-abyss-700 dark:border-opacity-50
+    bg-haruki-50;
   }
 
   .mdc-item-group {

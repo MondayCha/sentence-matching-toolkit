@@ -1,9 +1,11 @@
-import { DownloadComputer } from '@icon-park/react';
+import DownloadComputer from '@/assets/descriptions/DownloadComputer';
+import { useThemeContext } from '@/components/theme';
 import clsx from 'clsx';
 import type { FC } from 'react';
-import ListItemButton from '../../components/ListItemButton';
+import ListItemButton from '@/components/ListItemButton';
 
 const Download: FC = () => {
+  const { themeMode } = useThemeContext();
   return (
     <div className={clsx('mdc-paper')}>
       <div className="mdc-header">
@@ -15,7 +17,7 @@ const Download: FC = () => {
           index={0}
           title="数据导出位置"
           subtitle="C:\Users\username\Documents\"
-          icon={<DownloadComputer theme="outline" size="30" fill="#fff" />}
+          icon={<DownloadComputer isDark={themeMode === 'dark'} />}
           actionText="浏览"
           actionHandler={() => {}}
         />

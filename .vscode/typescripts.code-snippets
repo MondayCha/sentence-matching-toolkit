@@ -21,5 +21,30 @@
       "export default $TM_FILENAME_BASE;"
     ],
     "description": "Create A New React Function Component"
+  },
+  "New SVG Component": {
+    "prefix": "nsc",
+    "body": [
+      "import * as React from 'react';",
+      "import { SVG_OUTLINE_COLOR } from '@/assets/config';",
+      "// import { SVG_FILLED_COLOR, SVG_FILLED_BACKGROUND } from '@/assets/config';",
+      "",
+      "// {props.isDark ? SVG_OUTLINE_COLOR.DARK : SVG_OUTLINE_COLOR.LIGHT}",
+      "// {props.isDark ? SVG_FILLED_COLOR.DARK : SVG_FILLED_COLOR.LIGHT}",
+      "// {props.isDark ? SVG_FILLED_BACKGROUND.DARK : SVG_FILLED_BACKGROUND.LIGHT}",
+      "",
+      "const $TM_FILENAME_BASE = (",
+      "  props: JSX.IntrinsicAttributes &",
+      "    React.SVGProps<SVGSVGElement> & {",
+      "      isDark?: boolean | undefined;",
+      "    }",
+      ") => (",
+      " $1",
+      ");",
+      "",
+      "export default $TM_FILENAME_BASE;",
+      ""
+    ],
+    "description": "New SVG Component"
   }
 }

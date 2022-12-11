@@ -16,16 +16,14 @@ const SubCategoryButtonGroup: FC<{
   setSubListIndex: React.Dispatch<React.SetStateAction<SubListIndex>>;
 }> = ({ subListIndex, setSubListIndex }) => {
   const getButtonStyle = (matchIndex: SubListIndex): string =>
-    clsx(
-      'py-1 px-6 mdc-text-sm text-abyss-900 bg-white rounded-full border border-zinc-200 hover:bg-abyss-100 hover:text-blue-700 dark:bg-abyss-750',
-      {
-        'dark:border-sky-500 dark:text-sky-500 dark:hover:border-sky-500 dark:hover:bg-abyss-750 dark:hover:text-sky-500 dark:hover:cursor-default':
-          subListIndex === matchIndex,
-
-        '  dark:text-zinc-200 dark:border-abyss-500 dark:hover:text-white dark:hover:bg-abyss-700':
-          subListIndex !== matchIndex,
-      }
-    );
+    clsx('py-1 px-6 mdc-text-sm bg-haruki-100 dark:bg-abyss-750 rounded-full border', {
+      'border-primary-light text-primary-light \
+      dark:border-primary-dark dark:text-primary-dark \
+      hover:cursor-default': subListIndex === matchIndex,
+      'dark:text-zinc-200 dark:border-abyss-500 dark:hover:text-white dark:hover:bg-abyss-700 \
+      text-abyss-900 border-zinc-300 hover:text-black hover:bg-haruki-50':
+        subListIndex !== matchIndex,
+    });
 
   return (
     <div className="flex flex-row w-full px-4 2xl:px-6 space-x-1.5">

@@ -2,7 +2,7 @@ use serde::{Deserialize, Serialize};
 
 use super::classes::IntermediateClassInfo;
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Default, Debug, Serialize, Deserialize)]
 pub struct SourceRecord {
     #[serde(rename = "序号")]
     index: i32,

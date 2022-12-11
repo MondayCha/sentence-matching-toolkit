@@ -1,14 +1,17 @@
 import clsx from 'clsx';
 import type { FC } from 'react';
 import ListItemButton from '../../../components/ListItemButton';
-import { Agreement, Focus, Min } from '@icon-park/react';
+import Agreement from '@/assets/descriptions/Agreement';
+import Focus from '@/assets/descriptions/Focus';
 import { useRecoilState } from 'recoil';
 import { subCategoryInfoState, matchingRuleState } from '@/middleware/store';
 import { open as openDialog } from '@tauri-apps/api/dialog';
 import { loadMatchingRule, loadSubCategoryCSV } from '@/api/core';
 import log from '@/middleware/logger';
+import { useThemeContext } from '@/components/theme';
 
 const RuleManage: FC = () => {
+  const { themeMode } = useThemeContext();
   const [matchingRule, setMatchingRule] = useRecoilState(matchingRuleState);
   const [subCategoryInfo, setSubCategoryInfo] = useRecoilState(subCategoryInfoState);
 
@@ -94,7 +97,7 @@ const RuleManage: FC = () => {
             )}
           </>
         }
-        icon={<Agreement theme="outline" size="30" fill="#fff" />}
+        icon={<Agreement isDark={themeMode === 'dark'} />}
         actionText="导入"
         actionHandler={loadCategory}
       />
@@ -114,20 +117,10 @@ const RuleManage: FC = () => {
             )}
           </>
         }
-        icon={<Focus theme="outline" size="30" fill="#fff" />}
+        icon={<Focus isDark={themeMode === 'dark'} />}
         actionText="导入"
         actionHandler={loadSubCategory}
       />
-      {subCategoryInfo.available && (
-        <ListItemButton
-          index={0}
-          title="相似阈值"
-          subtitle="设置阈值，低于该值的匹配结果将不认为是相似的"
-          icon={<Min theme="outline" size="30" fill="#fff" />}
-          actionText="0.25"
-          actionHandler={() => {}}
-        />
-      )}
       <div className="mt-1.5 mr-4 flex flex-row space-x-2.5">
         <button className="mdc-btn-primary p-1 w-32">导出规则</button>
       </div>

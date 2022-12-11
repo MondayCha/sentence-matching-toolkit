@@ -18,6 +18,17 @@ module.exports = {
           850: '#262626',
           900: '#202020',
         },
+        haruki: {
+          50: '#fefdfc',
+          100: '#fcf8f6',
+          200: '#f9f1ec',
+          300: '#f0e8e4',
+          400: '#d4cdc9',
+        },
+        primary: {
+          dark: '#21b5ff',
+          light: '#0284c7',
+        },
       },
       spacing: {
         15: '3.75rem',
@@ -31,4 +42,5 @@ module.exports = {
   variants: {
     scrollbar: ['dark'],
   },
+  darkMode: 'class',
 };

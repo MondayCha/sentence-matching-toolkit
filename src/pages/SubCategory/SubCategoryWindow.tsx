@@ -8,8 +8,10 @@ import log from '@/middleware/logger';
 import clsx from 'clsx';
 import { FixedSizeList as List, ListChildComponentProps } from 'react-window';
 import AutoSizer from 'react-virtualized-auto-sizer';
-import { DataAll, Delete, Edit } from '@icon-park/react';
-import IconNotFound from '@/assets/not-found';
+import { useThemeContext } from '@/components/theme';
+import Delete from '@/assets/operations/Delete';
+import Edit from '@/assets/operations/Edit';
+import IconNotFound from '@/assets/illustrations/NotFound';
 import { SourceRecord } from '@/api/core';
 
 const SubCategoryWindow: FC<{
@@ -17,6 +19,8 @@ const SubCategoryWindow: FC<{
   actionTag: string;
   actionHandler: (index: number) => void;
 }> = ({ records, actionTag, actionHandler }) => {
+  const { themeMode } = useThemeContext();
+
   const Row: FC<ListChildComponentProps<SourceRecord[]>> = ({ index, style, data }) => {
     const title =
       data[index].parsedClass?.[2].replace(data[index].parsedName ?? ' ', ' ').trim() ??
@@ -28,7 +32,7 @@ const SubCategoryWindow: FC<{
           <div className="flex flex-row justify-between items-start">
             <div className="flex flex-row justify-start items-center space-x-3 2xl:space-x-4 w-2/5 overflow-hidden">
               <div className="flex flex-col space-y-2 w-full">
-                <span className="mdc-text-sm text-zinc-200 font-medium leading-none text-ellipsis overflow-hidden whitespace-nowrap w-full select-text">
+                <span className="mdc-text-sm leading-none text-ellipsis overflow-hidden whitespace-nowrap w-full select-text">
                   {title}
                 </span>
                 <span className="mdc-text-xs leading-none text-xs">
@@ -48,10 +52,10 @@ const SubCategoryWindow: FC<{
                 </div>
               )}
               <button className="mdc-btn-secondary h-8 w-8 flex items-center justify-center">
-                <Edit theme="outline" size="18" strokeWidth={4} />
+                <Edit isDark={themeMode === 'dark'} />
               </button>
               <button className="mdc-btn-secondary h-8 w-8 flex items-center justify-center">
-                <Delete theme="outline" size="18" strokeWidth={4} />
+                <Delete isDark={themeMode === 'dark'} />
               </button>
             </div>
           </div>
@@ -83,7 +87,7 @@ const SubCategoryWindow: FC<{
         <div className="mdc-body grow flex flex-col gap-4 overflow-hidden justify-between items-end">
           <div className="w-full h-full">
             <div className="flex h-full w-full flex-col items-center justify-center space-y-3 ">
-              <IconNotFound />
+              <IconNotFound isDark={themeMode === 'dark'} />
               <p className="mdc-text-sm text-center">该列表目前没有项目</p>
             </div>
           </div>

@@ -4,7 +4,6 @@
 import type { FC, ReactNode } from 'react';
 import { useState } from 'react';
 import clsx from 'clsx';
-import { FileAddition } from '@icon-park/react';
 
 const NavButton: FC<{
   index: number;
@@ -19,9 +18,9 @@ const NavButton: FC<{
     <button
       className={clsx(
         'w-15 h-15 flex flex-col items-center justify-center gap-1.5 rounded p-2 relative',
-        'hover:bg-abyss-800 select-none',
+        'hover:bg-haruki-100 dark:hover:bg-abyss-800 select-none',
         {
-          'bg-abyss-750 border border-abyss-700  after:block after:absolute after:left-0 after:rounded after:bg-sky-500 after:h-7 after:w-1 after:-translate-x-1/2':
+          'bg-haruki-50 dark:bg-abyss-750 border dark:border-abyss-700  after:block after:absolute after:left-0 after:rounded after:bg-primary-light dark:after:bg-primary-dark after:h-6 after:w-1 after:-translate-x-1/2':
             index === currentIndex,
         }
       )}
@@ -29,7 +28,7 @@ const NavButton: FC<{
     >
       {/* TODO: currently no animation */}
       <div className={iconClassName}>{currentIndex === index ? activeIcon : normalIcon}</div>
-      {currentIndex !== index && <p className=" text-xs text-white">{text}</p>}
+      {currentIndex !== index && <p className=" text-xs dark:text-white text-abyss-600">{text}</p>}
     </button>
   );
 };

@@ -223,30 +223,35 @@ pub fn receive_modified_records(
         }
     }
 
-    let accepted_records_path =
-        paths::history_accepted_path(&app_handle.path_resolver(), uuid).unwrap();
-    let data = serde_json::to_string(&records).unwrap();
-    let mut f = File::create(&accepted_records_path).unwrap();
-    f.write_all(data.as_bytes()).unwrap();
+    if let Some(accepted_records_path) =
+        paths::history_accepted_path(&app_handle.path_resolver(), uuid)
+    {
+        let data = serde_json::to_string(&records).unwrap();
+        let mut f = File::create(&accepted_records_path).unwrap();
+        f.write_all(data.as_bytes()).unwrap();
 
-    let option_accepted_records_csv_path =
-        paths::history_accepted_csv_path(&app_handle.path_resolver(), uuid);
-    if let Some(accepted_records_csv_path) = option_accepted_records_csv_path {
-        let mut wtr = csv::Writer::from_path(&accepted_records_csv_path).unwrap();
-        for record in records {
-            let sr = SourceRecord::from(record);
-            wtr.serialize(sr).unwrap();
+        if let Some(accepted_records_csv_path) =
+            paths::history_accepted_csv_path(&app_handle.path_resolver(), uuid)
+        {
+            let mut wtr = csv::Writer::from_path(&accepted_records_csv_path).unwrap();
+            for record in records {
+                let sr = SourceRecord::from(record);
+                wtr.serialize(sr).unwrap();
+            }
+
+            // if params.with_bom is true, reopen csv file, add BOM to the head
+            if with_bom {
+                let mut f = File::open(&accepted_records_csv_path).unwrap();
+                let mut content = String::new();
+                f.read_to_string(&mut content).unwrap();
+                let mut f = File::create(&accepted_records_csv_path).unwrap();
+                f.write_all(b"\xEF\xBB\xBF").unwrap();
+                f.write_all(content.as_bytes()).unwrap();
+            }
         }
-        // if params.with_bom is true, reopen csv file, add BOM to the head
-        if with_bom {
-            let mut f = File::open(&accepted_records_csv_path).unwrap();
-            let mut content = String::new();
-            f.read_to_string(&mut content).unwrap();
-            let mut f = File::create(&accepted_records_csv_path).unwrap();
-            f.write_all(b"\xEF\xBB\xBF").unwrap();
-            f.write_all(content.as_bytes()).unwrap();
-        }
+
+        Ok(accepted_records_path.to_str().unwrap().to_string())
+    } else {
+        Err("无法创建文件".to_string())
     }
-
-    Ok(accepted_records_path.to_str().unwrap().to_string())
 }

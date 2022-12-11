@@ -5,7 +5,7 @@ import clsx from 'clsx';
 import log from '@/middleware/logger';
 import { showMessage } from '@/middleware/message';
 import { AppStatus, checkCsvAvailability } from '@/api/core';
-import IconLoadFile from './load-file';
+import IconLoadFile from '@/assets/illustrations/NoFile';
 import { useRecoilState, useRecoilValue, useSetRecoilState } from 'recoil';
 import {
   navIndexState,
@@ -15,9 +15,11 @@ import {
   appStatusState,
 } from '@/middleware/store';
 import { getTimestamp } from '@/middleware/utils';
+import { useThemeContext } from '@/components/theme';
 
 const Home: FC = () => {
   const [appStatus, setAppStatus] = useRecoilState(appStatusState);
+  const { themeMode } = useThemeContext();
   const filename = useRecoilValue(getSourceFilename);
   const setNavIndex = useSetRecoilState(navIndexState);
   const setSourcePath = useSetRecoilState(sourceFilePathState);
@@ -87,7 +89,7 @@ const Home: FC = () => {
             className="flex h-full w-full flex-col items-center justify-center space-y-3 cursor-pointer"
             onClick={selectFile}
           >
-            <IconLoadFile />
+            <IconLoadFile className="h-64 lg:h-72" isDark={themeMode === 'dark'} />
             <div>
               <p className="mdc-text-sm text-center">
                 {!filename ? (

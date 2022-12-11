@@ -12,10 +12,9 @@ const ListItemToggle: FC<{
   subtitle?: string | ReactNode;
   icon?: ReactNode;
   toggleState: boolean;
-  setToggleState: Dispatch<SetStateAction<boolean>>;
   changeHandler?: (index: number, state: boolean) => void;
 }> = (props) => {
-  const { index, toggleState, setToggleState, changeHandler, ...other } = props;
+  const { index, toggleState, changeHandler, ...other } = props;
 
   return (
     <ListItem {...other}>
@@ -27,16 +26,16 @@ const ListItemToggle: FC<{
           key={index}
           className="sr-only peer"
           onChange={(e) => {
-            setToggleState(e.target.checked);
             changeHandler && changeHandler(index, e.target.checked);
           }}
         />
         <div
           className={clsx(
             'w-11 h-6 rounded-full peer dark:bg-abyss-700',
-            'bg-gray-200 ',
-            'peer-checked:after:translate-x-5 peer-checked:after:border-abyss-700 peer-checked:after:bg-abyss-700 peer-checked:bg-sky-600 peer-checked:border-none',
-            " after:content-[''] after:absolute after:top-[4px] after:left-[4px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all dark:border-white dark:border dark:box-border"
+            'bg-white',
+            'dark:border-white border box-border border-abyss-500',
+            "after:content-[''] after:absolute after:top-[4px] after:left-[4px] dark:after:bg-white after:bg-abyss-500 after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all",
+            'peer-checked:after:translate-x-5 peer-checked:after:border-white dark:peer-checked:after:border-abyss-700 peer-checked:after:bg-white dark:peer-checked:after:bg-abyss-700 peer-checked:bg-primary-light dark:peer-checked:bg-primary-dark peer-checked:border-none'
           )}
         ></div>
       </label>
