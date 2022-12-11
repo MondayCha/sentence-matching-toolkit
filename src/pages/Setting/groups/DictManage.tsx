@@ -1,31 +1,22 @@
 import clsx from 'clsx';
 import type { FC } from 'react';
-import { useState, useLayoutEffect, Suspense } from 'react';
-import { BookOne, FileSettingsOne } from '@icon-park/react';
-import {
-  store,
-  dictState,
-  DICT_SETTING_KEY,
-  dictSizeState,
-  sourceFilePathState,
-} from '@/middleware/store';
+import Book from '@/assets/descriptions/Book';
+import FileSetting from '@/assets/descriptions/FileSetting';
+import { store, dictState, DICT_SETTING_KEY, dictSizeState } from '@/middleware/store';
 import ListItemToggle from '@/components/ListItemToggle';
 import ListItemButton from '@/components/ListItemButton';
 import log from '@/middleware/logger';
-import { useRecoilState, useRecoilValue, useSetRecoilState } from 'recoil';
+import { useRecoilState } from 'recoil';
 import { open as openDialog } from '@tauri-apps/api/dialog';
 import { open as openShell } from '@tauri-apps/api/shell';
 import { importDictionary, getDictPath } from '@/api/core';
 import { getTimestamp } from '@/middleware/utils';
+import { useThemeContext } from '@/components/theme';
 
 const DictManage: FC = () => {
   const [dictEnabled, setDictEnabled] = useRecoilState(dictState);
   const [dictSize, setDictSize] = useRecoilState(dictSizeState);
-
-  const checkDictStatus = async () => {
-    const val = await store.get(DICT_SETTING_KEY);
-    log.info('DictManage checkDictStatus', val);
-  };
+  const { themeMode, toggleTheme } = useThemeContext();
 
   const changeHandler = async (index: number, state: boolean) => {
     await store.set(DICT_SETTING_KEY, state);
@@ -79,7 +70,7 @@ const DictManage: FC = () => {
             条关系 */}
           </p>
         }
-        icon={<FileSettingsOne theme="outline" size="30" fill="#fff" />}
+        icon={<FileSetting isDark={themeMode === 'dark'} />}
         actionText="编辑"
         actionHandler={openDictFolder}
       />
@@ -87,10 +78,17 @@ const DictManage: FC = () => {
         index={0}
         title="自动导入"
         subtitle="导出匹配结果时，同时将新名词添加到词典"
-        icon={<BookOne theme="outline" size="30" fill="#fff" />}
+        icon={<Book isDark={themeMode === 'dark'} />}
         toggleState={dictEnabled}
-        setToggleState={setDictEnabled}
         changeHandler={changeHandler}
+      />
+      <ListItemToggle
+        index={0}
+        title="夜间模式"
+        subtitle="设置夜间模式"
+        icon={<Book isDark={themeMode === 'dark'} />}
+        toggleState={themeMode === 'dark'}
+        changeHandler={toggleTheme}
       />
       <div className="mt-1.5 mr-4 flex flex-row space-x-2.5">
         <button className="mdc-btn-primary p-1 w-32" onClick={selectFile}>

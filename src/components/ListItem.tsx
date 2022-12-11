@@ -16,7 +16,7 @@ const ListItem: FC<{
         <div className="flex flex-row justify-start items-center space-x-3 2xl:space-x-4">
           {icon && icon}
           <div className="flex flex-col space-y-2">
-            <span className="mdc-text-sm text-zinc-200 font-medium leading-none">{title}</span>
+            <span className="mdc-text-sm font-medium leading-none">{title}</span>
             {subtitle && <span className="mdc-text-xs leading-none">{subtitle}</span>}
           </div>
         </div>

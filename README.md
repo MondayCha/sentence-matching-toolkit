@@ -2,8 +2,6 @@
 
 A Chinese short text matching tool.
 
----
-
 This template should help get you started developing with Tauri, React and Typescript in Vite.
 
 ## Recommended IDE Setup
@@ -12,4 +10,6 @@ This template should help get you started developing with Tauri, React and Types
 
 ## References
 
-- [星图主题的空状态插画](https://iconpark.oceanengine.com/illustrations/1)
+- [Iconpark Illustration 1](https://iconpark.oceanengine.com/illustrations/1)
+- [Convert SVG to React component](https://react-svgr.com/playground/)
+- [snippet generator](https://snippet-generator.app/)

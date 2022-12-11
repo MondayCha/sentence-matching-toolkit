@@ -92,8 +92,29 @@ export const dictState = atom({
     key: 'dictionaryState/default',
     get: async () => {
       const val = await store.get(DICT_SETTING_KEY);
-      //   await new Promise((res) => setTimeout(res, 1000 * 5));
       return val === true;
+    },
+  }),
+});
+
+// Theme State Key
+export const THEME_SETTING_KEY = 'theme';
+export type ThemeMode = 'light' | 'dark';
+const DARK_SCHEME_QUERY = '(prefers-color-scheme: dark)';
+
+// Theme State Selector
+export const themeState = atom({
+  key: 'themeState',
+  default: selector({
+    key: 'themeState/default',
+    get: async () => {
+      // await new Promise((res) => setTimeout(res, 1000 * 5));
+      const val = await store.get(THEME_SETTING_KEY);
+      if (val !== 'light' && val !== 'dark') {
+        const isDarkMode = window.matchMedia(DARK_SCHEME_QUERY).matches;
+        return isDarkMode ? 'dark' : 'light';
+      }
+      return val as ThemeMode;
     },
   }),
 });

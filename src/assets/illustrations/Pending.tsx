@@ -1,6 +1,11 @@
-import type { FC } from 'react';
+import { SVG_FILLED_COLOR } from '@/assets/config';
 
-const IconPending: FC = () => {
+const IconPending = (
+  props: JSX.IntrinsicAttributes &
+    React.SVGProps<SVGSVGElement> & {
+      isDark?: boolean | undefined;
+    }
+) => {
   return (
     <svg
       viewBox="0 0 400 300"
@@ -17,7 +22,7 @@ const IconPending: FC = () => {
       />
       <path
         d="M212.828 82.496c7.722 0 13.982-6.26 13.982-13.982 0-7.722-6.26-13.982-13.982-13.982-7.722 0-13.982 6.26-13.982 13.982 0 7.722 6.26 13.982 13.982 13.982ZM222.677 58.591l-19.771 19.771"
-        stroke="#0ea5e9"
+        stroke={props.isDark ? SVG_FILLED_COLOR.DARK : SVG_FILLED_COLOR.LIGHT}
         strokeWidth="1.503"
         strokeMiterlimit="10"
       />
@@ -180,7 +185,7 @@ const IconPending: FC = () => {
       />
       <path
         d="M165.244 202.925c-4.736 0-8.119 5.262-13.306-.075-13.757-13.983-21.951-10.224-29.769-14.058-2.781-1.353-6.615-9.096-7.818-12.329-5.037-13.005-11.953-18.342-18.042-17.139-7.592 1.578-11.727 3.007-15.786 5.262-4.51 2.481-6.615 5.713-7.142 9.547-.676 5.112-.45 20.447 1.053 31.272 1.127 7.894 7.517 14.734 15.486 14.734h3.307l-3.307-38.188 9.922-3.232 4.661 10.299c6.54 11.802 19.32 19.094 36.535 19.094 12.629 0 30.295 0 37.136-.076-.151.076-6.24-5.111-12.93-5.111Z"
-        fill="#0ea5e9"
+        fill={props.isDark ? SVG_FILLED_COLOR.DARK : SVG_FILLED_COLOR.LIGHT}
         stroke="#000"
         strokeWidth=".752"
         strokeMiterlimit="10"
@@ -209,7 +214,7 @@ const IconPending: FC = () => {
       />
       <path
         d="m131.039 178.869-.601-.601a.952.952 0 0 1 0-1.353l5.938-4.812-8.72-5.788s5.864.827 9.547.075c7.743-1.654 18.418-5.412 24.206.301 3.533 3.533 2.18 8.645-.601 10.9-1.278.902-2.857 2.03-4.586 3.157-7.367 4.887-18.643 4.06-25.183-1.879Z"
-        fill="#0ea5e9"
+        fill={props.isDark ? SVG_FILLED_COLOR.DARK : SVG_FILLED_COLOR.LIGHT}
         stroke="#000"
         strokeWidth=".752"
         strokeMiterlimit="10"

@@ -36,8 +36,7 @@ fn main() {
     let settings = StoreBuilder::new(".settings.dat".parse().unwrap())
         .defaults(HashMap::from([
             ("auto_import_dict".to_string(), true.into()),
-            ("language".to_string(), "zh-CN".into()),
-            ("rule".to_string(), "snzx".into()),
+            ("theme".to_string(), "dark".into()),
         ]))
         .build();
 
@@ -46,19 +45,19 @@ fn main() {
         .manage(AppState::default())
         .setup(|app| {
             setup_dirs(&app.path_resolver())?;
-            let splashscreen_window = app.get_window("splashscreen").unwrap();
-            let main_window = app.get_window("main").unwrap();
-            // we perform the initialization code on a new task so the app doesn't freeze
-            tauri::async_runtime::spawn(async move {
-                // initialize your app here instead of sleeping :)
-                println!("Initializing...");
-                std::thread::sleep(std::time::Duration::from_secs(2));
-                println!("Done initializing.");
+            // let splashscreen_window = app.get_window("splashscreen").unwrap();
+            // let main_window = app.get_window("main").unwrap();
+            // // we perform the initialization code on a new task so the app doesn't freeze
+            // tauri::async_runtime::spawn(async move {
+            //     // initialize your app here instead of sleeping :)
+            //     println!("Initializing...");
+            //     std::thread::sleep(std::time::Duration::from_secs(2));
+            //     println!("Done initializing.");
 
-                // After it's done, close the splashscreen and display the main window
-                splashscreen_window.close().unwrap();
-                main_window.show().unwrap();
-            });
+            //     // After it's done, close the splashscreen and display the main window
+            //     splashscreen_window.close().unwrap();
+            //     main_window.show().unwrap();
+            // });
             Ok(())
         })
         .invoke_handler(tauri::generate_handler![

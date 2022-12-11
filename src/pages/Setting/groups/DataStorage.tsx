@@ -1,12 +1,14 @@
 import clsx from 'clsx';
 import type { FC } from 'react';
-import ListItem from '../../../components/ListItem';
-import { History, Data, DownloadComputer } from '@icon-park/react';
+import History from '@/assets/descriptions/History';
+import Data from '@/assets/descriptions/Data';
 import ListItemButton from '../../../components/ListItemButton';
 import { openHistoryDir, openCacheDir, removeHistoryAndCache } from '@/api/core';
 import { showMessage } from '@/middleware/message';
+import { useThemeContext } from '@/components/theme';
 
 const DataStorage: FC = () => {
+  const { themeMode } = useThemeContext();
   const cleanData = () => {
     removeHistoryAndCache()
       .then(() => {
@@ -23,7 +25,7 @@ const DataStorage: FC = () => {
         index={0}
         title="历史数据"
         subtitle="匹配产生的中间文件"
-        icon={<History theme="outline" size="30" fill="#fff" />}
+        icon={<History isDark={themeMode === 'dark'} />}
         actionText="浏览"
         actionHandler={openHistoryDir}
       />
@@ -31,7 +33,7 @@ const DataStorage: FC = () => {
         index={0}
         title="缓存数据"
         subtitle="分词、关系等随使用产生的数据"
-        icon={<Data theme="outline" size="30" fill="#fff" />}
+        icon={<Data isDark={themeMode === 'dark'} />}
         actionText="浏览"
         actionHandler={openCacheDir}
       />

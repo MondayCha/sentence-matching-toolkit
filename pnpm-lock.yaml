@@ -1,7 +1,6 @@
 lockfileVersion: 5.4
 
 specifiers:
-  '@icon-park/react': ^1.4.2
   '@tauri-apps/api': ^1.1.0
   '@tauri-apps/cli': ^1.2.1
   '@types/node': ^18.7.10
@@ -34,7 +33,6 @@ specifiers:
   vite: ^3.0.2
 
 dependencies:
-  '@icon-park/react': 1.4.2_biqbaboplfbrettd7655fr4n2y
   '@tauri-apps/api': 1.2.0
   loglevel: 1.8.1
   moment: 2.29.4
@@ -514,22 +512,6 @@ packages:
     requiresBuild: true
     dev: true
     optional: true
-
-  /@icon-park/react/1.4.2_biqbaboplfbrettd7655fr4n2y:
-    resolution:
-      {
-        integrity: sha512-+MtQLjNiRuia3fC/NfpSCTIy5KH5b+NkMB9zYd7p3R4aAIK61AjK0OSraaICJdkKooU9jpzk8m0fY4g9A3JqhQ==,
-        registry: https://registry.npm.taobao.org/,
-        tarball: https://registry.npm.taobao.org/@icon-park/react/-/react-1.4.2.tgz,
-      }
-    engines: { node: '>= 8.0.0', npm: '>= 5.0.0' }
-    peerDependencies:
-      react: '>=16.9'
-      react-dom: '>=16.9'
-    dependencies:
-      react: 18.2.0
-      react-dom: 18.2.0_react@18.2.0
-    dev: false
 
   /@jridgewell/gen-mapping/0.1.1:
     resolution:

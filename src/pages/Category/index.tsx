@@ -19,10 +19,11 @@ import { useState, useEffect } from 'react';
 import { useRecoilValueLoadable, useRecoilValue, useSetRecoilState, useRecoilState } from 'recoil';
 import log from '@/middleware/logger';
 import CategoryWindow from './CategoryWindow';
-import IconPending from '@/assets/Pending';
-import IconSearch from '@/assets/search';
+import IconPending from '@/assets/illustrations/Pending';
+import Searching from '@/assets/illustrations/Searching';
 import CategoryButtonGroup, { ListIndex } from './CategoryButtonGroup';
-import { AppStatus, getSubCategoryInfo, receiveModifiedRecords, SourceRecord } from '@/api/core';
+import { AppStatus, receiveModifiedRecords, SourceRecord } from '@/api/core';
+import { useThemeContext } from '@/components/theme';
 
 export interface WindowProps {
   displayList: SourceRecord[];
@@ -41,6 +42,7 @@ const Category: FC = () => {
   const categoryLoadable = useRecoilValueLoadable(getCategory);
   const sourceBaseName = useRecoilValue(getSourceFilename);
   const [isLoading, setIsLoading] = useState(false);
+  const { themeMode } = useThemeContext();
   // List
   const [listIndex, setListIndex] = useState(ListIndex.Certainty);
   const [certaintyList, setCertaintyList] = useState<SourceRecord[]>([]);
@@ -251,7 +253,7 @@ const Category: FC = () => {
             <div className="mdc-body grow flex flex-col gap-4 overflow-hidden justify-between items-end">
               <div className="mdc-item py-12 grow">
                 <div className="flex h-full w-full flex-col items-center justify-center space-y-3 ">
-                  <IconPending />
+                  <IconPending isDark={themeMode === 'dark'} />
                   <p className="mdc-text-sm text-center">应用空闲，可在「设置」修改单位匹配规则</p>
                 </div>
               </div>
@@ -260,7 +262,7 @@ const Category: FC = () => {
             <div className="mdc-body grow flex flex-col gap-4 overflow-hidden justify-between items-end">
               <div className="mdc-item py-12 grow">
                 <div className="flex h-full w-full flex-col items-center justify-center space-y-3 ">
-                  <IconSearch />
+                  <Searching isDark={themeMode === 'dark'} />
                   <p className="mdc-text-sm text-center">正在匹配</p>
                 </div>
               </div>
