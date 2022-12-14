@@ -2,7 +2,6 @@
  * suspense fallback component
  */
 import {
-  getSourceFilename,
   getCategory,
   navIndexState,
   NavIndex,
@@ -11,6 +10,7 @@ import {
   matchingRuleState,
   appStatusState,
   platformState,
+  sourceFilePathState,
 } from '@/middleware/store';
 import clsx from 'clsx';
 import { FC, useMemo } from 'react';
@@ -38,7 +38,7 @@ const Category: FC = () => {
   const matchingRule = useRecoilValue(matchingRuleState);
   const uuid = useRecoilValue(getUuid);
   const categoryLoadable = useRecoilValueLoadable(getCategory);
-  const sourceBaseName = useRecoilValue(getSourceFilename);
+  const sourceFilePath = useRecoilValue(sourceFilePathState);
   const [isLoading, setIsLoading] = useState(false);
   const { themeMode } = useThemeContext();
   // List
@@ -194,13 +194,13 @@ const Category: FC = () => {
             </>
           ) : (
             <>
-              {!sourceBaseName ? (
-                <>请先在「导入」栏目下选择文件，再进行单位的匹配。</>
-              ) : (
+              {!!sourceFilePath.filename ? (
                 <>
-                  已导入「<span className="mdc-text-heightlight">{sourceBaseName}</span>
+                  已导入「<span className="mdc-text-heightlight">{sourceFilePath.filename}</span>
                   」，正在匹配单位数据...
                 </>
+              ) : (
+                <>请先在「导入」栏目下选择文件，再进行单位的匹配。</>
               )}
             </>
           )}
@@ -247,7 +247,7 @@ const Category: FC = () => {
         </div>
       ) : (
         <>
-          {!sourceBaseName ? (
+          {!sourceFilePath.filename ? (
             <div className="mdc-body grow flex flex-col gap-4 overflow-hidden justify-between items-end">
               <div className="mdc-item py-12 grow">
                 <div className="flex h-full w-full flex-col items-center justify-center space-y-3 ">

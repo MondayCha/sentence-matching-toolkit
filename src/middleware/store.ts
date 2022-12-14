@@ -11,7 +11,7 @@ import {
   AppStatus,
 } from '@/api/core';
 import log from '@/middleware/logger';
-import { getBaseFilenameFromPath, getTimestamp } from './utils';
+import { getTimestamp } from './utils';
 
 // Tauri FileSystem Store
 export const store = new Store('.settings.dat');
@@ -131,16 +131,8 @@ export const sourceFilePathState = atom({
   key: 'sourceFilePathState',
   default: {
     path: '',
+    filename: '',
     timestamp: getTimestamp(),
-  },
-});
-
-// Source File Name State
-export const getSourceFilename = selector({
-  key: 'sourceFilePathState/filename',
-  get: ({ get }) => {
-    const { path } = get(sourceFilePathState);
-    return getBaseFilenameFromPath(path);
   },
 });
 

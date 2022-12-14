@@ -16,10 +16,13 @@ use super::rule::AppState;
 // Learn more about Tauri commands at https://tauri.app/v1/guides/features/command
 
 /// Receive csv file path and check csv availablity.
+/// Return error message if csv file is not available.
+/// Return csv file name if csv file is available.
 #[command]
 pub fn check_csv_headers(path: &str) -> Result<String, String> {
     // check if file exists
-    if !std::path::Path::new(path).exists() {
+    let path = std::path::Path::new(path);
+    if !path.exists() {
         return Err("File not found".to_string());
     }
     let mut rdr = Reader::from_path(path).unwrap();
@@ -44,7 +47,7 @@ pub fn check_csv_headers(path: &str) -> Result<String, String> {
     }
 
     if err_log.is_empty() {
-        Ok(headers[0].to_string())
+        Ok(path.file_name().unwrap().to_str().unwrap().to_string())
     } else {
         Err(err_log)
     }

@@ -6,23 +6,16 @@ import log from '@/middleware/logger';
 import { showMessage } from '@/middleware/message';
 import { AppStatus, checkCsvAvailability } from '@/api/core';
 import IconLoadFile from '@/assets/illustrations/NoFile';
-import { useRecoilState, useRecoilValue, useSetRecoilState } from 'recoil';
-import {
-  navIndexState,
-  NavIndex,
-  sourceFilePathState,
-  getSourceFilename,
-  appStatusState,
-} from '@/middleware/store';
+import { useRecoilState, useSetRecoilState } from 'recoil';
+import { navIndexState, NavIndex, sourceFilePathState, appStatusState } from '@/middleware/store';
 import { getTimestamp } from '@/middleware/utils';
 import { useThemeContext } from '@/components/theme';
 
 const Home: FC = () => {
   const [appStatus, setAppStatus] = useRecoilState(appStatusState);
   const { themeMode } = useThemeContext();
-  const filename = useRecoilValue(getSourceFilename);
   const setNavIndex = useSetRecoilState(navIndexState);
-  const setSourcePath = useSetRecoilState(sourceFilePathState);
+  const [sourcePath, setSourcePath] = useRecoilState(sourceFilePathState);
 
   const selectFile = async () => {
     const selected = await open({
@@ -42,6 +35,7 @@ const Home: FC = () => {
       // showMessage("没有选择文件", "warning");
       setSourcePath({
         path: '',
+        filename: '',
         timestamp: getTimestamp(),
       });
       return;
@@ -51,10 +45,11 @@ const Home: FC = () => {
 
     checkCsvAvailability(fullPath)
       .then((res) => {
-        const data = res as string;
-        log.info(data);
+        const filename = res as string;
+        log.info(filename);
         setSourcePath({
           path: fullPath,
+          filename,
           timestamp: getTimestamp(),
         });
         setAppStatus(AppStatus.CanMatch1);
@@ -63,6 +58,7 @@ const Home: FC = () => {
         log.error(err);
         setSourcePath({
           path: '',
+          filename: '',
           timestamp: getTimestamp(),
         });
         setAppStatus(AppStatus.Idle);
@@ -92,18 +88,18 @@ const Home: FC = () => {
             <IconLoadFile className="h-64 lg:h-72" theme={themeMode} />
             <div>
               <p className="mdc-text-sm text-center">
-                {!filename ? (
-                  '点击这里，导入需要统计的文件（支持 *.csv 格式）'
-                ) : (
+                {!!sourcePath.filename ? (
                   <>
-                    已导入「<span className="mdc-text-heightlight">{filename}</span>」
+                    已导入「<span className="mdc-text-heightlight">{sourcePath.filename}</span>」
                   </>
+                ) : (
+                  '点击这里，导入需要统计的文件（支持 *.csv 格式）'
                 )}
               </p>
             </div>
           </div>
         </div>
-        {!!filename && (
+        {!!sourcePath.filename && (
           <button className="mdc-btn-primary p-1 w-32" onClick={navigateToCatrgory}>
             开始统计
           </button>
