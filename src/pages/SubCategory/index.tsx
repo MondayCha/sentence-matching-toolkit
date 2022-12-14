@@ -4,7 +4,7 @@ import { useState, useEffect, useMemo } from 'react';
 import clsx from 'clsx';
 import IconPending from '@/assets/illustrations/Pending';
 import { useRecoilValue, useRecoilValueLoadable } from 'recoil';
-import { getSourceFilename, getSubCategory } from '@/middleware/store';
+import { getSubCategory, sourceFilePathState } from '@/middleware/store';
 import Searching from '@/assets/illustrations/Searching';
 import SubCategoryButtonGroup, { SubListIndex } from './SubCategoryButtonGroup';
 import CategoryWindow from '../Category/CategoryWindow';
@@ -15,7 +15,7 @@ import { BaseRecord } from '@/api/core';
 
 const SubCategory: FC = () => {
   const { themeMode } = useThemeContext();
-  const sourceBaseName = useRecoilValue(getSourceFilename);
+  const sourceFilePath = useRecoilValue(sourceFilePathState);
   const subCategoryLoadable = useRecoilValueLoadable(getSubCategory);
   const [listIndex, setListIndex] = useState(SubListIndex.Normal);
   const [normalList, setNormalList] = useState<BaseRecord[]>([]);
@@ -94,7 +94,7 @@ const SubCategory: FC = () => {
         </div>
       ) : (
         <>
-          {!!sourceBaseName ? (
+          {!!sourceFilePath.filename ? (
             <div className="mdc-body grow flex flex-col gap-4 overflow-hidden justify-between items-end">
               <div className="mdc-item py-12 grow">
                 <div className="flex h-full w-full flex-col items-center justify-center space-y-3 ">
