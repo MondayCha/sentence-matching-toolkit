@@ -1,12 +1,10 @@
 use indexmap::IndexMap;
 use ngrammatic::{Corpus, CorpusBuilder, Pad};
-use serde::{Deserialize, Serialize};
 use std::path::PathBuf;
 use tauri::regex::Regex;
 
 use crate::{
     handler::{
-        dict_handler::DictHandler,
         jieba_handler::JiebaHandler,
         regex_handler::{RegexMatchHandler, RegexNumHandler},
     },
@@ -18,26 +16,26 @@ use crate::{
 };
 
 pub struct CategoryMatcher {
-    category: String,
+    // category: String,
     filter: RegexNumHandler,
     matcher: RegexMatchHandler,
+    sub_category_matcher: Option<SubCategoryMatcher>,
 }
 
 impl CategoryMatcher {
-    pub fn new(rule: &MatchingRule) -> Self {
+    pub fn new(rule: &MatchingRule, dict_path: &PathBuf) -> Self {
         Self {
-            category: rule.rule_name.clone(),
+            // category: rule.rule_name.clone(),
             filter: RegexNumHandler::new(),
             matcher: RegexMatchHandler::new(rule),
+            sub_category_matcher: match rule.sub_category {
+                Some(ref sub_category) => Some(SubCategoryMatcher::new(sub_category, dict_path)),
+                None => None,
+            },
         }
     }
 
-    pub fn match_category(
-        &self,
-        raw_name: &str,
-        raw_company: &str,
-        contains_sub_category: &dyn Fn(&str, &str) -> bool,
-    ) -> CategoryResult {
+    pub fn match_category(&self, raw_name: &str, raw_company: &str) -> CategoryResult {
         let split_code = '⌀';
         let filtered_name = raw_name.replace(split_code, "");
         let filtered_company = raw_company.replace(split_code, "");
@@ -59,28 +57,35 @@ impl CategoryMatcher {
                         company: target.clone(),
                         residue_1: residues[0].to_string(),
                         residue_2: residues[1].to_string(),
+                        similarity: 1.0,
                     };
-                    if self.matcher.match_reject(&target)
-                        || self.matcher.match_reject_city(&filtered_record)
+                    if self.matcher.match_reject_in_accept(&target)
+                        || self.matcher.match_reject(&filtered_record)
                     {
                         return CategoryResult::Possibility(cleaned_category);
                     } else {
                         return CategoryResult::Certainty(cleaned_category);
                     }
                 }
-                None => CategoryResult::Improbability,
+                None => return CategoryResult::Improbability,
             }
         } else {
-            if contains_sub_category(&filtered_name, &filtered_company) {
-                CategoryResult::Probably(CleanedCategory {
-                    company: self.category.clone(),
-                    residue_1: filtered_name,
-                    residue_2: filtered_company,
-                })
-            } else {
-                CategoryResult::Improbability
+            if !self.matcher.match_reject(&filtered_record) {
+                if let Some(sub_matcher) = self.sub_category_matcher.as_ref() {
+                    let sim =
+                        sub_matcher.info_contains_sub_category(&filtered_name, &filtered_company);
+                    if let Some(matched_sub_category) = sim.1 {
+                        return CategoryResult::Probably(CleanedCategory {
+                            company: matched_sub_category,
+                            residue_1: filtered_name,
+                            residue_2: filtered_company,
+                            similarity: sim.0,
+                        });
+                    }
+                }
             }
         }
+        CategoryResult::Improbability
     }
 }
 
@@ -119,15 +124,15 @@ impl SubCategoryExtracter {
         }
     }
 
-    // pub fn get_sequence(&self, record: &str) -> Option<String> {
-    //     if let Some(re) = &self.re_sequence {
-    //         re.captures(record)
-    //             .and_then(|cap| cap.get(0))
-    //             .map(|m| m.as_str().to_string())
-    //     } else {
-    //         None
-    //     }
-    // }
+    pub fn get_sequence(&self, record: &str) -> Option<String> {
+        if let Some(re) = &self.re_sequence {
+            re.captures(record)
+                .and_then(|cap| cap.get(0))
+                .map(|m| m.as_str().to_string())
+        } else {
+            None
+        }
+    }
 
     pub fn get_sequence_num(&self, record: &str) -> Option<String> {
         if let Some(re) = &self.re_sequence_num {
@@ -177,7 +182,7 @@ impl SubCategoryMatcher {
         }
         let regex = rule.regex.clone();
         let mut corpus = CorpusBuilder::new().arity(2).pad_full(Pad::Auto).finish();
-        for (i, c) in categories.keys().enumerate() {
+        for (_, c) in categories.keys().enumerate() {
             corpus.add_text(c);
         }
         let extracter = SubCategoryExtracter::new(
@@ -250,6 +255,33 @@ impl SubCategoryMatcher {
             }
         }
         record
+    }
+
+    fn contains_sub_category(&self, record: &str) -> (f32, Option<String>) {
+        let record = self.replace(&record);
+        let option_record_grade = self.extracter.get_grade(&record);
+        let record_without_grade = self.extracter.remove_all_grades(&record);
+        let option_record_sequence = self.extracter.get_sequence(&record_without_grade);
+        let record_identity = self.extracter.remove_all_sequences(&record_without_grade);
+
+        if option_record_grade.is_some() || option_record_sequence.is_some() {
+            let results = self.corpus.search(&record_identity, 0.1);
+            if !results.is_empty() {
+                return (results[0].similarity, Some(results[0].text.to_string()));
+            }
+        }
+        (0.0, None)
+    }
+
+    pub fn info_contains_sub_category(&self, name: &str, company: &str) -> (f32, Option<String>) {
+        // return max value of self.contains_sub_category(name) and self.contains_sub_category(company)
+        let ans_1 = self.contains_sub_category(name);
+        let ans_2 = self.contains_sub_category(company);
+        if ans_1.0 > ans_2.0 {
+            ans_1
+        } else {
+            ans_2
+        }
     }
 
     pub fn match_sub_category(

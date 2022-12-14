@@ -12,7 +12,7 @@ use std::fs;
 use std::io::Result;
 
 use api::{rule::AppState, *};
-use tauri::{Manager, PathResolver};
+use tauri::PathResolver;
 use tauri_plugin_store::{PluginBuilder, StoreBuilder};
 use utils::paths;
 
