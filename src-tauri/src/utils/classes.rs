@@ -1,9 +1,5 @@
-use super::paths;
 use indexmap::IndexMap;
 use serde::{Deserialize, Serialize};
-use std::io::Result;
-use std::{fs::File, io::Write, path::PathBuf};
-use tauri::PathResolver;
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct ClassInfo {
@@ -13,10 +9,10 @@ pub struct ClassInfo {
     size: i32,
 }
 
-impl ClassInfo {
-    pub fn from(intermediate_class_info: &IntermediateClassInfo) -> Self {
+impl From<IntermediateClassInfo> for ClassInfo {
+    fn from(intermediate_class_info: IntermediateClassInfo) -> Self {
         Self {
-            name: intermediate_class_info.name.clone(),
+            name: intermediate_class_info.name,
             size: intermediate_class_info.size,
         }
     }
@@ -31,10 +27,10 @@ pub struct IntermediateClassInfo {
     pub sequence: Option<String>,
 }
 
-impl IntermediateClassInfo {
-    pub fn from(class_info: &ClassInfo) -> Self {
+impl From<ClassInfo> for IntermediateClassInfo {
+    fn from(class_info: ClassInfo) -> Self {
         Self {
-            name: class_info.name.clone(),
+            name: class_info.name,
             size: class_info.size,
             grade: None,
             identity: None,

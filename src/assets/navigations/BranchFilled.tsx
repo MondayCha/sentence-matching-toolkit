@@ -7,7 +7,7 @@ import { SVG_FILLED_COLOR } from '@/assets/config';
 const BranchFilled = (
   props: JSX.IntrinsicAttributes &
     React.SVGProps<SVGSVGElement> & {
-      isDark?: boolean | undefined;
+      theme?: string;
     }
 ) => (
   <svg
@@ -20,14 +20,14 @@ const BranchFilled = (
   >
     <path
       d="M24 33V15"
-      stroke={props.isDark ? SVG_FILLED_COLOR.DARK : SVG_FILLED_COLOR.LIGHT}
+      stroke={props.theme == 'dark' ? SVG_FILLED_COLOR.DARK : SVG_FILLED_COLOR.LIGHT}
       strokeWidth={4}
       strokeLinecap="round"
       strokeLinejoin="round"
     />
     <path
-      fill={props.isDark ? SVG_FILLED_COLOR.DARK : SVG_FILLED_COLOR.LIGHT}
-      stroke={props.isDark ? SVG_FILLED_COLOR.DARK : SVG_FILLED_COLOR.LIGHT}
+      fill={props.theme == 'dark' ? SVG_FILLED_COLOR.DARK : SVG_FILLED_COLOR.LIGHT}
+      stroke={props.theme == 'dark' ? SVG_FILLED_COLOR.DARK : SVG_FILLED_COLOR.LIGHT}
       strokeWidth={4}
       strokeLinecap="round"
       strokeLinejoin="round"
@@ -35,14 +35,14 @@ const BranchFilled = (
     />
     <path
       d="m8 32 6-7h19.974L40 32"
-      stroke={props.isDark ? SVG_FILLED_COLOR.DARK : SVG_FILLED_COLOR.LIGHT}
+      stroke={props.theme == 'dark' ? SVG_FILLED_COLOR.DARK : SVG_FILLED_COLOR.LIGHT}
       strokeWidth={4}
       strokeLinecap="round"
       strokeLinejoin="round"
     />
     <path
-      fill={props.isDark ? SVG_FILLED_COLOR.DARK : SVG_FILLED_COLOR.LIGHT}
-      stroke={props.isDark ? SVG_FILLED_COLOR.DARK : SVG_FILLED_COLOR.LIGHT}
+      fill={props.theme == 'dark' ? SVG_FILLED_COLOR.DARK : SVG_FILLED_COLOR.LIGHT}
+      stroke={props.theme == 'dark' ? SVG_FILLED_COLOR.DARK : SVG_FILLED_COLOR.LIGHT}
       strokeWidth={4}
       strokeLinecap="round"
       strokeLinejoin="round"

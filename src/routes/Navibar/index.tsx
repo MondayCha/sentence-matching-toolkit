@@ -80,10 +80,6 @@ const Navibar = ({ delay, children }: { delay: number; children: ReactNode }) =>
     return themeMode === 'dark' ? '#f2f2f2' : '#696969';
   }, [themeMode]);
 
-  const isDark = useMemo(() => {
-    return themeMode === 'dark';
-  }, [themeMode]);
-
   return (
     <div className="h-screen w-screen bg-haruki-200 dark:bg-abyss-900 flex flex-col overflow-hidden relative">
       <div className="w-screen h-3 bg-haruki-200 dark:bg-abyss-900 absolute top-0" />
@@ -94,16 +90,16 @@ const Navibar = ({ delay, children }: { delay: number; children: ReactNode }) =>
             <NavButton
               index={NavIndex.Upload}
               currentIndex={currentIndex}
-              normalIcon={<Addition isDark={isDark} />}
-              activeIcon={<AdditionFilled isDark={isDark} />}
+              normalIcon={<Addition theme={themeMode} />}
+              activeIcon={<AdditionFilled theme={themeMode} />}
               text="导入"
               setCurrentIndex={setCurrentIndex}
             />
             <NavButton
               index={NavIndex.Category}
               currentIndex={currentIndex}
-              normalIcon={<Building isDark={isDark} />}
-              activeIcon={<BuildingFilled isDark={isDark} />}
+              normalIcon={<Building theme={themeMode} />}
+              activeIcon={<BuildingFilled theme={themeMode} />}
               text="单位"
               setCurrentIndex={setCurrentIndex}
             />
@@ -111,8 +107,8 @@ const Navibar = ({ delay, children }: { delay: number; children: ReactNode }) =>
               <NavButton
                 index={NavIndex.SubCategory}
                 currentIndex={currentIndex}
-                normalIcon={<Branch isDark={isDark} />}
-                activeIcon={<BranchFilled isDark={isDark} />}
+                normalIcon={<Branch theme={themeMode} />}
+                activeIcon={<BranchFilled theme={themeMode} />}
                 text="班级"
                 setCurrentIndex={setCurrentIndex}
               />
@@ -120,8 +116,8 @@ const Navibar = ({ delay, children }: { delay: number; children: ReactNode }) =>
             <NavButton
               index={NavIndex.Download}
               currentIndex={currentIndex}
-              normalIcon={<Download isDark={isDark} />}
-              activeIcon={<DownloadFilled isDark={isDark} />}
+              normalIcon={<Download theme={themeMode} />}
+              activeIcon={<DownloadFilled theme={themeMode} />}
               text="导出"
               setCurrentIndex={setCurrentIndex}
             />
@@ -131,16 +127,16 @@ const Navibar = ({ delay, children }: { delay: number; children: ReactNode }) =>
             <NavButton
               index={NavIndex.About}
               currentIndex={currentIndex}
-              normalIcon={<Info isDark={isDark} />}
-              activeIcon={<InfoFilled isDark={isDark} />}
+              normalIcon={<Info theme={themeMode} />}
+              activeIcon={<InfoFilled theme={themeMode} />}
               text="关于"
               setCurrentIndex={setCurrentIndex}
             />
             <NavButton
               index={NavIndex.Setting}
               currentIndex={currentIndex}
-              normalIcon={<Setting isDark={isDark} />}
-              activeIcon={<SettingFilled isDark={isDark} />}
+              normalIcon={<Setting theme={themeMode} />}
+              activeIcon={<SettingFilled theme={themeMode} />}
               iconClassName={clsx({
                 'animate-spin-slow':
                   preloadAutoImportDict === undefined ||

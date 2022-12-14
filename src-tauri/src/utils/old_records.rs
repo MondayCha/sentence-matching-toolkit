@@ -1,32 +1,3 @@
-use serde::{Deserialize, Serialize};
-
-use super::classes::IntermediateClassInfo;
-
-#[derive(Default, Debug, Serialize, Deserialize)]
-pub struct SourceRecord {
-    #[serde(rename = "序号")]
-    index: i32,
-    #[serde(rename = "提交时间")]
-    timestamp: String,
-    #[serde(rename = "请选择单位所在地")]
-    location: String,
-    #[serde(rename = "姓名")]
-    name: String,
-    #[serde(rename = "单位")]
-    company: String,
-}
-
-impl SourceRecord {
-    pub fn from(record: IntermediateRecord) -> Self {
-        SourceRecord {
-            index: record.index,
-            timestamp: record.timestamp,
-            location: record.location,
-            name: record.name,
-            company: record.company,
-        }
-    }
-}
 #[derive(Default, Debug, Serialize, Deserialize, Clone)]
 pub struct ParsedCompany {
     pub all: String,
@@ -111,14 +82,6 @@ impl IntermediateRecord {
         self.parsed_class = class;
         self.matched_class = matched_class;
     }
-}
-
-#[derive(Debug, Serialize, Deserialize, Clone, Copy)]
-pub enum RecordMatchingResult {
-    Certainty,
-    Probably,
-    Possibility,
-    Improbability,
 }
 
 #[derive(Debug, Serialize, Deserialize)]

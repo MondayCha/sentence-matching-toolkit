@@ -25,7 +25,7 @@ const DataStorage: FC = () => {
         index={0}
         title="历史数据"
         subtitle="匹配产生的中间文件"
-        icon={<History isDark={themeMode === 'dark'} />}
+        icon={<History theme={themeMode} />}
         actionText="浏览"
         actionHandler={openHistoryDir}
       />
@@ -33,7 +33,7 @@ const DataStorage: FC = () => {
         index={0}
         title="缓存数据"
         subtitle="分词、关系等随使用产生的数据"
-        icon={<Data isDark={themeMode === 'dark'} />}
+        icon={<Data theme={themeMode} />}
         actionText="浏览"
         actionHandler={openCacheDir}
       />

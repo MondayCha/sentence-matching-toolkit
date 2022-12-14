@@ -50,7 +50,6 @@ pub fn open_cache_dir(app_handle: AppHandle) {
 pub fn remove_history_and_cache(app_handle: AppHandle) -> Result<(), String> {
     let history_dir = paths::history_dir(&app_handle.path_resolver()).unwrap();
     let cache_dir = paths::cache_dir(&app_handle.path_resolver()).unwrap();
-    let dict_handler_path = paths::dict_handler_path(&app_handle.path_resolver()).unwrap();
     match std::fs::remove_dir_all(&history_dir) {
         Ok(_) => {}
         Err(_) => {
@@ -61,12 +60,6 @@ pub fn remove_history_and_cache(app_handle: AppHandle) -> Result<(), String> {
         Ok(_) => {}
         Err(_) => {
             return Err("remove cache dir error".to_string());
-        }
-    }
-    match std::fs::remove_file(&dict_handler_path) {
-        Ok(_) => {}
-        Err(_) => {
-            return Err("remove dict handler error".to_string());
         }
     }
     match std::fs::create_dir_all(history_dir) {

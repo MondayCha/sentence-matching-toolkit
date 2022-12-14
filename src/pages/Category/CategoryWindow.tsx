@@ -9,17 +9,17 @@ import clsx from 'clsx';
 import { FixedSizeList as List, ListChildComponentProps } from 'react-window';
 import AutoSizer from 'react-virtualized-auto-sizer';
 import IconNotFound from '@/assets/illustrations/NotFound';
-import { SourceRecord } from '@/api/core';
+import { BaseRecord } from '@/api/core';
 import { useThemeContext } from '@/components/theme';
 
 const CategoryWindow: FC<{
-  records: SourceRecord[];
+  records: BaseRecord[];
   actionTag: string;
   actionHandler: (index: number) => void;
 }> = ({ records, actionTag, actionHandler }) => {
   const { themeMode } = useThemeContext();
 
-  const Row: FC<ListChildComponentProps<SourceRecord[]>> = ({ index, style, data }) => (
+  const Row: FC<ListChildComponentProps<BaseRecord[]>> = ({ index, style, data }) => (
     <div className="pr-6 lg:pr-8" style={style}>
       <div className="mdc-item h-16">
         <div className="flex flex-row justify-between items-start">
@@ -60,7 +60,7 @@ const CategoryWindow: FC<{
         <div className="mdc-body grow flex flex-col gap-4 overflow-hidden justify-between items-end">
           <div className="w-full h-full">
             <div className="flex h-full w-full flex-col items-center justify-center space-y-3 ">
-              <IconNotFound isDark={themeMode === 'dark'} />
+              <IconNotFound theme={themeMode} />
               <p className="mdc-text-sm text-center">该列表目前没有项目</p>
             </div>
           </div>

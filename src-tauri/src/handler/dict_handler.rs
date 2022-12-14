@@ -1,8 +1,8 @@
 use crate::utils::{paths, rules::MatchingRule};
-use csv::Reader;
+use csv::{Reader, ReaderBuilder};
 use serde::{Deserialize, Serialize};
 use std::{
-    collections::BTreeMap,
+    collections::BTreeSet,
     fs::File,
     io::{Result, Write},
     path::PathBuf,
@@ -13,7 +13,7 @@ use tauri::PathResolver;
 /// ns  地名\
 /// nt	机构名\
 /// nw	作品名
-#[derive(Debug, Serialize, Deserialize, Clone, Copy)]
+#[derive(Debug, Serialize, Deserialize, Clone, PartialEq, Copy)]
 pub enum DictType {
     PER,
     ORG,
@@ -22,81 +22,101 @@ pub enum DictType {
 /// Receive name list to create name set
 #[derive(Default, Debug, Serialize, Deserialize)]
 pub struct DictHandler {
-    #[serde(skip)]
-    dict_handler_path: PathBuf,
-    #[serde(skip)]
-    dict_path: PathBuf,
-    pub dict: BTreeMap<String, DictType>,
-    pub size: usize,
+    pub dict_path: PathBuf,
+    per_dict: BTreeSet<String>,
+    org_dict: BTreeSet<String>,
 }
 
 impl DictHandler {
     pub fn new(path_resolver: &PathResolver) -> Self {
-        let dict_handler_path = paths::dict_handler_path(&path_resolver).unwrap_or_default();
         let output_dict_path = paths::dictionary_path(&path_resolver).unwrap_or_default();
-        let default_dict_handler = DictHandler {
-            dict_handler_path: dict_handler_path.clone(),
-            dict_path: output_dict_path.clone(),
-            dict: BTreeMap::default(),
-            size: 0,
-        };
-        if !dict_handler_path.exists() {
+        if !output_dict_path.exists() {
+            let default_dict_handler = DictHandler {
+                dict_path: output_dict_path.clone(),
+                ..DictHandler::default()
+            };
+            default_dict_handler.save().unwrap();
             return default_dict_handler;
         } else {
-            let dict_handler_file = match File::open(&dict_handler_path) {
-                Ok(file) => file,
-                Err(_) => {
-                    return default_dict_handler;
+            let mut per_dict = BTreeSet::new();
+            let mut org_dict = BTreeSet::new();
+            // load set from txt "{} 5 nr" or "{} 5 nt"
+            let input_file = File::open(&output_dict_path).unwrap();
+            // read txt lines
+            let mut rdr = ReaderBuilder::new()
+                .delimiter(b' ')
+                .has_headers(false)
+                .from_reader(input_file);
+            for result in rdr.records() {
+                let record = match result {
+                    Ok(record) => record,
+                    Err(e) => {
+                        println!("Error reading record: {}", e);
+                        continue;
+                    }
+                };
+                let name = record.get(0).unwrap();
+                let tag = record.get(2).unwrap();
+                if tag == "nr" {
+                    per_dict.insert(name.to_string());
+                } else if tag == "nt" {
+                    org_dict.insert(name.to_string());
                 }
+            }
+            return DictHandler {
+                dict_path: output_dict_path,
+                per_dict,
+                org_dict,
             };
-            let mut dict_handler: Self = match serde_json::from_reader(dict_handler_file) {
-                Ok(dict_handler) => dict_handler,
-                Err(err) => {
-                    println!("dict_handler_file: {:?}", err);
-                    return default_dict_handler;
-                }
-            };
-            dict_handler.dict_handler_path = dict_handler_path;
-            dict_handler.dict_path = output_dict_path;
-            return dict_handler;
         };
     }
 
     fn save(&self) -> Result<()> {
-        let dict_handler_data = serde_json::to_string(self).unwrap();
-        let mut f = File::create(&self.dict_handler_path)?;
-        f.write_all(dict_handler_data.as_bytes())?;
+        let mut output_file = std::fs::File::create(&self.dict_path)?;
+        for per in &self.per_dict {
+            writeln!(output_file, "{} 5 nr", per)?;
+        }
+        for org in &self.org_dict {
+            writeln!(output_file, "{} 5 nt", org)?;
+        }
         Ok(())
     }
 
-    fn add(&mut self, name: &str, tag: Option<DictType>) {
-        self.dict
-            .insert(name.to_string(), tag.unwrap_or(DictType::PER));
+    fn add(&mut self, name: &str, tag: DictType) {
+        if tag == DictType::PER {
+            self.per_dict.insert(name.to_string());
+        } else if tag == DictType::ORG {
+            self.org_dict.insert(name.to_string());
+        }
     }
 
-    pub fn load_vec(&mut self, name_list: &Vec<String>, tag: Option<DictType>) {
-        for name in name_list {
-            self.add(name, tag);
-        }
-        self.size = self.dict.len();
+    pub fn size(&self) -> usize {
+        self.per_dict.len() + self.org_dict.len()
     }
+
+    // pub fn load_vec(&mut self, name_list: &Vec<String>, tag: Option<DictType>) {
+    //     for name in name_list {
+    //         self.add(name, tag.unwrap_or(DictType::ORG));
+    //     }
+    //     self.save().unwrap();
+    // }
 
     pub fn load_rule(&mut self, matching_rule: &MatchingRule) -> Result<()> {
-        self.add(&matching_rule.rule_name, Some(DictType::ORG));
+        self.add(&matching_rule.rule_name, DictType::ORG);
         if let Some(sub_category) = &matching_rule.sub_category {
             for c in sub_category.csv.classes.iter() {
                 if let Some(identity) = &c.identity {
-                    self.add(&identity, Some(DictType::ORG));
+                    self.add(&identity, DictType::ORG);
                 }
                 if let Some(grade) = &c.grade {
-                    self.add(&grade, Some(DictType::ORG));
+                    self.add(&grade, DictType::ORG);
                 }
                 if let Some(sequence) = &c.sequence {
-                    self.add(&sequence, Some(DictType::ORG));
+                    self.add(&sequence, DictType::ORG);
                 }
             }
-            self.add("班", Some(DictType::ORG));
         }
+        self.save()?;
         Ok(())
     }
 
@@ -111,35 +131,19 @@ impl DictHandler {
             let record = result?;
             let name = record.get(column.unwrap_or(0)).unwrap_or("");
             if name != "" {
-                self.add(name, tag);
-            }
-        }
-        self.size = self.dict.len();
-        Ok(())
-    }
-
-    pub fn export_dict(&self) -> Result<()> {
-        let mut output_file = std::fs::File::create(&self.dict_path)?;
-        for (name, tag) in &self.dict {
-            match tag {
-                DictType::PER => {
-                    writeln!(output_file, "{} 5 nr", name)?;
-                }
-                DictType::ORG => {
-                    writeln!(output_file, "{} 5 nt", name)?;
-                }
+                self.add(name, tag.unwrap_or(DictType::ORG));
             }
         }
         self.save()?;
         Ok(())
     }
 
-    pub fn can_match_key(&self, info: &str) -> bool {
-        for key in self.dict.keys() {
+    pub fn get_name_from_dict(&self, info: &str) -> Option<String> {
+        for key in self.per_dict.iter() {
             if info.contains(key) {
-                return true;
+                return Some(key.to_string());
             }
         }
-        false
+        None
     }
 }

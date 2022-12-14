@@ -10,7 +10,6 @@ import {
   subCategoryInfoState,
   matchingRuleState,
   appStatusState,
-  tempFilePathState,
   platformState,
 } from '@/middleware/store';
 import clsx from 'clsx';
@@ -22,11 +21,11 @@ import CategoryWindow from './CategoryWindow';
 import IconPending from '@/assets/illustrations/Pending';
 import Searching from '@/assets/illustrations/Searching';
 import CategoryButtonGroup, { ListIndex } from './CategoryButtonGroup';
-import { AppStatus, receiveModifiedRecords, SourceRecord } from '@/api/core';
+import { AppStatus, receiveModifiedRecords, CategoryItem, BaseRecord } from '@/api/core';
 import { useThemeContext } from '@/components/theme';
 
 export interface WindowProps {
-  displayList: SourceRecord[];
+  displayList: BaseRecord[];
   actionTag: string;
   actionHandler: (id: number) => void;
 }
@@ -34,7 +33,6 @@ export interface WindowProps {
 const Category: FC = () => {
   const [appStatus, setAppStatus] = useRecoilState(appStatusState);
   const platform = useRecoilValue(platformState);
-  const setTempFilePath = useSetRecoilState(tempFilePathState);
   const setNavIndex = useSetRecoilState(navIndexState);
   const subCategoryInfo = useRecoilValue(subCategoryInfoState);
   const matchingRule = useRecoilValue(matchingRuleState);
@@ -45,23 +43,25 @@ const Category: FC = () => {
   const { themeMode } = useThemeContext();
   // List
   const [listIndex, setListIndex] = useState(ListIndex.Certainty);
-  const [certaintyList, setCertaintyList] = useState<SourceRecord[]>([]);
-  const [probablyList, setProbablyList] = useState<SourceRecord[]>([]);
-  const [possibilityList, setPossibilityList] = useState<SourceRecord[]>([]);
-  const [improbabilityList, setImprobabilityList] = useState<SourceRecord[]>([]);
-  const [recycledList, setRecycledList] = useState<SourceRecord[]>([]);
+  const [certaintyList, setCertaintyList] = useState<BaseRecord[]>([]);
+  const [probablyList, setProbablyList] = useState<BaseRecord[]>([]);
+  const [possibilityList, setPossibilityList] = useState<BaseRecord[]>([]);
+  const [improbabilityList, setImprobabilityList] = useState<BaseRecord[]>([]);
+  const [recycledList, setRecycledList] = useState<BaseRecord[]>([]);
 
   useEffect(() => {
     if (categoryLoadable.state === 'hasValue' && categoryLoadable.contents !== undefined) {
-      setCertaintyList(categoryLoadable.contents.certaintyRecords);
-      setPossibilityList(categoryLoadable.contents.possibilityRecords);
+      setCertaintyList(categoryLoadable.contents.certaintyRecords.map((item) => item.now));
+      setPossibilityList(categoryLoadable.contents.possibilityRecords.map((item) => item.now));
       if (subCategoryInfo.available) {
-        setProbablyList(categoryLoadable.contents.probablyRecords);
-        setImprobabilityList(categoryLoadable.contents.improbabilityRecords);
+        setProbablyList(categoryLoadable.contents.probablyRecords.map((item) => item.now));
+        setImprobabilityList(
+          categoryLoadable.contents.improbabilityRecords.map((item) => item.now)
+        );
       } else {
         setImprobabilityList([
-          ...categoryLoadable.contents.probablyRecords,
-          ...categoryLoadable.contents.improbabilityRecords,
+          ...categoryLoadable.contents.probablyRecords.map((item) => item.now),
+          ...categoryLoadable.contents.improbabilityRecords.map((item) => item.now),
         ]);
       }
     }
@@ -88,7 +88,7 @@ const Category: FC = () => {
           actionHandler: (index) => {
             const item = probablyList.find((item) => item.index === index);
             if (item) {
-              let modifiedItem: SourceRecord = {
+              let modifiedItem: BaseRecord = {
                 ...item,
                 company: `${matchingRule.name} ${item.company}`,
               };
@@ -116,7 +116,7 @@ const Category: FC = () => {
           actionHandler: (index) => {
             const item = improbabilityList.find((item) => item.index === index);
             if (item) {
-              let modifiedItem: SourceRecord = {
+              let modifiedItem: BaseRecord = {
                 ...item,
                 company: `${matchingRule.name} ${item.company}`,
               };
@@ -150,9 +150,7 @@ const Category: FC = () => {
     log.info('submit');
     setIsLoading(true);
     receiveModifiedRecords(certaintyList, uuid, platform === 'win32')
-      .then((path) => {
-        log.info('receive modified records cached path', path);
-        setTempFilePath(path);
+      .then(() => {
         setIsLoading(false);
         if (subCategoryInfo.available) {
           setAppStatus(AppStatus.CanMatch2);
@@ -253,7 +251,7 @@ const Category: FC = () => {
             <div className="mdc-body grow flex flex-col gap-4 overflow-hidden justify-between items-end">
               <div className="mdc-item py-12 grow">
                 <div className="flex h-full w-full flex-col items-center justify-center space-y-3 ">
-                  <IconPending isDark={themeMode === 'dark'} />
+                  <IconPending theme={themeMode} />
                   <p className="mdc-text-sm text-center">应用空闲，可在「设置」修改单位匹配规则</p>
                 </div>
               </div>
@@ -262,7 +260,7 @@ const Category: FC = () => {
             <div className="mdc-body grow flex flex-col gap-4 overflow-hidden justify-between items-end">
               <div className="mdc-item py-12 grow">
                 <div className="flex h-full w-full flex-col items-center justify-center space-y-3 ">
-                  <Searching isDark={themeMode === 'dark'} />
+                  <Searching theme={themeMode} />
                   <p className="mdc-text-sm text-center">正在匹配</p>
                 </div>
               </div>

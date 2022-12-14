@@ -70,7 +70,7 @@ const DictManage: FC = () => {
             条关系 */}
           </p>
         }
-        icon={<FileSetting isDark={themeMode === 'dark'} />}
+        icon={<FileSetting theme={themeMode} />}
         actionText="编辑"
         actionHandler={openDictFolder}
       />
@@ -78,7 +78,7 @@ const DictManage: FC = () => {
         index={0}
         title="自动导入"
         subtitle="导出匹配结果时，同时将新名词添加到词典"
-        icon={<Book isDark={themeMode === 'dark'} />}
+        icon={<Book theme={themeMode} />}
         toggleState={dictEnabled}
         changeHandler={changeHandler}
       />
@@ -86,7 +86,7 @@ const DictManage: FC = () => {
         index={0}
         title="夜间模式"
         subtitle="设置夜间模式"
-        icon={<Book isDark={themeMode === 'dark'} />}
+        icon={<Book theme={themeMode} />}
         toggleState={themeMode === 'dark'}
         changeHandler={toggleTheme}
       />

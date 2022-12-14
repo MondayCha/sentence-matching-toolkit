@@ -17,7 +17,7 @@ const Download: FC = () => {
           index={0}
           title="数据导出位置"
           subtitle="C:\Users\username\Documents\"
-          icon={<DownloadComputer isDark={themeMode === 'dark'} />}
+          icon={<DownloadComputer theme={themeMode} />}
           actionText="浏览"
           actionHandler={() => {}}
         />

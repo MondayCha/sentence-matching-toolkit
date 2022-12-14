@@ -1,14 +1,14 @@
 import * as React from 'react';
 import { SVG_OUTLINE_COLOR } from '@/assets/config';
 
-// {props.isDark ? SVG_OUTLINE_COLOR.DARK : SVG_OUTLINE_COLOR.LIGHT}
-// {props.isDark ? SVG_FILLED_COLOR.DARK : SVG_FILLED_COLOR.LIGHT}
-// {props.isDark ? SVG_FILLED_BACKGROUND.DARK : SVG_FILLED_BACKGROUND.LIGHT}
+// {props.theme == 'dark' ? SVG_OUTLINE_COLOR.DARK : SVG_OUTLINE_COLOR.LIGHT}
+// {props.theme == 'dark' ? SVG_FILLED_COLOR.DARK : SVG_FILLED_COLOR.LIGHT}
+// {props.theme == 'dark' ? SVG_FILLED_BACKGROUND.DARK : SVG_FILLED_BACKGROUND.LIGHT}
 
 const Focus = (
   props: JSX.IntrinsicAttributes &
     React.SVGProps<SVGSVGElement> & {
-      isDark?: boolean | undefined;
+      theme?: string;
     }
 ) => (
   <svg
@@ -21,7 +21,7 @@ const Focus = (
   >
     <path
       d="M16 6H8a2 2 0 0 0-2 2v8M16 42H8a2 2 0 0 1-2-2v-8M32 42h8a2 2 0 0 0 2-2v-8M32 6h8a2 2 0 0 1 2 2v8"
-      stroke={props.isDark ? SVG_OUTLINE_COLOR.DARK : SVG_OUTLINE_COLOR.LIGHT}
+      stroke={props.theme == 'dark' ? SVG_OUTLINE_COLOR.DARK : SVG_OUTLINE_COLOR.LIGHT}
       strokeWidth={4}
       strokeLinecap="round"
       strokeLinejoin="round"
@@ -32,13 +32,13 @@ const Focus = (
       width={20}
       height={20}
       rx={10}
-      stroke={props.isDark ? SVG_OUTLINE_COLOR.DARK : SVG_OUTLINE_COLOR.LIGHT}
+      stroke={props.theme == 'dark' ? SVG_OUTLINE_COLOR.DARK : SVG_OUTLINE_COLOR.LIGHT}
       strokeWidth={4}
     />
     <circle
       r={3}
       transform="matrix(-1 0 0 1 24 24)"
-      fill={props.isDark ? SVG_OUTLINE_COLOR.DARK : SVG_OUTLINE_COLOR.LIGHT}
+      fill={props.theme == 'dark' ? SVG_OUTLINE_COLOR.DARK : SVG_OUTLINE_COLOR.LIGHT}
     />
   </svg>
 );
