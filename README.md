@@ -13,3 +13,4 @@ This template should help get you started developing with Tauri, React and Types
 - [Iconpark Illustration 1](https://iconpark.oceanengine.com/illustrations/1)
 - [Convert SVG to React component](https://react-svgr.com/playground/)
 - [snippet generator](https://snippet-generator.app/)
+- [updating dependencies](https://tauri.app/v1/guides/development/updating-dependencies/#update-npm-packages)

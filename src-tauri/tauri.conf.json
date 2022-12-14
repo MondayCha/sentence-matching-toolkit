@@ -6,7 +6,7 @@
     "distDir": "../dist"
   },
   "package": {
-    "productName": "短文本匹配工具",
+    "productName": "sentence-matching-toolkit",
     "version": "0.1.0"
   },
   "tauri": {
