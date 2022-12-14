@@ -7,6 +7,7 @@ pub struct CleanedCategory {
     pub company: String,
     pub residue_1: String,
     pub residue_2: String,
+    pub similarity: f32,
 }
 
 /// Category result show the possibility of match to a category.

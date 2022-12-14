@@ -49,8 +49,8 @@ impl RegexNumHandler {
 
 pub struct RegexMatchHandler {
     re_accept: Regex,
+    re_reject_in_accept: Regex,
     re_reject: Regex,
-    re_reject_city: Regex,
 }
 
 impl RegexMatchHandler {
@@ -61,8 +61,8 @@ impl RegexMatchHandler {
             // re_reject: Regex::new(r"2").unwrap(),
             // re_reject_city: Regex::new(r"拉萨市|日喀则市|林芝市|昌都市|那曲市|阿里地区").unwrap(),
             re_accept: Regex::new(&rule.category.accept_pattern).unwrap(),
-            re_reject: Regex::new(&rule.category.accept_filter_pattern).unwrap(),
-            re_reject_city: Regex::new(&rule.category.reject_pattern).unwrap(),
+            re_reject_in_accept: Regex::new(&rule.category.accept_filter_pattern).unwrap(),
+            re_reject: Regex::new(&rule.category.reject_pattern).unwrap(),
         }
     }
 
@@ -70,12 +70,12 @@ impl RegexMatchHandler {
         self.re_accept.is_match(text)
     }
 
-    pub fn match_reject(&self, text: &str) -> bool {
-        self.re_reject.is_match(text)
+    pub fn match_reject_in_accept(&self, text: &str) -> bool {
+        self.re_reject_in_accept.is_match(text)
     }
 
-    pub fn match_reject_city(&self, text: &str) -> bool {
-        self.re_reject_city.is_match(text)
+    pub fn match_reject(&self, text: &str) -> bool {
+        self.re_reject.is_match(text)
     }
 
     pub fn get_target_and_other(&self, text: &str) -> Option<(String, String)> {

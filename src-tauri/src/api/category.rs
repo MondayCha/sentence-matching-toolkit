@@ -1,3 +1,4 @@
+use std::cmp::Ordering::Equal;
 use std::collections::HashMap;
 use std::fs::File;
 use std::io::{Read, Write};
@@ -8,7 +9,7 @@ use crate::utils::{paths, records::base::*, records::category::*};
 use csv::Reader;
 use rayon::prelude::*;
 use tauri::command;
-use tauri::{AppHandle, Manager, Window};
+use tauri::AppHandle;
 
 use super::rule::AppState;
 
@@ -16,16 +17,13 @@ use super::rule::AppState;
 
 /// Receive csv file path and check csv availablity.
 #[command]
-pub fn check_csv_headers(path: &str, window: Window) -> Result<String, String> {
+pub fn check_csv_headers(path: &str) -> Result<String, String> {
     // check if file exists
     if !std::path::Path::new(path).exists() {
         return Err("File not found".to_string());
     }
     let mut rdr = Reader::from_path(path).unwrap();
     let headers = rdr.headers().unwrap();
-
-    let label = window.label();
-    let parent_window = window.get_window(label).unwrap();
 
     let mut err_log = String::new();
     if headers.len() != 5 {
@@ -93,9 +91,10 @@ pub fn start_category_matching(
     let t2s_convert = |s: &str| t2s_handler.convert(s);
 
     // create matcher
-    let record_matcher = CategoryMatcher::new(&state.rule.read().unwrap());
-    let fff = |s1: &str, s2: &str| false;
-    let match_category = |r1: &str, r2: &str| record_matcher.match_category(r1, r2, &fff);
+    let dict_handler = &state.dict.read().unwrap();
+    let record_matcher = CategoryMatcher::new(&state.rule.read().unwrap(), &dict_handler.dict_path);
+
+    let match_category = |r1: &str, r2: &str| record_matcher.match_category(r1, r2);
 
     // read csv file
     let result_rdr = csv::Reader::from_path(path);
@@ -155,6 +154,15 @@ pub fn start_category_matching(
             .then(a.raw.company.cmp(&b.raw.company))
     });
     probably_records.sort_by(|a, b| {
+        if let Some(a_cleaned) = a.cleaned.as_ref() {
+            if let Some(b_cleaned) = b.cleaned.as_ref() {
+                return b_cleaned
+                    .similarity
+                    .partial_cmp(&a_cleaned.similarity)
+                    .unwrap_or(Equal)
+                    .then(a.raw.company.cmp(&b.raw.company));
+            }
+        }
         a.raw
             .company
             .cmp(&b.raw.company)
@@ -200,9 +208,10 @@ pub fn receive_modified_records(
     app_handle: AppHandle,
 ) -> Result<String, String> {
     // create matcher
-    let record_matcher = CategoryMatcher::new(&state.rule.read().unwrap());
-    let fff = |_: &str, _: &str| false;
-    let match_category = |r1: &str, r2: &str| record_matcher.match_category(r1, r2, &fff);
+    let dict_handler = &state.dict.read().unwrap();
+    let record_matcher = CategoryMatcher::new(&state.rule.read().unwrap(), &dict_handler.dict_path);
+
+    let match_category = |r1: &str, r2: &str| record_matcher.match_category(r1, r2);
 
     // load records map indexed by index from record_group_path
     let mut records_map = HashMap::new();
@@ -286,11 +295,11 @@ pub fn receive_modified_records(
             // if params.with_bom is true, reopen csv file, add BOM to the head
             if with_bom {
                 let mut f = File::open(&accepted_records_csv_path).unwrap();
-                let mut content = String::new();
-                f.read_to_string(&mut content).unwrap();
+                let mut content = Vec::new();
+                f.read_to_end(&mut content).unwrap();
                 let mut f = File::create(&accepted_records_csv_path).unwrap();
                 f.write_all(b"\xEF\xBB\xBF").unwrap();
-                f.write_all(content.as_bytes()).unwrap();
+                f.write_all(content.as_slice()).unwrap();
             }
         }
         *state.path.accepted_categories_path.write().unwrap() = accepted_records_path;
