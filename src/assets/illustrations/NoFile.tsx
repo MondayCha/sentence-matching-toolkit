@@ -1,14 +1,14 @@
 import * as React from 'react';
 import { SVG_FILLED_COLOR } from '@/assets/config';
 
-// {props.isDark ? SVG_OUTLINE_COLOR.DARK : SVG_OUTLINE_COLOR.LIGHT}
-// {props.isDark ? SVG_FILLED_COLOR.DARK : SVG_FILLED_COLOR.LIGHT}
-// {props.isDark ? SVG_FILLED_BACKGROUND.DARK : SVG_FILLED_BACKGROUND.LIGHT}
+// {props.theme == 'dark' ? SVG_OUTLINE_COLOR.DARK : SVG_OUTLINE_COLOR.LIGHT}
+// {props.theme == 'dark' ? SVG_FILLED_COLOR.DARK : SVG_FILLED_COLOR.LIGHT}
+// {props.theme == 'dark' ? SVG_FILLED_BACKGROUND.DARK : SVG_FILLED_BACKGROUND.LIGHT}
 
 const NoFile = (
   props: JSX.IntrinsicAttributes &
     React.SVGProps<SVGSVGElement> & {
-      isDark?: boolean | undefined;
+      theme?: string;
     }
 ) => (
   <svg viewBox="0 0 400 300" fill="none" xmlns="http://www.w3.org/2000/svg" {...props}>
@@ -53,7 +53,7 @@ const NoFile = (
     />
     <path
       d="M259.693 121.123c-7.449-6.633-18.673-16.633-24.898-22.245-4.082-3.775-9.286-6.122-14.796-6.02l-22.959.612h1.122-1.428 1.122l-22.959-.612c-5.51-.102-10.714 2.245-14.796 6.02-6.224 5.714-17.449 15.714-24.898 22.245l20.612 24.388 6.837-5.612v67.142h12.449l19.388-6.122h6.02l19.388 6.122h12.449v-67.142l6.837 5.612 20.51-24.388Z"
-      fill={props.isDark ? SVG_FILLED_COLOR.DARK : SVG_FILLED_COLOR.LIGHT}
+      fill={props.theme == 'dark' ? SVG_FILLED_COLOR.DARK : SVG_FILLED_COLOR.LIGHT}
       stroke="#202020"
       strokeWidth={0.87}
       strokeMiterlimit={10}

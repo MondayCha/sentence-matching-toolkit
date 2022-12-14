@@ -3,7 +3,7 @@ import { SVG_FILLED_COLOR } from '@/assets/config';
 const NotFound = (
   props: JSX.IntrinsicAttributes &
     React.SVGProps<SVGSVGElement> & {
-      isDark?: boolean | undefined;
+      theme?: string;
     }
 ) => (
   <svg
@@ -195,7 +195,7 @@ const NotFound = (
     />
     <path
       d="m261.639 196.626 28.781-10.814-18.733-43.768-20.947 9.111-3.747-5.79c-.085-.171-.255-.256-.34-.426-16.009-16.945-42.917-17.03-58.925-.085l-8.771 9.877s-.851 11.581 2.47 20.947c3.491 9.623 7.748 14.391 7.748 14.391h12.433c1.192 1.703 28.185 49.218 28.185 49.218l42.405-26.227-10.559-16.434Z"
-      fill={props.isDark ? SVG_FILLED_COLOR.DARK : SVG_FILLED_COLOR.LIGHT}
+      fill={props.theme == 'dark' ? SVG_FILLED_COLOR.DARK : SVG_FILLED_COLOR.LIGHT}
       stroke="#000"
       strokeWidth=".852"
       strokeMiterlimit="10"

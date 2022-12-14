@@ -97,7 +97,7 @@ const RuleManage: FC = () => {
             )}
           </>
         }
-        icon={<Agreement isDark={themeMode === 'dark'} />}
+        icon={<Agreement theme={themeMode} />}
         actionText="导入"
         actionHandler={loadCategory}
       />
@@ -117,7 +117,7 @@ const RuleManage: FC = () => {
             )}
           </>
         }
-        icon={<Focus isDark={themeMode === 'dark'} />}
+        icon={<Focus theme={themeMode} />}
         actionText="导入"
         actionHandler={loadSubCategory}
       />

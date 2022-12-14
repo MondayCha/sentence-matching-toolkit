@@ -3,7 +3,7 @@ import { SVG_FILLED_COLOR } from '@/assets/config';
 const Searching = (
   props: JSX.IntrinsicAttributes &
     React.SVGProps<SVGSVGElement> & {
-      isDark?: boolean | undefined;
+      theme?: string;
     }
 ) => {
   return (
@@ -168,7 +168,7 @@ const Searching = (
       />
       <path
         d="m145.988 151.686-11.392 22.278 40.589 11.729 7.257-17.72 16.117-4.557s-2.025-10.295-3.037-14.177c-2.701-10.885-9.367-17.974-19.493-21.096-9.536-3.038-19.915-1.688-28.438 3.544l-9.873 6.076 8.27 13.923Z"
-        fill={props.isDark ? SVG_FILLED_COLOR.DARK : SVG_FILLED_COLOR.LIGHT}
+        fill={props.theme == 'dark' ? SVG_FILLED_COLOR.DARK : SVG_FILLED_COLOR.LIGHT}
         stroke="#000"
         strokeWidth=".844"
         strokeMiterlimit="10"
@@ -196,7 +196,7 @@ const Searching = (
       />
       <path
         d="m210.457 216.664-7.004 4.81 7.004 5.063M282.943 226.536l7.089-4.81-7.089-5.063M204.297 221.558h84.807"
-        stroke={props.isDark ? SVG_FILLED_COLOR.DARK : SVG_FILLED_COLOR.LIGHT}
+        stroke={props.theme == 'dark' ? SVG_FILLED_COLOR.DARK : SVG_FILLED_COLOR.LIGHT}
         strokeWidth=".844"
         strokeMiterlimit="10"
         strokeLinecap="round"

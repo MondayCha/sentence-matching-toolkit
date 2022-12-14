@@ -1,11 +1,12 @@
+use std::collections::HashMap;
 use std::fs::File;
 use std::io::{Read, Write};
 
 use crate::handler::t2s_handler::T2SHandler;
-use crate::utils::matches::RecordMatcher;
-use crate::utils::{paths, records::*};
+use crate::utils::matches::CategoryMatcher;
+use crate::utils::{paths, records::base::*, records::category::*};
 use csv::Reader;
-use tauri::api::dialog::message;
+use rayon::prelude::*;
 use tauri::command;
 use tauri::{AppHandle, Manager, Window};
 
@@ -47,7 +48,6 @@ pub fn check_csv_headers(path: &str, window: Window) -> Result<String, String> {
     if err_log.is_empty() {
         Ok(headers[0].to_string())
     } else {
-        message(Some(&parent_window), "注意", err_log.clone());
         Err(err_log)
     }
 }
@@ -58,12 +58,8 @@ pub fn start_category_matching(
     path: &str,
     uuid: &str,
     state: tauri::State<'_, AppState>,
-    window: Window,
     app_handle: AppHandle,
-) -> Result<IntermediateRecordGroup, String> {
-    // init window for sending message
-    let label = window.label();
-    let parent_window = window.get_window(label).unwrap();
+) -> Result<CategoryGroup, String> {
     let mut err_log = String::new();
 
     // create folder in APP_DATA/history/uuid (history_uuid_dir)
@@ -88,21 +84,18 @@ pub fn start_category_matching(
         } else {
             // file might be deleted
             err_log = format!("路径「{}」不存在！", path.to_string());
-            message(Some(&parent_window), "注意", &err_log);
         }
-        return Err(err_log.to_string());
+        return Err(err_log);
     }
 
     // create traditional to simplified handler
     let t2s_handler = T2SHandler::new();
     let t2s_convert = |s: &str| t2s_handler.convert(s);
 
-    // create dict handler
-    let dict_handler = crate::handler::dict_handler::DictHandler::new(&app_handle.path_resolver());
-
     // create matcher
-    let record_matcher = RecordMatcher::new(&state.rule.read().unwrap());
-    let match_category = |r: &str| record_matcher.match_category(r, &dict_handler);
+    let record_matcher = CategoryMatcher::new(&state.rule.read().unwrap());
+    let fff = |s1: &str, s2: &str| false;
+    let match_category = |r1: &str, r2: &str| record_matcher.match_category(r1, r2, &fff);
 
     // read csv file
     let result_rdr = csv::Reader::from_path(path);
@@ -110,8 +103,7 @@ pub fn start_category_matching(
         Ok(rdr) => rdr,
         Err(e) => {
             err_log = format!("读取 CSV 文件失败：{}", e.to_string());
-            message(Some(&parent_window), "注意", &err_log);
-            return Err(err_log.to_string());
+            return Err(err_log);
         }
     };
 
@@ -120,116 +112,168 @@ pub fn start_category_matching(
     let mut possibility_records = Vec::new();
     let mut improbability_records = Vec::new();
 
+    let mut base_records = Vec::new();
+
     for result in rdr.deserialize() {
         let source_record: SourceRecord = match result {
             Ok(record) => record,
             Err(e) => {
                 err_log = format!("读取 CSV 行失败：{}", e.to_string());
-                message(Some(&parent_window), "注意", &err_log);
-                return Err(err_log.to_string());
+                return Err(err_log);
             }
         };
-        let mut intermediate_record = IntermediateRecord::new(source_record, &t2s_convert);
-        let (result, category) = match_category(&intermediate_record.info_t2s);
-        intermediate_record.set_parsed_company(category);
-        match result {
-            RecordMatchingResult::Certainty => {
-                certainty_records.push(intermediate_record);
+        base_records.push(BaseRecord::from(source_record));
+    }
+
+    let categories = base_records
+        .par_iter()
+        .map(|base_record| Category::new(base_record, &t2s_convert, &match_category))
+        .collect::<Vec<Category>>();
+
+    for category in categories {
+        match category.flag {
+            CategoryFlag::Certainty => {
+                certainty_records.push(category);
             }
-            RecordMatchingResult::Probably => {
-                probably_records.push(intermediate_record);
+            CategoryFlag::Probably => {
+                probably_records.push(category);
             }
-            RecordMatchingResult::Possibility => {
-                possibility_records.push(intermediate_record);
+            CategoryFlag::Possibility => {
+                possibility_records.push(category);
             }
-            RecordMatchingResult::Improbability => {
-                improbability_records.push(intermediate_record);
+            CategoryFlag::Improbability => {
+                improbability_records.push(category);
             }
         }
     }
 
     certainty_records.sort_by(|a, b| {
-        b.company
+        b.raw
+            .company
             .len()
-            .cmp(&a.company.len())
-            .then(a.company.cmp(&b.company))
+            .cmp(&a.raw.company.len())
+            .then(a.raw.company.cmp(&b.raw.company))
     });
     probably_records.sort_by(|a, b| {
-        a.company
-            .cmp(&b.company)
-            .then(b.name.len().cmp(&a.name.len()))
+        a.raw
+            .company
+            .cmp(&b.raw.company)
+            .then(b.raw.name.len().cmp(&a.raw.name.len()))
     });
     possibility_records.sort_by(|a, b| {
-        a.company
-            .cmp(&b.company)
-            .then(b.name.len().cmp(&a.name.len()))
+        a.raw
+            .company
+            .cmp(&b.raw.company)
+            .then(b.raw.name.len().cmp(&a.raw.name.len()))
     });
-    improbability_records.sort_by(|a, b| a.company.cmp(&b.company));
+    improbability_records.sort_by(|a, b| a.raw.company.cmp(&b.raw.company));
 
     if err_log.is_empty() {
-        let intermediate_record_group = IntermediateRecordGroup {
+        let category_group = CategoryGroup {
             certainty_records,
             probably_records,
             possibility_records,
             improbability_records,
         };
 
-        let option_record_group_path =
-            crate::utils::paths::history_sorted_path(&app_handle.path_resolver(), uuid);
-        if let Some(record_group_path) = option_record_group_path {
-            let record_group_data = serde_json::to_string(&intermediate_record_group).unwrap();
-            let mut f = File::create(record_group_path).unwrap();
+        if let Some(record_group_path) =
+            paths::history_sorted_path(&app_handle.path_resolver(), uuid)
+        {
+            let record_group_data = serde_json::to_string(&category_group).unwrap();
+            let mut f = File::create(&record_group_path).unwrap();
             f.write_all(record_group_data.as_bytes()).unwrap();
+            *state.path.categories_path.write().unwrap() = record_group_path;
         }
 
-        Ok(intermediate_record_group)
+        Ok(category_group)
     } else {
-        message(Some(&parent_window), "注意", err_log.clone());
         Err(err_log)
     }
 }
 
 #[command]
 pub fn receive_modified_records(
-    mut records: Vec<IntermediateRecord>,
+    records: Vec<BaseRecord>,
     uuid: &str,
     with_bom: bool,
     state: tauri::State<'_, AppState>,
     app_handle: AppHandle,
 ) -> Result<String, String> {
-    // create traditional to simplified handler
-    let t2s_handler = T2SHandler::new();
-    let t2s_convert = |s: &str| t2s_handler.convert(s);
     // create matcher
-    let record_matcher = RecordMatcher::new(&state.rule.read().unwrap());
-    let get_parsed_company = |r: &str| record_matcher.get_parsed_company(r);
+    let record_matcher = CategoryMatcher::new(&state.rule.read().unwrap());
+    let fff = |_: &str, _: &str| false;
+    let match_category = |r1: &str, r2: &str| record_matcher.match_category(r1, r2, &fff);
 
-    for record in records.iter_mut() {
-        // record.parsed_company.is_none() || record.parsed_company.is_some_and(|&c| c.all.is_empty())
-        if record.parsed_company.is_none()
-            || (record.parsed_company.is_some()
-                && record.parsed_company.as_ref().unwrap().all.is_empty())
-        {
-            // this record is added by user
-            record.update_info(&t2s_convert);
-            if let Some(category) = get_parsed_company(&record.info_t2s) {
-                record.set_parsed_company(category);
-            } else {
-                return Err(format!("无法识别的组织：{}", &record.company));
-            }
-        } else {
-            // user add record is only in the start of records
-            break;
+    // load records map indexed by index from record_group_path
+    let mut records_map = HashMap::new();
+    let record_group_path = &*state.path.categories_path.read().unwrap();
+    let mut f = File::open(record_group_path).unwrap();
+    let mut record_group_data = String::new();
+    f.read_to_string(&mut record_group_data).unwrap();
+    let category_group: CategoryGroup = serde_json::from_str(&record_group_data).unwrap();
+    for record in category_group.certainty_records {
+        records_map.insert(record.raw.index, record);
+    }
+    for record in category_group.probably_records {
+        records_map.insert(record.raw.index, record);
+    }
+    for record in category_group.possibility_records {
+        records_map.insert(record.raw.index, record);
+    }
+    for record in category_group.improbability_records {
+        records_map.insert(record.raw.index, record);
+    }
+
+    // update records
+    let mut modified_records = Vec::new();
+
+    for record in records.iter() {
+        // put record into modified_records
+        if records_map.contains_key(&record.index) {
+            let category = records_map.get(&record.index).unwrap().clone();
+
+            let modified_record =
+                if category.now.name != record.name || category.now.company != record.company {
+                    // category has been modified, rematch it
+                    let category_result = match_category(&record.name, &record.company);
+                    ModifiedCategory {
+                        raw: category.raw,
+                        old: category.now,
+                        new: record.clone(),
+                        cleaned: match category_result {
+                            CategoryResult::Certainty(cleaned) => Some(cleaned),
+                            CategoryResult::Probably(_) => category.cleaned,
+                            CategoryResult::Possibility(_) => category.cleaned,
+                            CategoryResult::Improbability => category.cleaned,
+                        },
+                        flag: category.flag,
+                    }
+                    // extract modified string as new replace rule
+                    // TODO!
+                } else {
+                    ModifiedCategory {
+                        raw: category.raw,
+                        old: category.now,
+                        new: record.clone(),
+                        cleaned: category.cleaned,
+                        flag: category.flag,
+                    }
+                };
+            modified_records.push(modified_record);
         }
     }
+
+    modified_records.sort_by(|a, b| a.raw.index.cmp(&b.raw.index));
 
     if let Some(accepted_records_path) =
         paths::history_accepted_path(&app_handle.path_resolver(), uuid)
     {
-        let data = serde_json::to_string(&records).unwrap();
+        // save modified_records to accepted_records_path in json format
+        let data = serde_json::to_string(&modified_records).unwrap();
         let mut f = File::create(&accepted_records_path).unwrap();
         f.write_all(data.as_bytes()).unwrap();
 
+        // save the "new" in modified_records to accepted_records_csv_path in csv format
         if let Some(accepted_records_csv_path) =
             paths::history_accepted_csv_path(&app_handle.path_resolver(), uuid)
         {
@@ -249,8 +293,8 @@ pub fn receive_modified_records(
                 f.write_all(content.as_bytes()).unwrap();
             }
         }
-
-        Ok(accepted_records_path.to_str().unwrap().to_string())
+        *state.path.accepted_categories_path.write().unwrap() = accepted_records_path;
+        Ok("".to_string())
     } else {
         Err("无法创建文件".to_string())
     }

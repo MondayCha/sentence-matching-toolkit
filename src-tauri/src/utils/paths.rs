@@ -78,12 +78,6 @@ pub fn history_accepted_class_path(path_resolver: &PathResolver, uuid: &str) -> 
     Some(history_today_dir.join(format!("4_accepted_class_records_{}.json", current)))
 }
 
-/// $APP_DATA/dict_handler.json
-pub fn dict_handler_path(path_resolver: &PathResolver) -> Option<PathBuf> {
-    let app_data_dir = path_resolver.app_data_dir()?;
-    Some(app_data_dir.join("dict_handler.json"))
-}
-
 /// $APP_DATA/rule.json
 pub fn rule_path(path_resolver: &PathResolver) -> Option<PathBuf> {
     let app_data_dir = path_resolver.app_data_dir()?;

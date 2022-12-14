@@ -5,7 +5,6 @@ import { platform } from '@tauri-apps/api/os';
 import {
   getDictSize,
   getSubCategoryInfo,
-  SourceRecord,
   startCategoryMatching,
   loadMatchingRule,
   startSubCategoryMatching,
@@ -53,11 +52,6 @@ export const navIndexState = atom({
 export const appStatusState = atom({
   key: 'appStatusState',
   default: AppStatus.Idle,
-});
-
-export const tempFilePathState = atom({
-  key: 'tempFilePathState',
-  default: '',
 });
 
 // Matching Rule Name
@@ -111,8 +105,8 @@ export const themeState = atom({
       // await new Promise((res) => setTimeout(res, 1000 * 5));
       const val = await store.get(THEME_SETTING_KEY);
       if (val !== 'light' && val !== 'dark') {
-        const isDarkMode = window.matchMedia(DARK_SCHEME_QUERY).matches;
-        return isDarkMode ? 'dark' : 'light';
+        const darkMode = window.matchMedia(DARK_SCHEME_QUERY).matches;
+        return darkMode ? 'dark' : 'light';
       }
       return val as ThemeMode;
     },
@@ -125,7 +119,7 @@ export const dictSizeState = atom({
   default: selector({
     key: 'dictionarySizeState/default',
     get: async ({ get }) => {
-      const path = get(sourceFilePathState);
+      const rule = get(matchingRuleState);
       const val = await getDictSize();
       return val as number;
     },
@@ -175,9 +169,8 @@ export const getCategory = selector({
 export const getSubCategory = selector({
   key: 'subCategoryState',
   get: async ({ get }) => {
-    const path = get(tempFilePathState);
     const uuid = get(getUuid);
-    const sub_category = startSubCategoryMatching(path, uuid);
+    const sub_category = startSubCategoryMatching(uuid);
     log.info('getSubCategory', sub_category);
     return sub_category;
   },

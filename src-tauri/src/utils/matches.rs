@@ -4,26 +4,29 @@ use serde::{Deserialize, Serialize};
 use std::path::PathBuf;
 use tauri::regex::Regex;
 
-use crate::handler::{
-    dict_handler::DictHandler,
-    jieba_handler::JiebaHandler,
-    regex_handler::{RegexMatchHandler, RegexNumHandler},
+use crate::{
+    handler::{
+        dict_handler::DictHandler,
+        jieba_handler::JiebaHandler,
+        regex_handler::{RegexMatchHandler, RegexNumHandler},
+    },
+    utils::classes::{IntermediateClassInfo, SubCategoryCSV, SubCategoryRegex, SubCategoryRule},
+    utils::records::category::CategoryResult,
+    utils::records::sub_category::{SubCategoryFlag, SubCategoryNameType},
+    utils::records::{category::CleanedCategory, sub_category::CleanedSubCategory},
+    utils::rules::MatchingRule,
 };
 
-use super::{
-    classes::{IntermediateClassInfo, SubCategoryCSV, SubCategoryRegex, SubCategoryRule},
-    records::{ParsedCompany, RecordMatchingResult},
-    rules::MatchingRule,
-};
-
-pub struct RecordMatcher {
+pub struct CategoryMatcher {
+    category: String,
     filter: RegexNumHandler,
     matcher: RegexMatchHandler,
 }
 
-impl RecordMatcher {
+impl CategoryMatcher {
     pub fn new(rule: &MatchingRule) -> Self {
         Self {
+            category: rule.rule_name.clone(),
             filter: RegexNumHandler::new(),
             matcher: RegexMatchHandler::new(rule),
         }
@@ -31,69 +34,61 @@ impl RecordMatcher {
 
     pub fn match_category(
         &self,
-        record: &str,
-        dict_handler: &DictHandler,
-    ) -> (RecordMatchingResult, ParsedCompany) {
-        let record = self.filter.replace_all(record);
+        raw_name: &str,
+        raw_company: &str,
+        contains_sub_category: &dyn Fn(&str, &str) -> bool,
+    ) -> CategoryResult {
+        let split_code = '⌀';
+        let filtered_name = raw_name.replace(split_code, "");
+        let filtered_company = raw_company.replace(split_code, "");
+        let filtered_record = self.filter.replace_all(&format!(
+            "{} {} {}",
+            filtered_name, split_code, filtered_company
+        ));
 
-        if self.matcher.match_accept(&record) {
-            match self.matcher.find_accept(&record) {
-                Some(category_info) => {
-                    println!("Matched category: {}", category_info.name);
-                    if self.matcher.match_reject(&category_info.name)
-                        || self.matcher.match_reject_city(&record)
+        if self.matcher.match_accept(&filtered_record) {
+            match self.matcher.get_target_and_other(&filtered_record) {
+                Some((target, other)) => {
+                    println!("Matched category: {}", &target);
+                    let residues = other.split(split_code).collect::<Vec<&str>>();
+                    if residues.len() != 2 {
+                        println!("Residue length is not 2: {:?}", residues);
+                        return CategoryResult::Improbability;
+                    }
+                    let cleaned_category = CleanedCategory {
+                        company: target.clone(),
+                        residue_1: residues[0].to_string(),
+                        residue_2: residues[1].to_string(),
+                    };
+                    if self.matcher.match_reject(&target)
+                        || self.matcher.match_reject_city(&filtered_record)
                     {
-                        (RecordMatchingResult::Possibility, category_info)
+                        return CategoryResult::Possibility(cleaned_category);
                     } else {
-                        (RecordMatchingResult::Certainty, category_info)
+                        return CategoryResult::Certainty(cleaned_category);
                     }
                 }
-                None => (
-                    RecordMatchingResult::Improbability,
-                    ParsedCompany::default(),
-                ),
+                None => CategoryResult::Improbability,
             }
         } else {
-            if dict_handler.can_match_key(&record) {
-                (RecordMatchingResult::Probably, ParsedCompany::default())
+            if contains_sub_category(&filtered_name, &filtered_company) {
+                CategoryResult::Probably(CleanedCategory {
+                    company: self.category.clone(),
+                    residue_1: filtered_name,
+                    residue_2: filtered_company,
+                })
             } else {
-                (
-                    RecordMatchingResult::Improbability,
-                    ParsedCompany::default(),
-                )
+                CategoryResult::Improbability
             }
         }
     }
-
-    pub fn get_parsed_company(&self, record: &str) -> Option<ParsedCompany> {
-        self.matcher.find_accept(record)
-    }
-
-    pub fn remove_category(&self, record: &str) -> String {
-        let mut record = record.to_string();
-        while let Some((start, end)) = self.matcher.find_accept_range(&record) {
-            println!("Removing category: {}", &record[start..end]);
-            record.replace_range(start..end, "");
-        }
-        record
-    }
-
-    pub fn get_chinese(&self, text: &str) -> String {
-        self.matcher.get_chinese(text)
-    }
-}
-
-pub enum SubCategoryMatchResult {
-    Normal(f32, IntermediateClassInfo),
-    Incomplete,
-    Suspension,
-    Mismatch,
 }
 
 pub struct SubCategoryExtracter {
     re_grade: Option<Regex>,
     re_sequence: Option<Regex>,
     re_sequence_num: Option<Regex>,
+    re_chinese: Regex,
 }
 
 impl SubCategoryExtracter {
@@ -102,6 +97,7 @@ impl SubCategoryExtracter {
             re_grade: grade.map(|s| Regex::new(s).unwrap()),
             re_sequence: sequence.map(|s| Regex::new(s).unwrap()),
             re_sequence_num: sequence_num.map(|s| Regex::new(s).unwrap()),
+            re_chinese: Regex::new("[\\u4e00-\\u9fa5]*").unwrap(),
         }
     }
 
@@ -123,19 +119,18 @@ impl SubCategoryExtracter {
         }
     }
 
-    pub fn get_sequence(&self, record: &str) -> Option<String> {
-        if let Some(re) = &self.re_sequence {
-            re.captures(record)
-                .and_then(|cap| cap.get(0))
-                .map(|m| m.as_str().to_string())
-        } else {
-            None
-        }
-    }
+    // pub fn get_sequence(&self, record: &str) -> Option<String> {
+    //     if let Some(re) = &self.re_sequence {
+    //         re.captures(record)
+    //             .and_then(|cap| cap.get(0))
+    //             .map(|m| m.as_str().to_string())
+    //     } else {
+    //         None
+    //     }
+    // }
 
     pub fn get_sequence_num(&self, record: &str) -> Option<String> {
         if let Some(re) = &self.re_sequence_num {
-            println!("Before get_sequence_num: {}", record);
             re.find(record).map(|m| m.as_str().to_string())
         } else {
             None
@@ -148,6 +143,12 @@ impl SubCategoryExtracter {
         } else {
             record.to_string()
         }
+    }
+
+    pub fn get_chinese(&self, text: &str) -> String {
+        self.re_chinese
+            .find(text)
+            .map_or("".to_string(), |m| m.as_str().to_string())
     }
 }
 
@@ -209,7 +210,7 @@ impl SubCategoryMatcher {
         }
     }
 
-    pub fn replace(&self, record: &str) -> String {
+    fn replace(&self, record: &str) -> String {
         let mut record = record.to_string();
         // replace all str in regex.replace.ignore to empty
         if let Some(ignore_strs) = &self.regex.replace.ignore {
@@ -251,29 +252,51 @@ impl SubCategoryMatcher {
         record
     }
 
-    pub fn match_sub_category(&self, record: &str) -> SubCategoryMatchResult {
-        let option_record_grade = self.extracter.get_grade(record);
-        let record_without_grade = self.extracter.remove_all_grades(record);
+    pub fn match_sub_category(
+        &self,
+        record: &str,
+        get_name_from_dict: &dyn Fn(&str) -> Option<String>,
+    ) -> CleanedSubCategory {
+        let record = self.replace(&record);
+
+        let option_record_grade = self.extracter.get_grade(&record);
+        let record_without_grade = self.extracter.remove_all_grades(&record);
+
         let option_record_sequence_num = self.extracter.get_sequence_num(&record_without_grade);
         let record_identity = self.extracter.remove_all_sequences(&record_without_grade);
 
-        println!(
-            "Matching sub category: {} {:?} {:?}",
-            &record_identity, &option_record_grade, &option_record_sequence_num
-        );
-
         let results = self.corpus.search(&record_identity, 0.01);
+
+        let mut cleaned_sub_category = CleanedSubCategory::default();
+        cleaned_sub_category.replaced_info = record.clone();
+
+        // try to get name from dict
+        if let Some(author) = get_name_from_dict(&record_identity) {
+            cleaned_sub_category.name = author;
+            cleaned_sub_category.name_type = SubCategoryNameType::Dict;
+        } else {
+            cleaned_sub_category.name = self.extracter.get_chinese(&record);
+            cleaned_sub_category.name_type = SubCategoryNameType::Calc;
+        };
+
         if results.is_empty() {
+            println!("Mismatch or Incomplete sub category: {:?}", &record);
             if option_record_grade.is_some() || option_record_sequence_num.is_some() {
-                return SubCategoryMatchResult::Incomplete;
+                if cleaned_sub_category.name_type == SubCategoryNameType::Dict {
+                    cleaned_sub_category.user_input_class =
+                        record.replace(&cleaned_sub_category.name, "");
+                } else {
+                    cleaned_sub_category.user_input_class = record.clone();
+                }
+                cleaned_sub_category.flag = SubCategoryFlag::Incomplete;
+                return cleaned_sub_category;
             }
-            return SubCategoryMatchResult::Mismatch;
+            return cleaned_sub_category;
         }
 
         let mut i = 0;
         while i < results.len() {
             let search_result = &results[i];
-            println!("{} Case sub category: {}", i, &search_result.text);
             let category_list = &self.categories.get(&search_result.text).unwrap();
             let mut j = 0;
             while j < category_list.len() {
@@ -282,7 +305,6 @@ impl SubCategoryMatcher {
                     if self.sub_category_csv.available_grade.contains(record_grade) {
                         if let Some(grade) = &category.grade {
                             if !grade.eq(record_grade) {
-                                println!("Grade not match: {} != {}", grade, record_grade);
                                 j += 1;
                                 continue;
                             }
@@ -297,40 +319,54 @@ impl SubCategoryMatcher {
                     {
                         if let Some(sequence) = &category.sequence {
                             if !sequence.eq(record_sequence_num) {
-                                println!(
-                                    "Sequence not match: {} != {}",
-                                    sequence, record_sequence_num
-                                );
                                 j += 1;
                                 continue;
                             }
                         } else {
-                            println!("Sequence not match: None != {}", record_sequence_num);
                             j += 1;
                             continue;
                         }
                     }
                 }
-                return SubCategoryMatchResult::Normal(
-                    search_result.similarity.clone(),
-                    category.clone(),
-                );
+
+                let (splitted_name, splitted_class) =
+                    self.split_name_and_subcategory(&record, &category.name);
+
+                cleaned_sub_category.flag = SubCategoryFlag::Normal;
+                cleaned_sub_category.matched_class = category.name.clone();
+                cleaned_sub_category.user_input_class = splitted_class;
+                cleaned_sub_category.simularity = search_result.similarity;
+
+                if cleaned_sub_category.name_type == SubCategoryNameType::Calc {
+                    cleaned_sub_category.name = splitted_name;
+                }
+
+                println!("Normal sub category: {:?}", &category.name);
+                return cleaned_sub_category;
             }
             i += 1;
         }
-        SubCategoryMatchResult::Suspension
+
+        println!("Suspension sub category: {:?}", &record);
+        if cleaned_sub_category.name_type == SubCategoryNameType::Dict {
+            cleaned_sub_category.user_input_class = record.replace(&cleaned_sub_category.name, "");
+        } else {
+            cleaned_sub_category.user_input_class = record;
+        }
+
+        cleaned_sub_category.flag = SubCategoryFlag::Suspension;
+        cleaned_sub_category
     }
 
     // split info into name and subcategory
-    pub fn split_name_and_subcategory(&self, info: &str, subcategory: &str) -> (String, String) {
+    fn split_name_and_subcategory(&self, info: &str, target_category: &str) -> (String, String) {
         let info_vec = self.jieba.cut(info);
-        println!("info_vec: {:?}", info_vec);
         let mut ans_cadidates = vec![];
         for split_point in 0..info_vec.len() {
             let head_candidate = info_vec[0..split_point].join("");
-            let head_sim = strsim::sorensen_dice(&head_candidate, &subcategory);
+            let head_sim = strsim::sorensen_dice(&head_candidate, &target_category);
             let end_candidate = info_vec[split_point..].join("");
-            let end_sim = strsim::sorensen_dice(&end_candidate, &subcategory);
+            let end_sim = strsim::sorensen_dice(&end_candidate, &target_category);
             if head_sim > end_sim {
                 ans_cadidates.push((head_sim, end_candidate, head_candidate));
             } else {

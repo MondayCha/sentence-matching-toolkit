@@ -8,28 +8,28 @@ import { getSourceFilename, getSubCategory } from '@/middleware/store';
 import Searching from '@/assets/illustrations/Searching';
 import SubCategoryButtonGroup, { SubListIndex } from './SubCategoryButtonGroup';
 import CategoryWindow from '../Category/CategoryWindow';
-import { SourceRecord } from '@/api/core';
 import { WindowProps } from '../Category';
 import SubCategoryWindow from './SubCategoryWindow';
 import { useThemeContext } from '@/components/theme';
+import { BaseRecord } from '@/api/core';
 
 const SubCategory: FC = () => {
   const { themeMode } = useThemeContext();
   const sourceBaseName = useRecoilValue(getSourceFilename);
   const subCategoryLoadable = useRecoilValueLoadable(getSubCategory);
   const [listIndex, setListIndex] = useState(SubListIndex.Normal);
-  const [normalList, setNormalList] = useState<SourceRecord[]>([]);
-  const [incompleteList, setIncompleteList] = useState<SourceRecord[]>([]);
-  const [suspensionList, setSuspensionList] = useState<SourceRecord[]>([]);
-  const [mismatchList, setMismatchList] = useState<SourceRecord[]>([]);
-  const [recycledList, setRecycledList] = useState<SourceRecord[]>([]);
+  const [normalList, setNormalList] = useState<BaseRecord[]>([]);
+  const [incompleteList, setIncompleteList] = useState<BaseRecord[]>([]);
+  const [suspensionList, setSuspensionList] = useState<BaseRecord[]>([]);
+  const [mismatchList, setMismatchList] = useState<BaseRecord[]>([]);
+  const [recycledList, setRecycledList] = useState<BaseRecord[]>([]);
 
   useEffect(() => {
     if (subCategoryLoadable.state === 'hasValue' && subCategoryLoadable.contents !== undefined) {
-      setNormalList(subCategoryLoadable.contents.normalRecords);
-      setSuspensionList(subCategoryLoadable.contents.suspensionRecords);
-      setIncompleteList(subCategoryLoadable.contents.incompleteRecords);
-      setMismatchList(subCategoryLoadable.contents.mismatchRecords);
+      setNormalList(subCategoryLoadable.contents.normalRecords.map((item) => item.sub));
+      setSuspensionList(subCategoryLoadable.contents.suspensionRecords.map((item) => item.sub));
+      setIncompleteList(subCategoryLoadable.contents.incompleteRecords.map((item) => item.sub));
+      setMismatchList(subCategoryLoadable.contents.mismatchRecords.map((item) => item.sub));
     }
   }, [subCategoryLoadable]);
 
@@ -98,7 +98,7 @@ const SubCategory: FC = () => {
             <div className="mdc-body grow flex flex-col gap-4 overflow-hidden justify-between items-end">
               <div className="mdc-item py-12 grow">
                 <div className="flex h-full w-full flex-col items-center justify-center space-y-3 ">
-                  <Searching isDark={themeMode === 'dark'} />
+                  <Searching theme={themeMode} />
                   <p className="mdc-text-sm text-center">正在匹配</p>
                 </div>
               </div>
@@ -107,7 +107,7 @@ const SubCategory: FC = () => {
             <div className="mdc-body grow flex flex-col gap-4 overflow-hidden justify-between items-end">
               <div className="mdc-item py-12 grow">
                 <div className="flex h-full w-full flex-col items-center justify-center space-y-3 ">
-                  <IconPending isDark={themeMode === 'dark'} />
+                  <IconPending theme={themeMode} />
                   <p className="mdc-text-sm text-center">应用空闲，可在「设置」修改班级信息</p>
                 </div>
               </div>

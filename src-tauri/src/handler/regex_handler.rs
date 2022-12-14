@@ -1,6 +1,6 @@
 use tauri::regex::Regex;
 
-use crate::utils::{records::ParsedCompany, rules::MatchingRule};
+use crate::utils::rules::MatchingRule;
 
 pub struct RegexNumHandler {
     re_num_0: Regex,
@@ -51,7 +51,6 @@ pub struct RegexMatchHandler {
     re_accept: Regex,
     re_reject: Regex,
     re_reject_city: Regex,
-    re_chinese: Regex,
 }
 
 impl RegexMatchHandler {
@@ -64,7 +63,6 @@ impl RegexMatchHandler {
             re_accept: Regex::new(&rule.category.accept_pattern).unwrap(),
             re_reject: Regex::new(&rule.category.accept_filter_pattern).unwrap(),
             re_reject_city: Regex::new(&rule.category.reject_pattern).unwrap(),
-            re_chinese: Regex::new("[\\u4e00-\\u9fa5]*").unwrap(),
         }
     }
 
@@ -80,19 +78,13 @@ impl RegexMatchHandler {
         self.re_reject_city.is_match(text)
     }
 
-    pub fn find_accept(&self, text: &str) -> Option<ParsedCompany> {
-        self.re_accept
-            .find(text)
-            .map(|m| (ParsedCompany::new(text, m.as_str(), m.start(), m.end())))
-    }
-
-    pub fn find_accept_range(&self, text: &str) -> Option<(usize, usize)> {
-        self.re_accept.find(text).map(|m| ((m.start(), m.end())))
-    }
-
-    pub fn get_chinese(&self, text: &str) -> String {
-        self.re_chinese
-            .find(text)
-            .map_or("".to_string(), |m| m.as_str().to_string())
+    pub fn get_target_and_other(&self, text: &str) -> Option<(String, String)> {
+        // remove all substring matching the regex from text\
+        self.re_accept.find(text).map(|m| {
+            (
+                m.as_str().to_string(),
+                self.re_accept.replace_all(text, "").to_string(),
+            )
+        })
     }
 }

@@ -9,38 +9,46 @@ export const enum AppStatus {
   CanExport2,
 }
 
-export interface SourceRecord {
+export interface BaseRecord {
   index: number;
   timestamp: string;
   location: string;
   name: string;
   company: string;
-  info: string;
-  infoT2s: string;
-  infoJieba: string[];
-  parsedName?: string;
-  parsedClass?: [number, string, string];
-  matchedClass?: string;
-  parsedCompany?: {
-    all: string;
-    name: string;
-    start: number;
-    end: number;
+}
+
+export interface CategoryItem {
+  raw: BaseRecord;
+  now: BaseRecord;
+  cleaned?: {
+    company: string;
+    residue_1: string;
+    residue_2: string;
   };
+  flag: 'Certainty' | 'Probably' | 'Possibility' | 'Improbability';
 }
 
 export interface CategoryGroup {
-  certaintyRecords: SourceRecord[];
-  probablyRecords: SourceRecord[];
-  possibilityRecords: SourceRecord[];
-  improbabilityRecords: SourceRecord[];
+  certaintyRecords: CategoryItem[];
+  probablyRecords: CategoryItem[];
+  possibilityRecords: CategoryItem[];
+  improbabilityRecords: CategoryItem[];
+}
+
+export interface SubCategoryItem {
+  raw: BaseRecord;
+  cat: BaseRecord;
+  sub: BaseRecord;
+  matchedClass?: string;
+  simularity: number;
+  flag: 'Normal' | 'Incomplete' | 'Suspension' | 'Mismatch';
 }
 
 export interface SubCategoryGroup {
-  normalRecords: SourceRecord[];
-  incompleteRecords: SourceRecord[];
-  suspensionRecords: SourceRecord[];
-  mismatchRecords: SourceRecord[];
+  normalRecords: SubCategoryItem[];
+  incompleteRecords: SubCategoryItem[];
+  suspensionRecords: SubCategoryItem[];
+  mismatchRecords: SubCategoryItem[];
 }
 
 export interface SubCategoyrCSV {
@@ -58,12 +66,12 @@ export const startCategoryMatching = async (path: string, uuid: string) =>
   (await invoke('start_category_matching', { path, uuid })) as CategoryGroup;
 
 // start_sub_category_matching
-export const startSubCategoryMatching = async (path: string, uuid: string) =>
-  (await invoke('start_sub_category_matching', { path, uuid })) as SubCategoryGroup;
+export const startSubCategoryMatching = async (uuid: string) =>
+  (await invoke('start_sub_category_matching', { uuid })) as SubCategoryGroup;
 
 // receive_modified_records
 export const receiveModifiedRecords = async (
-  records: SourceRecord[],
+  records: BaseRecord[],
   uuid: string,
   withBom: boolean
 ) => (await invoke('receive_modified_records', { records, uuid, withBom })) as string;

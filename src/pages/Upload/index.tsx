@@ -89,7 +89,7 @@ const Home: FC = () => {
             className="flex h-full w-full flex-col items-center justify-center space-y-3 cursor-pointer"
             onClick={selectFile}
           >
-            <IconLoadFile className="h-64 lg:h-72" isDark={themeMode === 'dark'} />
+            <IconLoadFile className="h-64 lg:h-72" theme={themeMode} />
             <div>
               <p className="mdc-text-sm text-center">
                 {!filename ? (
