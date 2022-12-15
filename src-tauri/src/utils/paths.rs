@@ -1,91 +1,123 @@
-use std::path::PathBuf;
+use anyhow::{anyhow, Result};
+use std::path::{Path, PathBuf};
 use tauri::PathResolver;
 
-/// $APP_CACHE/cache
-pub fn cache_dir(path_resolver: &PathResolver) -> Option<PathBuf> {
-    let app_cache_dir_option = path_resolver.app_cache_dir();
-    if let Some(app_cache_dir) = app_cache_dir_option {
-        let dict_dir = app_cache_dir.join("cache");
-        Some(dict_dir)
-    } else {
-        None
-    }
+fn get_current_time() -> String {
+    use chrono::prelude::*;
+    let now: DateTime<Utc> = Utc::now();
+    now.format("%H_%M_%S").to_string()
 }
 
-/// $APP_DATA/history
-pub fn history_dir(path_resolver: &PathResolver) -> Option<PathBuf> {
-    let app_data_dir_option = path_resolver.app_data_dir();
-    if let Some(app_data_dir) = app_data_dir_option {
-        let history_dir = app_data_dir.join("history");
-        Some(history_dir)
-    } else {
-        None
-    }
+pub fn get_filename_from_path(path: &Path) -> String {
+    path.file_name()
+        .map(|os_s| {
+            os_s.to_str()
+                .map(|s| s.to_string())
+                .unwrap_or_else(|| "unknown".to_string())
+        })
+        .unwrap_or_else(|| "unknown".to_string())
 }
 
-/// $APP_DATA/history/2022-11-25-15-00-00
-pub fn history_uuid_dir(path_resolver: &PathResolver, uuid: &str) -> Option<PathBuf> {
-    let history_dir = history_dir(path_resolver)?;
-    Some(history_dir.join(uuid))
+pub fn pathbuf_to_string(pathbuf: &PathBuf) -> Result<String> {
+    let str = pathbuf
+        .clone()
+        .into_os_string()
+        .into_string()
+        .map_err(|os_str| anyhow!("Convert os_string into string failed: {:?}", os_str))?;
+    Ok(str)
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////
+//////////////////////////          Folders           /////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////////////
+
+/// $APP_CACHE/history/
+pub fn history_dir(path_resolver: &PathResolver) -> Result<PathBuf> {
+    if let Some(app_data_dir) = path_resolver.app_cache_dir() {
+        Ok(app_data_dir.join("history"))
+    } else {
+        Err(anyhow!("无法生成历史文件夹路径"))
+    }
+}
+
+/// $APP_DATA/cache/
+pub fn cache_dir(path_resolver: &PathResolver) -> Result<PathBuf> {
+    if let Some(app_cache_dir) = path_resolver.app_data_dir() {
+        Ok(app_cache_dir.join("cache"))
+    } else {
+        Err(anyhow!("无法生成缓存文件夹路径"))
+    }
+}
+
+/// $APP_DATA/config/
+pub fn config_dir(path_resolver: &PathResolver) -> Result<PathBuf> {
+    if let Some(app_data_dir) = path_resolver.app_data_dir() {
+        Ok(app_data_dir.join("config"))
+    } else {
+        Err(anyhow!("无法生成配置文件夹路径"))
+    }
+}
+
+/// $APP_DATA/history/2022-11-25-15-00-00/
+pub fn history_uuid_dir(path_resolver: &PathResolver, uuid: &str) -> Result<PathBuf> {
+    let history_dir = history_dir(path_resolver)?;
+    Ok(history_dir.join(uuid))
+}
+
+///////////////////////////////////////////////////////////////////////////////////////
+//////////////////////////           Files            /////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////////////
 
 /// $APP_CACHE/cache/dict.txt
-pub fn dictionary_path(path_resolver: &PathResolver) -> Option<PathBuf> {
+pub fn dictionary_path(path_resolver: &PathResolver) -> Result<PathBuf> {
     let dict_dir = cache_dir(path_resolver)?;
-    Some(dict_dir.join("dict.txt"))
+    Ok(dict_dir.join("dict.txt"))
 }
 
 /// $APP_CACHE/cache/relations.json
-pub fn relations_path(path_resolver: &PathResolver) -> Option<PathBuf> {
+pub fn relations_path(path_resolver: &PathResolver) -> Result<PathBuf> {
     let dict_dir = cache_dir(path_resolver)?;
-    Some(dict_dir.join("relations.json"))
+    Ok(dict_dir.join("relations.json"))
 }
 
 /// $APP_DATA/history/2022-11-25-15-00-00/1_sorted_records.json
-pub fn history_sorted_path(path_resolver: &PathResolver, uuid: &str) -> Option<PathBuf> {
+pub fn history_sorted_path(path_resolver: &PathResolver, uuid: &str) -> Result<PathBuf> {
     let history_today_dir = history_uuid_dir(path_resolver, uuid)?;
-    let current = chrono::Local::now().format("%H_%M_%S").to_string();
-    Some(history_today_dir.join(format!("1_sorted_records_{}.json", current)))
+    Ok(history_today_dir.join(format!("1_sorted_records_{}.json", get_current_time())))
 }
 
 /// $APP_DATA/history/2022-11-25-15-00-00/2_accepted_records.json
-pub fn history_accepted_path(path_resolver: &PathResolver, uuid: &str) -> Option<PathBuf> {
+pub fn history_accepted_path(path_resolver: &PathResolver, uuid: &str) -> Result<PathBuf> {
     let history_today_dir = history_uuid_dir(path_resolver, uuid)?;
-    let current = chrono::Local::now().format("%H_%M_%S").to_string();
-    Some(history_today_dir.join(format!("2_accepted_records_{}.json", current)))
+    Ok(history_today_dir.join(format!("2_accepted_records_{}.json", get_current_time())))
 }
 
 /// $APP_DATA/history/2022-11-25-15-00-00/2_accepted_records.csv
-pub fn history_accepted_csv_path(path_resolver: &PathResolver, uuid: &str) -> Option<PathBuf> {
+pub fn history_accepted_csv_path(path_resolver: &PathResolver, uuid: &str) -> Result<PathBuf> {
     let history_today_dir = history_uuid_dir(path_resolver, uuid)?;
-    let current = chrono::Local::now().format("%H_%M_%S").to_string();
-    Some(history_today_dir.join(format!("2_accepted_records_{}.csv", current)))
+    Ok(history_today_dir.join(format!("2_accepted_records_{}.csv", get_current_time())))
 }
 
 /// $APP_DATA/history/2022-11-25-15-00-00/3_sorted_records.json
-pub fn history_sorted_class_path(path_resolver: &PathResolver, uuid: &str) -> Option<PathBuf> {
+pub fn history_sorted_class_path(path_resolver: &PathResolver, uuid: &str) -> Result<PathBuf> {
     let history_today_dir = history_uuid_dir(path_resolver, uuid)?;
-    let current = chrono::Local::now().format("%H_%M_%S").to_string();
-    Some(history_today_dir.join(format!("3_sorted_class_records_{}.json", current)))
+    Ok(history_today_dir.join(format!(
+        "3_sorted_class_records_{}.json",
+        get_current_time()
+    )))
 }
 
 /// $APP_DATA/history/2022-11-25-15-00-00/4_accepted_records.json
-pub fn history_accepted_class_path(path_resolver: &PathResolver, uuid: &str) -> Option<PathBuf> {
+pub fn history_accepted_class_path(path_resolver: &PathResolver, uuid: &str) -> Result<PathBuf> {
     let history_today_dir = history_uuid_dir(path_resolver, uuid)?;
-    let current = chrono::Local::now().format("%H_%M_%S").to_string();
-    Some(history_today_dir.join(format!("4_accepted_class_records_{}.json", current)))
+    Ok(history_today_dir.join(format!(
+        "4_accepted_class_records_{}.json",
+        get_current_time()
+    )))
 }
 
-/// $APP_DATA/rule.json
-pub fn rule_path(path_resolver: &PathResolver) -> Option<PathBuf> {
-    let app_data_dir = path_resolver.app_data_dir()?;
-    Some(app_data_dir.join("rule.json"))
-}
-
-/// $APP_DATA/rule_template.json
-pub fn rule_template_path(path_resolver: &PathResolver) -> Option<PathBuf> {
-    let app_data_dir = path_resolver.app_data_dir()?;
-    Some(app_data_dir.join("rule_template.json"))
+/// $APP_DATA/config/rule.json
+pub fn rule_path(path_resolver: &PathResolver) -> Result<PathBuf> {
+    let app_data_dir = config_dir(path_resolver)?;
+    Ok(app_data_dir.join("rule.json"))
 }

@@ -9,9 +9,11 @@ import {
   loadMatchingRule,
   startSubCategoryMatching,
   AppStatus,
+  BaseCategoryGroup,
 } from '@/api/core';
 import log from '@/middleware/logger';
 import { getTimestamp } from './utils';
+import { showMessage } from './message';
 
 // Tauri FileSystem Store
 export const store = new Store('.settings.dat');
@@ -43,6 +45,11 @@ export const platformState = atom({
   }),
 });
 
+export const getIsWin32 = selector({
+  key: 'platformState/isWin32',
+  get: ({ get }) => get(platformState) === 'win32',
+});
+
 // Navigation Bar State
 export const navIndexState = atom({
   key: 'navIndexState',
@@ -51,7 +58,13 @@ export const navIndexState = atom({
 
 export const appStatusState = atom({
   key: 'appStatusState',
-  default: AppStatus.Idle,
+  default: selector({
+    key: 'appStatusState/default',
+    get: async ({ get }) => {
+      const { name } = get(matchingRuleState);
+      return !!name ? (AppStatus.Idle as AppStatus) : (AppStatus.NoRule as AppStatus);
+    },
+  }),
 });
 
 // Matching Rule Name
@@ -64,10 +77,10 @@ export const matchingRuleState = atom({
         const res = await loadMatchingRule(null);
         log.info('matchingRuleState', res);
         return {
-          name: res as string,
+          name: res,
         };
       } catch (err) {
-        log.error('matchingRuleState err', err);
+        showMessage(err, 'error');
         return {
           name: '',
         };
@@ -145,15 +158,37 @@ export const getUuid = selector({
   },
 });
 
+export const categoryState = atom({
+  key: 'primaryCategoryState',
+  default: null as BaseCategoryGroup | null,
+});
+
+export const categoryUpdateTriggerState = atom({
+  key: 'primaryCategoryState/updateTrigger',
+  default: '',
+});
+
 // Call Category Matching API
 export const getCategory = selector({
-  key: 'primaryCategoryState',
+  key: 'primaryCategoryState/getCategory',
   get: async ({ get }) => {
     const { path } = get(sourceFilePathState);
     const uuid = get(getUuid);
-    const category = startCategoryMatching(path, uuid);
-    log.info('getCategory', category);
-    return category;
+    const appStatus = get(appStatusState);
+    const trigger = get(categoryUpdateTriggerState);
+
+    if (appStatus !== AppStatus.CanMatchCompany || !path) {
+      return null;
+    }
+
+    try {
+      const category = await startCategoryMatching(path, uuid);
+      log.info('getCategory', category, trigger);
+      return category;
+    } catch (err) {
+      showMessage(err, 'error');
+      return null;
+    }
   },
 });
 

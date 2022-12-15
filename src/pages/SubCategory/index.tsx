@@ -8,32 +8,37 @@ import { getSubCategory, sourceFilePathState } from '@/middleware/store';
 import Searching from '@/assets/illustrations/Searching';
 import SubCategoryButtonGroup, { SubListIndex } from './SubCategoryButtonGroup';
 import CategoryWindow from '../Category/CategoryWindow';
-import { WindowProps } from '../Category';
 import SubCategoryWindow from './SubCategoryWindow';
 import { useThemeContext } from '@/components/theme';
-import { BaseRecord } from '@/api/core';
+import { BaseRecord, SubCategoryItem } from '@/api/core';
+
+export interface SubWindowProps {
+  displayList: SubCategoryItem[];
+  actionTag: string;
+  actionHandler: (id: number) => void;
+}
 
 const SubCategory: FC = () => {
   const { themeMode } = useThemeContext();
   const sourceFilePath = useRecoilValue(sourceFilePathState);
   const subCategoryLoadable = useRecoilValueLoadable(getSubCategory);
   const [listIndex, setListIndex] = useState(SubListIndex.Normal);
-  const [normalList, setNormalList] = useState<BaseRecord[]>([]);
-  const [incompleteList, setIncompleteList] = useState<BaseRecord[]>([]);
-  const [suspensionList, setSuspensionList] = useState<BaseRecord[]>([]);
-  const [mismatchList, setMismatchList] = useState<BaseRecord[]>([]);
-  const [recycledList, setRecycledList] = useState<BaseRecord[]>([]);
+  const [normalList, setNormalList] = useState<SubCategoryItem[]>([]);
+  const [incompleteList, setIncompleteList] = useState<SubCategoryItem[]>([]);
+  const [suspensionList, setSuspensionList] = useState<SubCategoryItem[]>([]);
+  const [mismatchList, setMismatchList] = useState<SubCategoryItem[]>([]);
+  const [recycledList, setRecycledList] = useState<SubCategoryItem[]>([]);
 
   useEffect(() => {
     if (subCategoryLoadable.state === 'hasValue' && subCategoryLoadable.contents !== undefined) {
-      setNormalList(subCategoryLoadable.contents.normalRecords.map((item) => item.sub));
-      setSuspensionList(subCategoryLoadable.contents.suspensionRecords.map((item) => item.sub));
-      setIncompleteList(subCategoryLoadable.contents.incompleteRecords.map((item) => item.sub));
-      setMismatchList(subCategoryLoadable.contents.mismatchRecords.map((item) => item.sub));
+      setNormalList(subCategoryLoadable.contents.normalRecords);
+      setSuspensionList(subCategoryLoadable.contents.suspensionRecords);
+      setIncompleteList(subCategoryLoadable.contents.incompleteRecords);
+      setMismatchList(subCategoryLoadable.contents.mismatchRecords);
     }
   }, [subCategoryLoadable]);
 
-  const windowProps: WindowProps = useMemo(() => {
+  const windowProps: SubWindowProps = useMemo(() => {
     switch (listIndex) {
       case SubListIndex.Normal:
         return {

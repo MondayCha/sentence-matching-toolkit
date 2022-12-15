@@ -8,7 +8,7 @@ import Navibar from './Navibar';
 import { ThemeProvider } from '@/components/theme';
 import { RecoilRoot } from 'recoil';
 import { Suspense } from 'react';
-import Skeleton from '@/components/Skeleton';
+import Skeleton from '@/components/loading/Skeleton';
 
 function RouterView() {
   const AppRoutes = () => useRoutes(routerConfig);
@@ -18,7 +18,9 @@ function RouterView() {
         <ThemeProvider>
           <BrowserRouter>
             <Navibar delay={1500}>
-              <AppRoutes />
+              <Suspense fallback={<Skeleton />}>
+                <AppRoutes />
+              </Suspense>
             </Navibar>
           </BrowserRouter>
         </ThemeProvider>

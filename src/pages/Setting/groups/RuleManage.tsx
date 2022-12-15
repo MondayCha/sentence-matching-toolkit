@@ -1,6 +1,6 @@
 import clsx from 'clsx';
 import type { FC } from 'react';
-import ListItemButton from '../../../components/ListItemButton';
+import ListItemButton from '@/components/list/ListItemButton';
 import Agreement from '@/assets/descriptions/Agreement';
 import Focus from '@/assets/descriptions/Focus';
 import { useRecoilState } from 'recoil';
@@ -9,6 +9,7 @@ import { open as openDialog } from '@tauri-apps/api/dialog';
 import { loadMatchingRule, loadSubCategoryCSV } from '@/api/core';
 import log from '@/middleware/logger';
 import { useThemeContext } from '@/components/theme';
+import { showMessage } from '@/middleware/message';
 
 const RuleManage: FC = () => {
   const { themeMode } = useThemeContext();
@@ -42,7 +43,7 @@ const RuleManage: FC = () => {
         log.info('Rule selectFile', name);
       })
       .catch((err) => {
-        log.error('Rule selectFile', err);
+        showMessage(err, 'error');
         setMatchingRule({ name: '' });
       });
   };

@@ -25,6 +25,8 @@ rust-embed="6.4.2"
 chrono = "0.4.23"
 indexmap = {version = "1.9.2", features = ["serde-1"] }
 rayon = "1.6.1"
+thiserror = "1.0"
+anyhow = "1.0"
 
 [dependencies.tauri-plugin-store]
 git = "https://github.com/tauri-apps/tauri-plugin-store"

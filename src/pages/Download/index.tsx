@@ -2,7 +2,7 @@ import DownloadComputer from '@/assets/descriptions/DownloadComputer';
 import { useThemeContext } from '@/components/theme';
 import clsx from 'clsx';
 import type { FC } from 'react';
-import ListItemButton from '@/components/ListItemButton';
+import ListItemButton from '@/components/list/ListItemButton';
 
 const Download: FC = () => {
   const { themeMode } = useThemeContext();

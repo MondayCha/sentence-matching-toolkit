@@ -9,26 +9,29 @@ mod utils;
 
 use std::collections::HashMap;
 use std::fs;
-use std::io::Result;
 
-use api::{rule::AppState, *};
+use anyhow::Result;
 use tauri::PathResolver;
 use tauri_plugin_store::{PluginBuilder, StoreBuilder};
+
+use api::{rule::AppState, *};
 use utils::paths;
 
 fn setup_dirs(path_resolver: &PathResolver) -> Result<()> {
-    let option_cache_dir = paths::cache_dir(path_resolver);
-    if let Some(cache_dir) = option_cache_dir {
-        if !cache_dir.exists() {
-            fs::create_dir_all(&cache_dir)?;
-        }
+    let cache_dir = paths::cache_dir(path_resolver)?;
+    let history_dir = paths::history_dir(path_resolver)?;
+    let config_dir = paths::config_dir(path_resolver)?;
+
+    if !cache_dir.exists() {
+        fs::create_dir_all(&cache_dir)?;
     }
-    let option_history_dir = paths::history_dir(path_resolver);
-    if let Some(history_dir) = option_history_dir {
-        if !history_dir.exists() {
-            fs::create_dir_all(&history_dir)?;
-        }
+    if !history_dir.exists() {
+        fs::create_dir_all(&history_dir)?;
     }
+    if !config_dir.exists() {
+        fs::create_dir_all(&config_dir)?;
+    }
+
     Ok(())
 }
 

@@ -1,7 +1,24 @@
-use crate::utils::paths;
+use crate::utils::errors::AResult;
+use crate::utils::paths::{self, pathbuf_to_string};
+
+use anyhow::Result;
 use tauri::api::shell::open;
 use tauri::command;
 use tauri::{AppHandle, Manager, Window};
+
+fn call_open_history_dir(app_handle: &AppHandle) -> Result<()> {
+    let history_dir = paths::history_dir(&app_handle.path_resolver())?;
+    let history_dir_str = pathbuf_to_string(&history_dir)?;
+    open(&app_handle.shell_scope(), history_dir_str, None)?;
+    Ok(())
+}
+
+fn call_open_cache_dir(app_handle: &AppHandle) -> Result<()> {
+    let cache_dir = paths::cache_dir(&app_handle.path_resolver())?;
+    let cache_dir_str = pathbuf_to_string(&cache_dir)?;
+    open(&app_handle.shell_scope(), cache_dir_str, None)?;
+    Ok(())
+}
 
 /// Close Splashscreen.
 /// This command must be async so that it doesn't run on the main thread.
@@ -17,33 +34,15 @@ pub async fn close_splashscreen(window: Window) {
 }
 
 #[command]
-pub fn open_history_dir(app_handle: AppHandle) {
-    let history_dir = paths::history_dir(&app_handle.path_resolver())
-        .unwrap_or_default()
-        .into_os_string()
-        .into_string()
-        .unwrap();
-    match open(&app_handle.shell_scope(), history_dir, None) {
-        Ok(_) => {}
-        Err(e) => {
-            println!("open cache dir error: {:?}", e);
-        }
-    }
+pub fn open_history_dir(app_handle: AppHandle) -> AResult<()> {
+    call_open_history_dir(&app_handle)?;
+    Ok(())
 }
 
 #[command]
-pub fn open_cache_dir(app_handle: AppHandle) {
-    let cache_dir = paths::cache_dir(&app_handle.path_resolver())
-        .unwrap_or_default()
-        .into_os_string()
-        .into_string()
-        .unwrap();
-    match open(&app_handle.shell_scope(), cache_dir, None) {
-        Ok(_) => {}
-        Err(e) => {
-            println!("open cache dir error: {:?}", e);
-        }
-    }
+pub fn open_cache_dir(app_handle: AppHandle) -> AResult<()> {
+    call_open_cache_dir(&app_handle)?;
+    Ok(())
 }
 
 #[command]
