@@ -11,6 +11,8 @@ import {
   appStatusState,
   platformState,
   sourceFilePathState,
+  getIsWin32,
+  categoryState,
 } from '@/middleware/store';
 import clsx from 'clsx';
 import { FC, useMemo } from 'react';
@@ -32,12 +34,13 @@ export interface WindowProps {
 
 const Category: FC = () => {
   const [appStatus, setAppStatus] = useRecoilState(appStatusState);
-  const platform = useRecoilValue(platformState);
+  const isWin32 = useRecoilValue(getIsWin32);
   const setNavIndex = useSetRecoilState(navIndexState);
   const subCategoryInfo = useRecoilValue(subCategoryInfoState);
   const matchingRule = useRecoilValue(matchingRuleState);
   const uuid = useRecoilValue(getUuid);
   const categoryLoadable = useRecoilValueLoadable(getCategory);
+  const [category, setCategory] = useRecoilState(categoryState);
   const sourceFilePath = useRecoilValue(sourceFilePathState);
   const [isLoading, setIsLoading] = useState(false);
   const { themeMode } = useThemeContext();
@@ -50,22 +53,49 @@ const Category: FC = () => {
   const [recycledList, setRecycledList] = useState<BaseRecord[]>([]);
 
   useEffect(() => {
-    if (categoryLoadable.state === 'hasValue' && categoryLoadable.contents !== undefined) {
-      setCertaintyList(categoryLoadable.contents.certaintyRecords.map((item) => item.now));
-      setPossibilityList(categoryLoadable.contents.possibilityRecords.map((item) => item.now));
+    if (categoryLoadable.state === 'hasValue' && categoryLoadable.contents !== null) {
       if (subCategoryInfo.available) {
-        setProbablyList(categoryLoadable.contents.probablyRecords.map((item) => item.now));
-        setImprobabilityList(
-          categoryLoadable.contents.improbabilityRecords.map((item) => item.now)
-        );
+        setCategory({
+          shouldRerender: true,
+          certaintyList: categoryLoadable.contents.certaintyRecords.map((item) => item.now),
+          probablyList: categoryLoadable.contents.probablyRecords.map((item) => item.now),
+          possibilityList: categoryLoadable.contents.possibilityRecords.map((item) => item.now),
+          improbabilityList: categoryLoadable.contents.improbabilityRecords.map((item) => item.now),
+          recycledList: [],
+        });
       } else {
-        setImprobabilityList([
-          ...categoryLoadable.contents.probablyRecords.map((item) => item.now),
-          ...categoryLoadable.contents.improbabilityRecords.map((item) => item.now),
-        ]);
+        setCategory({
+          shouldRerender: true,
+          certaintyList: categoryLoadable.contents.certaintyRecords.map((item) => item.now),
+          probablyList: [],
+          possibilityList: categoryLoadable.contents.possibilityRecords.map((item) => item.now),
+          improbabilityList: [
+            ...categoryLoadable.contents.probablyRecords.map((item) => item.now),
+            ...categoryLoadable.contents.improbabilityRecords.map((item) => item.now),
+          ],
+          recycledList: [],
+        });
       }
+    } else {
+      setCategory((prev) => {
+        if (prev !== null) {
+          return { ...prev, shouldRerender: true };
+        } else {
+          return prev;
+        }
+      });
     }
   }, [categoryLoadable, subCategoryInfo]);
+
+  useEffect(() => {
+    if (category !== null && category.shouldRerender) {
+      setCertaintyList(category.certaintyList);
+      setProbablyList(category.probablyList);
+      setPossibilityList(category.possibilityList);
+      setImprobabilityList(category.improbabilityList);
+      setRecycledList(category.recycledList);
+    }
+  }, [category]);
 
   const windowProps: WindowProps = useMemo(() => {
     switch (listIndex) {
@@ -149,14 +179,22 @@ const Category: FC = () => {
   const handleSubmit = async () => {
     log.info('submit');
     setIsLoading(true);
-    receiveModifiedRecords(certaintyList, uuid, platform === 'win32')
+    setCategory({
+      shouldRerender: false,
+      certaintyList: certaintyList,
+      probablyList: probablyList,
+      possibilityList: possibilityList,
+      improbabilityList: improbabilityList,
+      recycledList: recycledList,
+    });
+    receiveModifiedRecords(certaintyList, uuid, isWin32)
       .then(() => {
         setIsLoading(false);
         if (subCategoryInfo.available) {
-          setAppStatus(AppStatus.CanMatch2);
+          setAppStatus(AppStatus.CanMatchClass);
           setNavIndex(NavIndex.SubCategory);
         } else {
-          setAppStatus(AppStatus.CanExport1);
+          setAppStatus(AppStatus.ExportWithoutClass);
           setNavIndex(NavIndex.Download);
         }
       })
@@ -165,6 +203,14 @@ const Category: FC = () => {
         setIsLoading(false);
       });
   };
+
+  const shouldShowList = useMemo(() => {
+    return categoryLoadable.state === 'hasValue' && appStatus >= AppStatus.CanMatchCompany;
+  }, [categoryLoadable, appStatus]);
+
+  const isMatching = useMemo(() => {
+    return !!sourceFilePath.filename && appStatus >= AppStatus.CanMatchCompany;
+  }, [sourceFilePath, appStatus]);
 
   return (
     <div className={clsx('mdc-paper')}>
@@ -179,7 +225,7 @@ const Category: FC = () => {
           单位匹配
         </h1>
         <p className="mdc-text-sm">
-          {categoryLoadable.state === 'hasValue' ? (
+          {shouldShowList ? (
             <>
               极大概率匹配<span className=" mdc-text-heightlight">{certaintyList.length}</span>
               条，
@@ -194,11 +240,13 @@ const Category: FC = () => {
             </>
           ) : (
             <>
-              {!!sourceFilePath.filename ? (
+              {isMatching ? (
                 <>
                   已导入「<span className="mdc-text-heightlight">{sourceFilePath.filename}</span>
                   」，正在匹配单位数据...
                 </>
+              ) : appStatus === AppStatus.NoRule ? (
+                <>请先在「设置」栏目下导入规则，再进行单位的匹配。</>
               ) : (
                 <>请先在「导入」栏目下选择文件，再进行单位的匹配。</>
               )}
@@ -207,7 +255,7 @@ const Category: FC = () => {
         </p>
         {/* {categoryLoadable.state === 'hasError' && <>{categoryLoadable.contents}</>} */}
       </div>
-      {categoryLoadable.state === 'hasValue' ? (
+      {shouldShowList ? (
         <div className="flex flex-col items-end w-full h-full space-y-4">
           <CategoryButtonGroup
             showInDict={subCategoryInfo.available}
@@ -247,12 +295,12 @@ const Category: FC = () => {
         </div>
       ) : (
         <>
-          {!sourceFilePath.filename ? (
+          {isMatching ? (
             <div className="mdc-body grow flex flex-col gap-4 overflow-hidden justify-between items-end">
               <div className="mdc-item py-12 grow">
                 <div className="flex h-full w-full flex-col items-center justify-center space-y-3 ">
-                  <IconPending theme={themeMode} />
-                  <p className="mdc-text-sm text-center">应用空闲，可在「设置」修改单位匹配规则</p>
+                  <Searching theme={themeMode} />
+                  <p className="mdc-text-sm text-center">正在匹配</p>
                 </div>
               </div>
             </div>
@@ -260,8 +308,8 @@ const Category: FC = () => {
             <div className="mdc-body grow flex flex-col gap-4 overflow-hidden justify-between items-end">
               <div className="mdc-item py-12 grow">
                 <div className="flex h-full w-full flex-col items-center justify-center space-y-3 ">
-                  <Searching theme={themeMode} />
-                  <p className="mdc-text-sm text-center">正在匹配</p>
+                  <IconPending theme={themeMode} />
+                  <p className="mdc-text-sm text-center">应用空闲，可在「设置」修改单位匹配规则</p>
                 </div>
               </div>
             </div>

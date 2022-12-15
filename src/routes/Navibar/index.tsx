@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo } from 'react';
 import type { ReactNode } from 'react';
-import { useRecoilState, useRecoilValue } from 'recoil';
+import { useRecoilState, useRecoilValue, useRecoilValueLoadable } from 'recoil';
 import clsx from 'clsx';
 import NavButton from './components/NavButton';
 import { useNavigate } from 'react-router-dom';
@@ -31,10 +31,8 @@ import Setting from '@/assets/navigations/Setting';
 
 const Navibar = ({ delay, children }: { delay: number; children: ReactNode }) => {
   // preload tauri store
-  const preloadAutoImportDict = useRecoilValue(dictState);
-  const preloadSubCategoryInfo = useRecoilValue(subCategoryInfoState);
-  const preloadMatchingRule = useRecoilValue(matchingRuleState);
-  const preloadPlatformState = useRecoilValue(platformState);
+  const preloadMatchingRule = useRecoilValueLoadable(matchingRuleState);
+  const preloadSubCategoryInfo = useRecoilValueLoadable(subCategoryInfoState);
 
   // navibar state
   const [currentIndex, setCurrentIndex] = useRecoilState(navIndexState);
@@ -103,16 +101,17 @@ const Navibar = ({ delay, children }: { delay: number; children: ReactNode }) =>
               text="单位"
               setCurrentIndex={setCurrentIndex}
             />
-            {preloadSubCategoryInfo.available && (
-              <NavButton
-                index={NavIndex.SubCategory}
-                currentIndex={currentIndex}
-                normalIcon={<Branch theme={themeMode} />}
-                activeIcon={<BranchFilled theme={themeMode} />}
-                text="班级"
-                setCurrentIndex={setCurrentIndex}
-              />
-            )}
+            {preloadSubCategoryInfo.state === 'hasValue' &&
+              preloadSubCategoryInfo.contents.available && (
+                <NavButton
+                  index={NavIndex.SubCategory}
+                  currentIndex={currentIndex}
+                  normalIcon={<Branch theme={themeMode} />}
+                  activeIcon={<BranchFilled theme={themeMode} />}
+                  text="班级"
+                  setCurrentIndex={setCurrentIndex}
+                />
+              )}
             <NavButton
               index={NavIndex.Download}
               currentIndex={currentIndex}
@@ -139,10 +138,7 @@ const Navibar = ({ delay, children }: { delay: number; children: ReactNode }) =>
               activeIcon={<SettingFilled theme={themeMode} />}
               iconClassName={clsx({
                 'animate-spin-slow':
-                  preloadAutoImportDict === undefined ||
-                  preloadSubCategoryInfo === undefined ||
-                  preloadMatchingRule === undefined ||
-                  preloadPlatformState === undefined,
+                  preloadSubCategoryInfo === undefined || preloadMatchingRule === undefined,
               })}
               text="设置"
               setCurrentIndex={setCurrentIndex}

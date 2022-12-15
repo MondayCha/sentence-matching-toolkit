@@ -2569,6 +2569,7 @@ checksum = "a507befe795404456341dfab10cef66ead4c041f62b8b11bbb92bffe5d0953e0"
 name = "snzx-tw-statistic"
 version = "0.0.0"
 dependencies = [
+ "anyhow",
  "chrono",
  "csv",
  "indexmap",
@@ -2582,6 +2583,7 @@ dependencies = [
  "tauri",
  "tauri-build",
  "tauri-plugin-store",
+ "thiserror",
 ]
 
 [[package]]

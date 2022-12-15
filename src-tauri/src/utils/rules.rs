@@ -1,14 +1,12 @@
-use crate::utils::{classes::SubCategoryRule, paths};
+use anyhow::Result;
 use serde::{Deserialize, Serialize};
-use std::{
-    collections::HashSet,
-    fs::File,
-    io::{Result, Write},
-    path::PathBuf,
-};
+use std::{collections::HashSet, fs::File, io::Write, path::PathBuf};
 use tauri::{regex::Regex, PathResolver};
 
-use super::classes::{SubCategoryCSV, SubCategoryRegex};
+use super::{
+    classes::{SubCategoryCSV, SubCategoryRegex, SubCategoryRule},
+    paths,
+};
 
 #[derive(Default, Debug, Serialize, Deserialize)]
 pub struct CategoryRule {
@@ -29,32 +27,35 @@ pub struct MatchingRule {
 }
 
 impl MatchingRule {
-    pub fn from(json_path: &PathBuf, path_resolver: &PathResolver) -> Option<Self> {
-        if !json_path.exists() {
-            return None;
+    pub fn new(path: Option<&str>, path_resolver: &PathResolver) -> Result<Self> {
+        let rule_path = paths::rule_path(&path_resolver)?;
+
+        let default_rule = MatchingRule {
+            rule_path: rule_path.clone(),
+            ..Default::default()
+        };
+
+        // if path is None, use default rule
+        let import_path = match path {
+            Some(path) => PathBuf::from(path),
+            None => rule_path.clone(),
+        };
+        if !import_path.exists() {
+            // if import file not exists, create a default rule file
+            default_rule.save()?;
+            return Ok(default_rule);
         }
-        let rule_json_file = match File::open(&json_path) {
-            Ok(file) => file,
-            Err(_) => {
-                return None;
-            }
-        };
-        let mut rule: Self = match serde_json::from_reader(rule_json_file) {
-            Ok(rule) => rule,
-            Err(err) => {
-                println!("rule: {:?}", err);
-                return None;
-            }
-        };
-        let rule_path = paths::rule_path(&path_resolver).unwrap_or_default();
+
+        let rule_json_file = File::open(&import_path)?;
+        let mut rule: Self = serde_json::from_reader(rule_json_file)?;
         rule.rule_path = rule_path;
-        rule.label().unwrap();
-        rule.save().unwrap();
-        return Some(rule);
+        rule.label()?;
+        rule.save()?;
+        return Ok(rule);
     }
 
     fn save(&self) -> Result<()> {
-        let rule_data = serde_json::to_string_pretty(self).unwrap();
+        let rule_data = serde_json::to_string_pretty(self)?;
         let mut f = File::create(&self.rule_path)?;
         f.write_all(rule_data.as_bytes())?;
         Ok(())
@@ -66,7 +67,7 @@ impl MatchingRule {
             // init regex pattern
             if let Some(extract_grade) = sub_category.regex.extract.csv.grade.clone() {
                 let mut grade_set = HashSet::new();
-                let re_grade = Regex::new(&extract_grade.pattern).unwrap();
+                let re_grade = Regex::new(&extract_grade.pattern)?;
                 for c in &mut csv.classes {
                     for cap in re_grade.captures_iter(&c.name) {
                         if let Some(g) =
@@ -84,7 +85,7 @@ impl MatchingRule {
             // https://docs.rs/regex/latest/regex/#example-iterating-over-capture-groups
             if let Some(extract_identity) = sub_category.regex.extract.csv.identity.clone() {
                 println!("extract_identity: {:?}", extract_identity);
-                let re_identity = Regex::new(&extract_identity.pattern).unwrap();
+                let re_identity = Regex::new(&extract_identity.pattern)?;
                 for c in &mut csv.classes {
                     for cap in re_identity.captures_iter(&c.name) {
                         c.identity = cap
@@ -97,7 +98,7 @@ impl MatchingRule {
 
             if let Some(extract_sequence) = sub_category.regex.extract.csv.sequence.clone() {
                 let mut sequence_set = HashSet::new();
-                let re_sequence = Regex::new(&extract_sequence.pattern).unwrap();
+                let re_sequence = Regex::new(&extract_sequence.pattern)?;
                 for c in &mut csv.classes {
                     for cap in re_sequence.captures_iter(&c.name) {
                         if let Some(s) = cap
@@ -114,12 +115,6 @@ impl MatchingRule {
             }
         }
         Ok(())
-    }
-
-    pub fn generate_template(path_resolver: &PathResolver) -> Result<()> {
-        let mut rule = MatchingRule::default();
-        rule.rule_path = paths::rule_template_path(&path_resolver).unwrap_or_default();
-        rule.save()
     }
 
     pub fn update_sub_category_csv(&mut self, csv: SubCategoryCSV) -> Result<()> {

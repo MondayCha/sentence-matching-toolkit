@@ -2,7 +2,7 @@ import clsx from 'clsx';
 import type { FC } from 'react';
 import History from '@/assets/descriptions/History';
 import Data from '@/assets/descriptions/Data';
-import ListItemButton from '../../../components/ListItemButton';
+import ListItemButton from '@/components/list/ListItemButton';
 import { openHistoryDir, openCacheDir, removeHistoryAndCache } from '@/api/core';
 import { showMessage } from '@/middleware/message';
 import { useThemeContext } from '@/components/theme';

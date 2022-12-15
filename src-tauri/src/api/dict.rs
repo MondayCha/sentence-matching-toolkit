@@ -1,5 +1,6 @@
+use crate::handler::dict_handler::DictHandler;
 use crate::handler::dict_handler::DictType;
-use crate::utils::paths;
+use crate::utils::errors::AResult;
 use tauri::command;
 use tauri::AppHandle;
 
@@ -12,24 +13,15 @@ pub fn get_dict_size(state: tauri::State<'_, AppState>) -> usize {
 }
 
 #[command]
-pub fn get_dict_path(app_handle: AppHandle) -> String {
-    let dict_file_path = paths::dictionary_path(&app_handle.path_resolver());
-    if let Some(dict_file_path) = dict_file_path {
-        if !dict_file_path.exists() {
-            return "".to_string();
-        }
-        dict_file_path.into_os_string().into_string().unwrap()
-    } else {
-        "".to_string()
-    }
+pub fn get_dict_path(app_handle: AppHandle) -> AResult<String> {
+    let dict_path = DictHandler::get_dict_path(&app_handle.path_resolver())?;
+    Ok(dict_path)
 }
 
 /// Generate dictionary file and save to fs.
 #[command]
-pub fn import_dictionary(path: &str, state: tauri::State<'_, AppState>) -> Result<usize, String> {
+pub fn import_dictionary(path: &str, state: tauri::State<'_, AppState>) -> AResult<usize> {
     let dict_handler = &mut *state.dict.write().unwrap();
-    dict_handler
-        .load_csv(path, Some(1), Some(DictType::PER))
-        .unwrap();
+    dict_handler.load_csv(path, Some(1), Some(DictType::PER))?;
     Ok(dict_handler.size())
 }

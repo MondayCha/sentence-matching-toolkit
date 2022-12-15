@@ -12,18 +12,16 @@ import { useThemeContext } from '@/components/theme';
 import Delete from '@/assets/operations/Delete';
 import Edit from '@/assets/operations/Edit';
 import IconNotFound from '@/assets/illustrations/NotFound';
-import { BaseRecord } from '@/api/core';
+import { BaseRecord, SubCategoryItem } from '@/api/core';
 
 const SubCategoryWindow: FC<{
-  records: BaseRecord[];
+  records: SubCategoryItem[];
   actionTag: string;
   actionHandler: (index: number) => void;
 }> = ({ records, actionTag, actionHandler }) => {
   const { themeMode } = useThemeContext();
 
-  const Row: FC<ListChildComponentProps<BaseRecord[]>> = ({ index, style, data }) => {
-    const title = data[index].company;
-
+  const Row: FC<ListChildComponentProps<SubCategoryItem[]>> = ({ index, style, data }) => {
     return (
       <div className="pr-6 lg:pr-8" style={style}>
         <div className="mdc-item h-16">
@@ -31,20 +29,20 @@ const SubCategoryWindow: FC<{
             <div className="flex flex-row justify-start items-center space-x-3 2xl:space-x-4 w-2/5 overflow-hidden">
               <div className="flex flex-col space-y-2 w-full">
                 <span className="mdc-text-sm leading-none text-ellipsis overflow-hidden whitespace-nowrap w-full select-text">
-                  {title}
+                  {data[index].sub.company}
                 </span>
-                <span className="mdc-text-xs leading-none text-xs">{data[index].name}</span>
+                <span className="mdc-text-xs leading-none text-xs">{data[index].sub.name}</span>
               </div>
             </div>
             <div className="flex flex-row items-center justify-end space-x-2">
-              {/* {!!data[index].matchedClass && (
+              {!!data[index].matchedClass && (
                 <div
                   className="mdc-btn-secondary w-fit px-3 select-none cursor-pointer h-8"
-                  onClick={() => actionHandler(data[index].index)}
+                  onClick={() => actionHandler(data[index].sub.index)}
                 >
                   <p className="leading-normal">{data[index].matchedClass}</p>
                 </div>
-              )} */}
+              )}
               <button className="mdc-btn-secondary h-8 w-8 flex items-center justify-center">
                 <Edit theme={themeMode} />
               </button>

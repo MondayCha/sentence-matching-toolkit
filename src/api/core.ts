@@ -2,11 +2,12 @@ import { invoke } from '@tauri-apps/api/tauri';
 import log from '@/middleware/logger';
 
 export const enum AppStatus {
-  Idle = 0,
-  CanMatch1,
-  CanMatch2,
-  CanExport1,
-  CanExport2,
+  NoRule,
+  Idle,
+  CanMatchCompany,
+  CanMatchClass,
+  ExportWithoutClass,
+  ExportWithClass,
 }
 
 export interface BaseRecord {
@@ -35,6 +36,15 @@ export interface CategoryGroup {
   improbabilityRecords: CategoryItem[];
 }
 
+export interface BaseCategoryGroup {
+  shouldRerender: boolean;
+  certaintyList: BaseRecord[];
+  probablyList: BaseRecord[];
+  possibilityList: BaseRecord[];
+  improbabilityList: BaseRecord[];
+  recycledList: BaseRecord[];
+}
+
 export interface SubCategoryItem {
   raw: BaseRecord;
   cat: BaseRecord;
@@ -60,7 +70,27 @@ export interface SubCategoyrCSV {
  */
 export const closeSplashscreen = () => invoke('close_splashscreen');
 
-export const checkCsvAvailability = (path: string) => invoke('check_csv_headers', { path });
+/**
+ * Initialize the app, load the matching rule and the dictionary.
+ * If path is null, last saved rule will be loaded.
+ * @param path The path of the matching rule.
+ * @returns The identifier of the matching rule.
+ * @throws Error if the matching rule is not available.
+ */
+export const loadMatchingRule = async (path: string | null) =>
+  (await invoke('load_matching_rule', { path })) as string;
+
+// load_sub_category_csv
+export const loadSubCategoryCSV = (path: string) => invoke('load_class_csv', { path });
+
+/**
+ * Check csv file's availability, return the name of the csv file if success.
+ * @param path The path of the csv file.
+ * @returns The name of the csv file.
+ * @throws Error if the csv file is not available.
+ */
+export const checkCsvAvailability = async (path: string) =>
+  (await invoke('check_csv_headers', { path })) as string;
 
 export const startCategoryMatching = async (path: string, uuid: string) =>
   (await invoke('start_category_matching', { path, uuid })) as CategoryGroup;
@@ -96,9 +126,3 @@ export const getDictPath = () => invoke('get_dict_path');
 // get_sub_category_info
 export const getSubCategoryInfo = async () =>
   (await invoke('get_sub_category_state')) as SubCategoyrCSV;
-
-// load_sub_category_csv
-export const loadSubCategoryCSV = (path: string) => invoke('load_class_csv', { path });
-
-// load_matching_rule
-export const loadMatchingRule = (path: string | null) => invoke('load_matching_rule', { path });
