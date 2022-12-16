@@ -50,11 +50,11 @@ impl CategoryHandler {
         }
 
         // create traditional to simplified handler
-        let t2s_handler = T2SHandler::new();
+        let t2s_handler = T2SHandler::new()?;
         let t2s_convert = |s: &str| t2s_handler.convert(s);
 
         // create matcher
-        let record_matcher = CategoryMatcher::new(rule, &dict_handler.dict_path);
+        let record_matcher = CategoryMatcher::new(rule, &dict_handler.dict_path)?;
         let match_category = |r1: &str, r2: &str| record_matcher.match_category(r1, r2);
 
         // read csv file
@@ -153,7 +153,7 @@ impl CategoryHandler {
         path_resolver: &PathResolver,
     ) -> Result<PathBuf> {
         // create matcher
-        let record_matcher = CategoryMatcher::new(rule, &dict_handler.dict_path);
+        let record_matcher = CategoryMatcher::new(rule, &dict_handler.dict_path)?;
         let match_category = |r1: &str, r2: &str| record_matcher.match_category(r1, r2);
 
         // load records map indexed by index from record_group_path

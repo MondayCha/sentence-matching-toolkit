@@ -1,7 +1,7 @@
 use crate::utils::errors::AResult;
 use crate::utils::paths::{self, pathbuf_to_string};
 
-use anyhow::Result;
+use anyhow::{anyhow, Context, Result};
 use tauri::api::shell::open;
 use tauri::command;
 use tauri::{AppHandle, Manager, Window};
@@ -24,13 +24,20 @@ fn call_open_cache_dir(app_handle: &AppHandle) -> Result<()> {
 /// This command must be async so that it doesn't run on the main thread.
 /// [Waiting for Rust](https://tauri.app/v1/guides/features/splashscreen#waiting-for-rust).
 #[command]
-pub async fn close_splashscreen(window: Window) {
+pub async fn close_splashscreen(window: Window) -> AResult<()> {
     // Close splashscreen
     if let Some(splashscreen) = window.get_window("splashscreen") {
-        splashscreen.close().unwrap();
+        splashscreen
+            .close()
+            .with_context(|| "无法关闭 Splash Screen")?;
     }
     // Show main window
-    window.get_window("main").unwrap().show().unwrap();
+    window
+        .get_window("main")
+        .with_context(|| "无法获取主窗口")?
+        .show()
+        .with_context(|| "无法显示主窗口")?;
+    Ok(())
 }
 
 #[command]
@@ -46,32 +53,12 @@ pub fn open_cache_dir(app_handle: AppHandle) -> AResult<()> {
 }
 
 #[command]
-pub fn remove_history_and_cache(app_handle: AppHandle) -> Result<(), String> {
-    let history_dir = paths::history_dir(&app_handle.path_resolver()).unwrap();
-    let cache_dir = paths::cache_dir(&app_handle.path_resolver()).unwrap();
-    match std::fs::remove_dir_all(&history_dir) {
-        Ok(_) => {}
-        Err(_) => {
-            return Err("remove history dir error".to_string());
-        }
-    }
-    match std::fs::remove_dir_all(&cache_dir) {
-        Ok(_) => {}
-        Err(_) => {
-            return Err("remove cache dir error".to_string());
-        }
-    }
-    match std::fs::create_dir_all(history_dir) {
-        Ok(_) => {}
-        Err(_) => {
-            return Err("create history dir error".to_string());
-        }
-    }
-    match std::fs::create_dir_all(cache_dir) {
-        Ok(_) => {}
-        Err(_) => {
-            return Err("create cache dir error".to_string());
-        }
-    }
+pub fn remove_history_and_cache(app_handle: AppHandle) -> AResult<()> {
+    let history_dir = paths::history_dir(&app_handle.path_resolver())?;
+    let cache_dir = paths::cache_dir(&app_handle.path_resolver())?;
+    std::fs::remove_dir_all(&history_dir).map_err(|e| anyhow!(e.to_string()))?;
+    std::fs::remove_dir_all(&cache_dir).map_err(|e| anyhow!(e.to_string()))?;
+    std::fs::create_dir_all(history_dir).map_err(|e| anyhow!(e.to_string()))?;
+    std::fs::create_dir_all(cache_dir).map_err(|e| anyhow!(e.to_string()))?;
     Ok(())
 }

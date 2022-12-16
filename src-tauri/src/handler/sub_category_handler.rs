@@ -44,7 +44,7 @@ impl SubCategoryHandler {
             .as_ref()
             .ok_or_else(|| anyhow!("未加载分类信息"))?;
         let sub_category_matcher =
-            SubCategoryMatcher::new(sub_category_rule, &dict_handler.dict_path);
+            SubCategoryMatcher::new(sub_category_rule, &dict_handler.dict_path)?;
         let match_sub_category =
             |r: &str| sub_category_matcher.match_sub_category(r, &get_name_from_dict);
 
@@ -93,7 +93,6 @@ impl SubCategoryHandler {
         let accepted_records_data = serde_json::to_string(&sub_category_record_group)?;
         let mut f = File::create(&history_sorted_class_path)?;
         f.write_all(accepted_records_data.as_bytes())?;
-        // *state.path.sub_categories_path.write().unwrap() = path;
 
         Ok((sub_category_record_group, history_sorted_class_path))
     }

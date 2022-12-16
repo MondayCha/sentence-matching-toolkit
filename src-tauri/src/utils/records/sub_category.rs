@@ -1,4 +1,5 @@
 use super::{base::BaseRecord, category::ModifiedCategory};
+use anyhow::Result;
 use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Serialize, Deserialize, PartialEq, Clone)]
@@ -53,11 +54,23 @@ pub struct SubCategory {
 impl SubCategory {
     pub fn new(
         modified_category: ModifiedCategory,
-        match_sub_category: &dyn Fn(&str) -> CleanedSubCategory,
+        match_sub_category: &dyn Fn(&str) -> Result<CleanedSubCategory>,
     ) -> Self {
+        let default = SubCategory {
+            raw: modified_category.raw.clone(),
+            cat: modified_category.new.clone(),
+            ..Default::default()
+        };
+
         if let Some(cleaned_category) = modified_category.cleaned {
-            let result_1 = match_sub_category(&cleaned_category.residue_1);
-            let result_2 = match_sub_category(&cleaned_category.residue_2);
+            let result_1 = match match_sub_category(&cleaned_category.residue_1) {
+                Ok(result) => result,
+                Err(_) => return default,
+            };
+            let result_2 = match match_sub_category(&cleaned_category.residue_2) {
+                Ok(result) => result,
+                Err(_) => return default,
+            };
 
             let mut sub_name = modified_category.new.name.clone();
             let mut sub_company = modified_category.new.company.clone();
@@ -99,7 +112,7 @@ impl SubCategory {
                 sub_flag = SubCategoryFlag::Mismatch;
             }
 
-            SubCategory {
+            return SubCategory {
                 matched_class,
                 simularity,
                 flag: sub_flag,
@@ -110,15 +123,9 @@ impl SubCategory {
                     ..modified_category.raw
                 },
                 cat: modified_category.new,
-                ..Default::default()
-            }
-        } else {
-            SubCategory {
-                raw: modified_category.raw,
-                cat: modified_category.new,
-                ..Default::default()
-            }
+            };
         }
+        default
     }
 }
 

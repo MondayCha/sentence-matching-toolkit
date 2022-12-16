@@ -1,5 +1,7 @@
+use anyhow::{Context, Result};
 use indexmap::IndexMap;
 use ngrammatic::{Corpus, CorpusBuilder, Pad};
+use std::cmp::Ordering::Equal;
 use std::path::PathBuf;
 use tauri::regex::Regex;
 
@@ -23,16 +25,16 @@ pub struct CategoryMatcher {
 }
 
 impl CategoryMatcher {
-    pub fn new(rule: &MatchingRule, dict_path: &PathBuf) -> Self {
-        Self {
+    pub fn new(rule: &MatchingRule, dict_path: &PathBuf) -> Result<Self> {
+        Ok(Self {
             // category: rule.rule_name.clone(),
-            filter: RegexNumHandler::new(),
-            matcher: RegexMatchHandler::new(rule),
+            filter: RegexNumHandler::new()?,
+            matcher: RegexMatchHandler::new(rule)?,
             sub_category_matcher: match rule.sub_category {
-                Some(ref sub_category) => Some(SubCategoryMatcher::new(sub_category, dict_path)),
+                Some(ref sub_category) => Some(SubCategoryMatcher::new(sub_category, dict_path)?),
                 None => None,
             },
-        }
+        })
     }
 
     pub fn match_category(&self, raw_name: &str, raw_company: &str) -> CategoryResult {
@@ -97,13 +99,37 @@ pub struct SubCategoryExtracter {
 }
 
 impl SubCategoryExtracter {
-    pub fn new(grade: Option<&str>, sequence: Option<&str>, sequence_num: Option<&str>) -> Self {
-        Self {
-            re_grade: grade.map(|s| Regex::new(s).unwrap()),
-            re_sequence: sequence.map(|s| Regex::new(s).unwrap()),
-            re_sequence_num: sequence_num.map(|s| Regex::new(s).unwrap()),
-            re_chinese: Regex::new("[\\u4e00-\\u9fa5]*").unwrap(),
-        }
+    pub fn new(
+        grade: Option<&str>,
+        sequence: Option<&str>,
+        sequence_num: Option<&str>,
+    ) -> Result<Self> {
+        let re_grade = if let Some(grade) = grade {
+            Some(Regex::new(grade)?)
+        } else {
+            None
+        };
+
+        let re_sequence = if let Some(sequence) = sequence {
+            Some(Regex::new(sequence)?)
+        } else {
+            None
+        };
+
+        let re_sequence_num = if let Some(sequence_num) = sequence_num {
+            Some(Regex::new(sequence_num)?)
+        } else {
+            None
+        };
+
+        let re_chinese = Regex::new("[\\u4e00-\\u9fa5]*")?;
+
+        Ok(Self {
+            re_grade,
+            re_sequence,
+            re_sequence_num,
+            re_chinese,
+        })
     }
 
     pub fn get_grade(&self, record: &str) -> Option<String> {
@@ -167,7 +193,7 @@ pub struct SubCategoryMatcher {
 }
 
 impl SubCategoryMatcher {
-    pub fn new(rule: &SubCategoryRule, dict_path: &PathBuf) -> Self {
+    pub fn new(rule: &SubCategoryRule, dict_path: &PathBuf) -> Result<Self> {
         let mut categories: IndexMap<String, Vec<IntermediateClassInfo>> = IndexMap::default();
         for c in rule.csv.classes.iter() {
             let id = match c.identity {
@@ -204,15 +230,15 @@ impl SubCategoryMatcher {
                 .sequence_num
                 .as_ref()
                 .map(|s| s.pattern.as_str()),
-        );
-        Self {
+        )?;
+        Ok(Self {
             jieba: JiebaHandler::new(&dict_path),
             sub_category_csv: rule.csv.clone(),
             categories,
             regex,
             extracter,
             corpus,
-        }
+        })
     }
 
     fn replace(&self, record: &str) -> String {
@@ -288,7 +314,7 @@ impl SubCategoryMatcher {
         &self,
         record: &str,
         get_name_from_dict: &dyn Fn(&str) -> Option<String>,
-    ) -> CleanedSubCategory {
+    ) -> Result<CleanedSubCategory> {
         let record = self.replace(&record);
 
         let option_record_grade = self.extracter.get_grade(&record);
@@ -321,15 +347,20 @@ impl SubCategoryMatcher {
                     cleaned_sub_category.user_input_class = record.clone();
                 }
                 cleaned_sub_category.flag = SubCategoryFlag::Incomplete;
-                return cleaned_sub_category;
+                return Ok(cleaned_sub_category);
             }
-            return cleaned_sub_category;
+            return Ok(cleaned_sub_category);
         }
 
         let mut i = 0;
         while i < results.len() {
             let search_result = &results[i];
-            let category_list = &self.categories.get(&search_result.text).unwrap();
+            let category_list = &self.categories.get(&search_result.text).with_context(|| {
+                format!(
+                    "No category found for sub category: {:?}",
+                    &search_result.text
+                )
+            })?;
             let mut j = 0;
             while j < category_list.len() {
                 let category = &category_list[j];
@@ -374,7 +405,7 @@ impl SubCategoryMatcher {
                 }
 
                 println!("Normal sub category: {:?}", &category.name);
-                return cleaned_sub_category;
+                return Ok(cleaned_sub_category);
             }
             i += 1;
         }
@@ -387,7 +418,7 @@ impl SubCategoryMatcher {
         }
 
         cleaned_sub_category.flag = SubCategoryFlag::Suspension;
-        cleaned_sub_category
+        Ok(cleaned_sub_category)
     }
 
     // split info into name and subcategory
@@ -405,7 +436,11 @@ impl SubCategoryMatcher {
                 ans_cadidates.push((end_sim, head_candidate, end_candidate));
             }
         }
-        ans_cadidates.sort_by(|a, b| b.0.partial_cmp(&a.0).unwrap());
+        ans_cadidates.sort_by(|a, b| {
+            b.0.partial_cmp(&a.0)
+                .unwrap_or(Equal)
+                .then(b.2.len().cmp(&a.2.len()))
+        });
         (ans_cadidates[0].1.clone(), ans_cadidates[0].2.clone())
     }
 }
