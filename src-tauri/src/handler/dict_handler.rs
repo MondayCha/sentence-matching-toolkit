@@ -52,10 +52,10 @@ impl DictHandler {
                 let record = result?;
                 let name = record
                     .get(0)
-                    .context(format!("行 {:?} 找不到单词", &record))?;
+                    .with_context(|| format!("行 {:?} 找不到单词", &record))?;
                 let tag = record
                     .get(2)
-                    .context(format!("行 {:?} 找不到标签", &record))?;
+                    .with_context(|| format!("行 {:?} 找不到标签", &record))?;
                 if tag == "nr" {
                     per_dict.insert(name.to_string());
                 } else if tag == "nt" {
@@ -128,7 +128,7 @@ impl DictHandler {
             let record = result?;
             let name = record
                 .get(column.unwrap_or(0))
-                .context(format!("行 {:?} 找不到单词", &record))?;
+                .with_context(|| format!("行 {:?} 找不到单词", &record))?;
             self.add(name, tag.unwrap_or(DictType::ORG));
         }
         self.save()?;

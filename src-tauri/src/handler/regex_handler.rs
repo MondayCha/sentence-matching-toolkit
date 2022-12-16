@@ -1,6 +1,6 @@
-use tauri::regex::Regex;
-
 use crate::utils::rules::MatchingRule;
+use anyhow::Result;
+use tauri::regex::Regex;
 
 pub struct RegexNumHandler {
     re_num_0: Regex,
@@ -16,19 +16,19 @@ pub struct RegexNumHandler {
 }
 
 impl RegexNumHandler {
-    pub fn new() -> Self {
-        Self {
-            re_num_0: Regex::new(r"[〇零oO]").unwrap(),
-            re_num_1: Regex::new(r"[1壹|①\-—一]").unwrap(),
-            re_num_2: Regex::new(r"[2贰②二]").unwrap(),
-            re_num_3: Regex::new(r"[3叁③三]").unwrap(),
-            re_num_4: Regex::new(r"[4肆④四]").unwrap(),
-            re_num_5: Regex::new(r"[5伍⑤五]").unwrap(),
-            re_num_6: Regex::new(r"[6陆⑥六]").unwrap(),
-            re_num_7: Regex::new(r"[7柒⑦七]").unwrap(),
-            re_num_8: Regex::new(r"[8捌⑧八]").unwrap(),
-            re_num_9: Regex::new(r"[9玖⑨九]").unwrap(),
-        }
+    pub fn new() -> Result<Self> {
+        Ok(Self {
+            re_num_0: Regex::new(r"[〇零oO]")?,
+            re_num_1: Regex::new(r"[1壹|①\-—一]")?,
+            re_num_2: Regex::new(r"[2贰②二]")?,
+            re_num_3: Regex::new(r"[3叁③三]")?,
+            re_num_4: Regex::new(r"[4肆④四]")?,
+            re_num_5: Regex::new(r"[5伍⑤五]")?,
+            re_num_6: Regex::new(r"[6陆⑥六]")?,
+            re_num_7: Regex::new(r"[7柒⑦七]")?,
+            re_num_8: Regex::new(r"[8捌⑧八]")?,
+            re_num_9: Regex::new(r"[9玖⑨九]")?,
+        })
     }
 
     pub fn replace_all(&self, text: &str) -> String {
@@ -54,16 +54,15 @@ pub struct RegexMatchHandler {
 }
 
 impl RegexMatchHandler {
-    pub fn new(rule: &MatchingRule) -> Self {
-        Self {
-            // re_accept: Regex::new(r"(山南|市)(.*?)((职业技术|职业|技术)学[校院]|职[业校院]|1职)")
-            //     .unwrap(),
-            // re_reject: Regex::new(r"2").unwrap(),
-            // re_reject_city: Regex::new(r"拉萨市|日喀则市|林芝市|昌都市|那曲市|阿里地区").unwrap(),
-            re_accept: Regex::new(&rule.category.accept_pattern).unwrap(),
-            re_reject_in_accept: Regex::new(&rule.category.accept_filter_pattern).unwrap(),
-            re_reject: Regex::new(&rule.category.reject_pattern).unwrap(),
-        }
+    pub fn new(rule: &MatchingRule) -> Result<Self> {
+        Ok(Self {
+            // re_accept: Regex::new(r"(山南|市)(.*?)((职业技术|职业|技术)学[校院]|职[业校院]|1职)")?,
+            // re_reject: Regex::new(r"2")?,
+            // re_reject_city: Regex::new(r"拉萨市|日喀则市|林芝市|昌都市|那曲市|阿里地区")?,
+            re_accept: Regex::new(&rule.category.accept_pattern)?,
+            re_reject_in_accept: Regex::new(&rule.category.accept_filter_pattern)?,
+            re_reject: Regex::new(&rule.category.reject_pattern)?,
+        })
     }
 
     pub fn match_accept(&self, text: &str) -> bool {
