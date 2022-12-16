@@ -17,13 +17,16 @@ const CategoryButtonGroup: FC<{
   setListIndex: React.Dispatch<React.SetStateAction<ListIndex>>;
 }> = ({ showInDict, listIndex, setListIndex }) => {
   const getButtonStyle = (matchIndex: ListIndex): string =>
-    clsx('py-1 px-6 mdc-text-sm bg-haruki-100 dark:bg-abyss-750 rounded-full border', {
-      'border-primary-light text-primary-light \
+    clsx(
+      'h-8 px-5 lg:px-6 mdc-text-sm bg-haruki-100 dark:bg-abyss-750 rounded-full border leading-none',
+      {
+        'border-primary-light text-primary-light \
     dark:border-primary-dark dark:text-primary-dark \
     hover:cursor-default': listIndex === matchIndex,
-      'dark:text-zinc-200 dark:border-abyss-500 dark:hover:text-white dark:hover:bg-abyss-700 \
+        'dark:text-zinc-200 dark:border-abyss-500 dark:hover:text-white dark:hover:bg-abyss-700 \
     text-abyss-900 border-zinc-300 hover:text-black hover:bg-haruki-50': listIndex !== matchIndex,
-    });
+      }
+    );
 
   return (
     <div className="flex flex-row w-full px-4 2xl:px-6 space-x-1.5">

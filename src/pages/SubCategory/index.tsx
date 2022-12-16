@@ -3,14 +3,19 @@ import log from '@/middleware/logger';
 import { useState, useEffect, useMemo } from 'react';
 import clsx from 'clsx';
 import IconPending from '@/assets/illustrations/Pending';
-import { useRecoilValue, useRecoilValueLoadable } from 'recoil';
-import { getSubCategory, sourceFilePathState } from '@/middleware/store';
+import { useRecoilState, useRecoilValue, useRecoilValueLoadable } from 'recoil';
+import {
+  appStatusState,
+  getSubCategory,
+  sourceFilePathState,
+  subCategoryState,
+} from '@/middleware/store';
 import Searching from '@/assets/illustrations/Searching';
 import SubCategoryButtonGroup, { SubListIndex } from './SubCategoryButtonGroup';
 import CategoryWindow from '../Category/CategoryWindow';
 import SubCategoryWindow from './SubCategoryWindow';
 import { useThemeContext } from '@/components/theme';
-import { BaseRecord, SubCategoryItem } from '@/api/core';
+import { AppStatus, BaseRecord, SubCategoryItem } from '@/api/core';
 
 export interface SubWindowProps {
   displayList: SubCategoryItem[];
@@ -19,10 +24,13 @@ export interface SubWindowProps {
 }
 
 const SubCategory: FC = () => {
+  const [appStatus, setAppStatus] = useRecoilState(appStatusState);
   const { themeMode } = useThemeContext();
   const sourceFilePath = useRecoilValue(sourceFilePathState);
   const subCategoryLoadable = useRecoilValueLoadable(getSubCategory);
+  const [subCategory, setSubCategory] = useRecoilState(subCategoryState);
   const [listIndex, setListIndex] = useState(SubListIndex.Normal);
+
   const [normalList, setNormalList] = useState<SubCategoryItem[]>([]);
   const [incompleteList, setIncompleteList] = useState<SubCategoryItem[]>([]);
   const [suspensionList, setSuspensionList] = useState<SubCategoryItem[]>([]);
@@ -30,13 +38,35 @@ const SubCategory: FC = () => {
   const [recycledList, setRecycledList] = useState<SubCategoryItem[]>([]);
 
   useEffect(() => {
-    if (subCategoryLoadable.state === 'hasValue' && subCategoryLoadable.contents !== undefined) {
-      setNormalList(subCategoryLoadable.contents.normalRecords);
-      setSuspensionList(subCategoryLoadable.contents.suspensionRecords);
-      setIncompleteList(subCategoryLoadable.contents.incompleteRecords);
-      setMismatchList(subCategoryLoadable.contents.mismatchRecords);
+    if (subCategoryLoadable.state === 'hasValue' && subCategoryLoadable.contents !== null) {
+      setSubCategory({
+        normalRecords: subCategoryLoadable.contents.normalRecords,
+        incompleteRecords: subCategoryLoadable.contents.incompleteRecords,
+        suspensionRecords: subCategoryLoadable.contents.suspensionRecords,
+        mismatchRecords: subCategoryLoadable.contents.mismatchRecords,
+        recycledRecords: [],
+        shouldRerender: true,
+      });
+    } else {
+      setSubCategory((prev) => {
+        if (prev !== null) {
+          return { ...prev, shouldRerender: true };
+        } else {
+          return prev;
+        }
+      });
     }
   }, [subCategoryLoadable]);
+
+  useEffect(() => {
+    if (subCategory !== null && subCategory.shouldRerender) {
+      setNormalList(subCategory.normalRecords);
+      setSuspensionList(subCategory.suspensionRecords);
+      setIncompleteList(subCategory.incompleteRecords);
+      setMismatchList(subCategory.mismatchRecords);
+      setRecycledList(subCategory.recycledRecords);
+    }
+  }, [subCategory]);
 
   const windowProps: SubWindowProps = useMemo(() => {
     switch (listIndex) {
@@ -79,13 +109,21 @@ const SubCategory: FC = () => {
     }
   }, [listIndex, normalList, suspensionList, mismatchList, recycledList]);
 
+  const shouldShowList = useMemo(() => {
+    return subCategoryLoadable.state === 'hasValue' && appStatus >= AppStatus.CanMatchClass;
+  }, [subCategoryLoadable, appStatus]);
+
+  const isMatching = useMemo(() => {
+    return !!sourceFilePath.filename && appStatus >= AppStatus.CanMatchClass;
+  }, [sourceFilePath, appStatus]);
+
   return (
     <div className={clsx('mdc-paper')}>
       <div className="mdc-header">
         <h1 className="mdc-title pb-1.5">班级匹配</h1>
         <p className="mdc-text-sm">基于 N-Gram 算法模糊搜索，评分并匹配给定班级。</p>
       </div>
-      {subCategoryLoadable.state === 'hasValue' ? (
+      {shouldShowList ? (
         <div className="flex flex-col items-end w-full h-full space-y-4">
           <SubCategoryButtonGroup subListIndex={listIndex} setSubListIndex={setListIndex} />
           <SubCategoryWindow
@@ -99,7 +137,7 @@ const SubCategory: FC = () => {
         </div>
       ) : (
         <>
-          {!!sourceFilePath.filename ? (
+          {isMatching ? (
             <div className="mdc-body grow flex flex-col gap-4 overflow-hidden justify-between items-end">
               <div className="mdc-item py-12 grow">
                 <div className="flex h-full w-full flex-col items-center justify-center space-y-3 ">
