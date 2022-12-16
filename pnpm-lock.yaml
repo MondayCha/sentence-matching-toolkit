@@ -3117,7 +3117,9 @@ packages:
   github.com/tauri-apps/tauri-plugin-store/9bd993aa67766596638bbfd91e79a1bf8f632014:
     resolution:
       {
-        tarball: https://codeload.github.com/tauri-apps/tauri-plugin-store/tar.gz/9bd993aa67766596638bbfd91e79a1bf8f632014,
+        commit: 9bd993aa67766596638bbfd91e79a1bf8f632014,
+        repo: git+ssh://git@github.com/tauri-apps/tauri-plugin-store.git,
+        type: git,
       }
     name: tauri-plugin-store-api
     version: 0.1.0

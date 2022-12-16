@@ -10,6 +10,7 @@ import {
   startSubCategoryMatching,
   AppStatus,
   BaseCategoryGroup,
+  BaseSubCategoryGroup,
 } from '@/api/core';
 import log from '@/middleware/logger';
 import { getTimestamp } from './utils';
@@ -192,14 +193,37 @@ export const getCategory = selector({
   },
 });
 
+export const subCategoryState = atom({
+  key: 'secondaryCategoryState',
+  default: null as BaseSubCategoryGroup | null,
+});
+
+export const subCategoryUpdateTriggerState = atom({
+  key: 'secondaryCategoryState/updateTrigger',
+  default: '',
+});
+
 // Call Sub Category Matching API
 export const getSubCategory = selector({
   key: 'subCategoryState',
   get: async ({ get }) => {
+    const { path } = get(sourceFilePathState);
     const uuid = get(getUuid);
-    const sub_category = startSubCategoryMatching(uuid);
-    log.info('getSubCategory', sub_category);
-    return sub_category;
+    const appStatus = get(appStatusState);
+    const trigger = get(subCategoryUpdateTriggerState);
+
+    if (appStatus !== AppStatus.CanMatchClass || !path) {
+      return null;
+    }
+
+    try {
+      const sub_category = startSubCategoryMatching(uuid);
+      log.info('getSubCategory', sub_category, trigger);
+      return sub_category;
+    } catch (err) {
+      showMessage(err, 'error');
+      return null;
+    }
   },
 });
 

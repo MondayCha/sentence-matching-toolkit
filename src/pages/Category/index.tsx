@@ -13,6 +13,7 @@ import {
   sourceFilePathState,
   getIsWin32,
   categoryState,
+  subCategoryUpdateTriggerState,
 } from '@/middleware/store';
 import clsx from 'clsx';
 import { FC, useMemo } from 'react';
@@ -25,6 +26,9 @@ import Searching from '@/assets/illustrations/Searching';
 import CategoryButtonGroup, { ListIndex } from './CategoryButtonGroup';
 import { AppStatus, receiveModifiedRecords, CategoryItem, BaseRecord } from '@/api/core';
 import { useThemeContext } from '@/components/theme';
+import Spin from '@/assets/others/Spin';
+import { getTimestamp } from '@/middleware/utils';
+import { useDebounce } from 'usehooks-ts';
 
 export interface WindowProps {
   displayList: BaseRecord[];
@@ -41,6 +45,7 @@ const Category: FC = () => {
   const uuid = useRecoilValue(getUuid);
   const categoryLoadable = useRecoilValueLoadable(getCategory);
   const [category, setCategory] = useRecoilState(categoryState);
+  const setSubCategoryUpdateTrigger = useSetRecoilState(subCategoryUpdateTriggerState);
   const sourceFilePath = useRecoilValue(sourceFilePathState);
   const [isLoading, setIsLoading] = useState(false);
   const { themeMode } = useThemeContext();
@@ -51,6 +56,9 @@ const Category: FC = () => {
   const [possibilityList, setPossibilityList] = useState<BaseRecord[]>([]);
   const [improbabilityList, setImprobabilityList] = useState<BaseRecord[]>([]);
   const [recycledList, setRecycledList] = useState<BaseRecord[]>([]);
+  // Search
+  const [searchKeyword, setSearchKeyword] = useState('');
+  const debouncedSearchKeyword = useDebounce(searchKeyword, 500);
 
   useEffect(() => {
     if (categoryLoadable.state === 'hasValue' && categoryLoadable.contents !== null) {
@@ -98,9 +106,14 @@ const Category: FC = () => {
   }, [category]);
 
   const windowProps: WindowProps = useMemo(() => {
+    let props: WindowProps = {
+      displayList: [],
+      actionTag: '',
+      actionHandler: () => {},
+    };
     switch (listIndex) {
       case ListIndex.Certainty:
-        return {
+        props = {
           displayList: certaintyList,
           actionTag: '移除',
           actionHandler: (index) => {
@@ -111,8 +124,9 @@ const Category: FC = () => {
             }
           },
         };
+        break;
       case ListIndex.Probably:
-        return {
+        props = {
           displayList: probablyList,
           actionTag: '添加',
           actionHandler: (index) => {
@@ -127,8 +141,9 @@ const Category: FC = () => {
             }
           },
         };
+        break;
       case ListIndex.Possibility:
-        return {
+        props = {
           displayList: possibilityList,
           actionTag: '添加',
           actionHandler: (index) => {
@@ -139,8 +154,9 @@ const Category: FC = () => {
             }
           },
         };
+        break;
       case ListIndex.Improbability:
-        return {
+        props = {
           displayList: improbabilityList,
           actionTag: '添加',
           actionHandler: (index) => {
@@ -155,8 +171,9 @@ const Category: FC = () => {
             }
           },
         };
+        break;
       case ListIndex.Recycled:
-        return {
+        props = {
           displayList: recycledList,
           actionTag: '撤销',
           actionHandler: (index) => {
@@ -167,14 +184,33 @@ const Category: FC = () => {
             }
           },
         };
+        break;
       default:
-        return {
+        props = {
           displayList: [],
           actionTag: '',
           actionHandler: () => {},
         };
+        break;
     }
-  }, [listIndex, certaintyList, possibilityList, improbabilityList, recycledList]);
+    if (debouncedSearchKeyword.length > 0) {
+      props.displayList = props.displayList.filter((item) => {
+        return (
+          item.company.includes(debouncedSearchKeyword) ||
+          item.name.includes(debouncedSearchKeyword)
+        );
+      });
+    }
+    return props;
+  }, [
+    listIndex,
+    certaintyList,
+    probablyList,
+    possibilityList,
+    improbabilityList,
+    recycledList,
+    debouncedSearchKeyword,
+  ]);
 
   const handleSubmit = async () => {
     log.info('submit');
@@ -191,6 +227,7 @@ const Category: FC = () => {
       .then(() => {
         setIsLoading(false);
         if (subCategoryInfo.available) {
+          setSubCategoryUpdateTrigger(getTimestamp());
           setAppStatus(AppStatus.CanMatchClass);
           setNavIndex(NavIndex.SubCategory);
         } else {
@@ -226,18 +263,26 @@ const Category: FC = () => {
         </h1>
         <p className="mdc-text-sm">
           {shouldShowList ? (
-            <>
-              极大概率匹配<span className=" mdc-text-heightlight">{certaintyList.length}</span>
-              条，
-              {subCategoryInfo.available && (
-                <>
-                  一定概率<span className=" mdc-text-heightlight">{probablyList.length}</span>条，
-                </>
-              )}
-              较小概率<span className=" mdc-text-heightlight">{possibilityList.length}</span>条，
-              极小概率<span className=" mdc-text-heightlight">{improbabilityList.length}</span>条，
-              回收站<span className=" mdc-text-heightlight">{recycledList.length}</span>条。
-            </>
+            debouncedSearchKeyword.length === 0 ? (
+              <>
+                极大概率匹配<span className=" mdc-text-heightlight">{certaintyList.length}</span>
+                条，
+                {subCategoryInfo.available && (
+                  <>
+                    一定概率<span className=" mdc-text-heightlight">{probablyList.length}</span>条，
+                  </>
+                )}
+                较小概率<span className=" mdc-text-heightlight">{possibilityList.length}</span>条，
+                极小概率<span className=" mdc-text-heightlight">{improbabilityList.length}</span>
+                条， 回收站<span className=" mdc-text-heightlight">{recycledList.length}</span>条。
+              </>
+            ) : (
+              <>
+                包含关键词「<span className="mdc-text-heightlight">{debouncedSearchKeyword}</span>
+                」的数据有
+                <span className="mdc-text-heightlight">{windowProps.displayList.length}</span>条。
+              </>
+            )
           ) : (
             <>
               {isMatching ? (
@@ -267,31 +312,77 @@ const Category: FC = () => {
             actionTag={windowProps.actionTag}
             actionHandler={windowProps.actionHandler}
           />
-          <button className="mdc-btn-primary p-1 w-32 mr-12 lg:mr-14" onClick={handleSubmit}>
-            <div className="flex flex-row items-center justify-center space-x-2">
-              {isLoading ? (
-                <div>
+          <div className="pl-4 lg:pl-6 flex flex-row justify-between items-center h-8 lg:h-9 w-full lg:pt-1">
+            <form className="flex items-center">
+              <label htmlFor="simple-search" className="sr-only">
+                Search
+              </label>
+              <div className="relative w-full">
+                <div className="absolute inset-y-0 left-0 flex items-center pl-4 pointer-events-none">
                   <svg
-                    className="inline h-3.5 mr-1 text-sky-400  animate-spin fill-abyss-500 dark:fill-zinc-100"
-                    viewBox="0 0 100 101"
-                    fill="none"
+                    aria-hidden="true"
+                    className="w-4 h-4 text-zinc-500 dark:text-zinc-400"
+                    fill="currentColor"
+                    viewBox="0 0 20 20"
                     xmlns="http://www.w3.org/2000/svg"
                   >
                     <path
-                      d="M100 50.5908C100 78.2051 77.6142 100.591 50 100.591C22.3858 100.591 0 78.2051 0 50.5908C0 22.9766 22.3858 0.59082 50 0.59082C77.6142 0.59082 100 22.9766 100 50.5908ZM9.08144 50.5908C9.08144 73.1895 27.4013 91.5094 50 91.5094C72.5987 91.5094 90.9186 73.1895 90.9186 50.5908C90.9186 27.9921 72.5987 9.67226 50 9.67226C27.4013 9.67226 9.08144 27.9921 9.08144 50.5908Z"
-                      fill="currentColor"
-                    />
-                    <path
-                      d="M93.9676 39.0409C96.393 38.4038 97.8624 35.9116 97.0079 33.5539C95.2932 28.8227 92.871 24.3692 89.8167 20.348C85.8452 15.1192 80.8826 10.7238 75.2124 7.41289C69.5422 4.10194 63.2754 1.94025 56.7698 1.05124C51.7666 0.367541 46.6976 0.446843 41.7345 1.27873C39.2613 1.69328 37.813 4.19778 38.4501 6.62326C39.0873 9.04874 41.5694 10.4717 44.0505 10.1071C47.8511 9.54855 51.7191 9.52689 55.5402 10.0491C60.8642 10.7766 65.9928 12.5457 70.6331 15.2552C75.2735 17.9648 79.3347 21.5619 82.5849 25.841C84.9175 28.9121 86.7997 32.2913 88.1811 35.8758C89.083 38.2158 91.5421 39.6781 93.9676 39.0409Z"
-                      fill="currentFill"
-                    />
+                      fillRule="evenodd"
+                      d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z"
+                      clipRule="evenodd"
+                    ></path>
                   </svg>
                 </div>
-              ) : (
-                <>提交</>
-              )}
-            </div>
-          </button>
+                <input
+                  type="text"
+                  id="simple-search"
+                  value={searchKeyword}
+                  className="bg-haruki-50 border leading-none text-sm rounded focus:border-primary-light block w-full pl-10 pr-8 h-8 placeholder-zinc-400 dark:border-abyss-600 dark:bg-abyss-700 dark:border-opacity-50 dark:placeholder-zinc-500 dark:text-zinc-200 dark:focus:border-primary-dark text-abyss-900 focus:outline-none"
+                  placeholder="输入关键字"
+                  autoComplete="off"
+                  onChange={(e) => {
+                    setSearchKeyword(e.target.value);
+                  }}
+                  required
+                />
+                <div className="absolute inset-y-0 right-0 flex items-center pr-2">
+                  <button
+                    type="button"
+                    className={clsx(
+                      'inline-flex items-center p-0.5 ml-2 text-sm text-zinc-400 dark:text-zinc-500 bg-transparent rounded-full hover:bg-haruki-300 dark:hover:bg-abyss-600',
+                      {
+                        hidden: debouncedSearchKeyword.length === 0,
+                      }
+                    )}
+                    onClick={() => {
+                      setSearchKeyword('');
+                    }}
+                  >
+                    <svg
+                      className="w-3.5 h-3.5"
+                      fill="currentColor"
+                      viewBox="0 0 20 20"
+                      xmlns="http://www.w3.org/2000/svg"
+                    >
+                      <path
+                        fill-rule="evenodd"
+                        d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z"
+                        clip-rule="evenodd"
+                      ></path>
+                    </svg>
+                    <span className="sr-only">Remove badge</span>
+                  </button>
+                </div>
+              </div>
+            </form>
+
+            <button
+              className="mdc-btn-primary p-1 h-full w-32 mr-12 lg:mr-14"
+              onClick={handleSubmit}
+            >
+              {isLoading ? <Spin /> : <>提交</>}
+            </button>
+          </div>
         </div>
       ) : (
         <>

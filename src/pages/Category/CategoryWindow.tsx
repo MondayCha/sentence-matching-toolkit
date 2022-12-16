@@ -44,7 +44,7 @@ const CategoryWindow: FC<{
           <AutoSizer>
             {({ height, width }) => (
               <List
-                className={clsx('List mdc-scroolbar')}
+                className={clsx('List', 'mdc-scroolbar')}
                 height={height}
                 itemCount={records.length}
                 itemSize={74}

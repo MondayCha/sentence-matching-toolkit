@@ -61,6 +61,11 @@ export interface SubCategoryGroup {
   mismatchRecords: SubCategoryItem[];
 }
 
+export type BaseSubCategoryGroup = SubCategoryGroup & {
+  shouldRerender: boolean;
+  recycledRecords: SubCategoryItem[];
+};
+
 export interface SubCategoyrCSV {
   name: string;
 }
