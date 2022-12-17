@@ -12,6 +12,7 @@
   },
   "dependencies": {
     "@tauri-apps/api": "^1.2.0",
+    "framer-motion": "^7.10.2",
     "loglevel": "^1.8.1",
     "moment": "^2.29.4",
     "react": "^18.2.0",

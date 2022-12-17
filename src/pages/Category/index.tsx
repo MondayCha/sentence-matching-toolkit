@@ -29,6 +29,7 @@ import { useThemeContext } from '@/components/theme';
 import Spin from '@/assets/others/Spin';
 import { getTimestamp } from '@/middleware/utils';
 import { useDebounce } from 'usehooks-ts';
+import PageMotion from '@/components/transition/PageMotion';
 
 export interface WindowProps {
   displayList: BaseRecord[];
@@ -250,7 +251,7 @@ const Category: FC = () => {
   }, [sourceFilePath, appStatus]);
 
   return (
-    <div className={clsx('mdc-paper')}>
+    <PageMotion>
       <div className="mdc-header">
         <h1
           className="mdc-title pb-1.5"
@@ -407,7 +408,7 @@ const Category: FC = () => {
           )}
         </>
       )}
-    </div>
+    </PageMotion>
   );
 };
 

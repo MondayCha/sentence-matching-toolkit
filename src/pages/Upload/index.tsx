@@ -1,4 +1,5 @@
 import { useState, useMemo } from 'react';
+import { motion } from 'framer-motion';
 import type { FC } from 'react';
 import { open } from '@tauri-apps/api/dialog';
 import clsx from 'clsx';
@@ -16,8 +17,9 @@ import {
 } from '@/middleware/store';
 import { getTimestamp } from '@/middleware/utils';
 import { useThemeContext } from '@/components/theme';
+import PageMotion from '@/components/transition/PageMotion';
 
-const Home: FC = () => {
+const Upload: FC = () => {
   const [appStatus, setAppStatus] = useRecoilState(appStatusState);
   const { themeMode } = useThemeContext();
   const setNavIndex = useSetRecoilState(navIndexState);
@@ -92,7 +94,7 @@ const Home: FC = () => {
   };
 
   return (
-    <div className="mdc-paper">
+    <PageMotion>
       <div className="mdc-header">
         <h1 className="mdc-title pb-1.5">短文本匹配工具</h1>
         {appStatus === AppStatus.NoRule ? (
@@ -127,8 +129,8 @@ const Home: FC = () => {
           </button>
         )}
       </div>
-    </div>
+    </PageMotion>
   );
 };
 
-export default Home;
+export default Upload;
