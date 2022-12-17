@@ -3,10 +3,11 @@
  */
 import clsx from 'clsx';
 import type { FC } from 'react';
+import PageMotion from '@/components/transition/PageMotion';
 
 const About: FC = () => {
   return (
-    <div className={clsx('mdc-paper')}>
+    <PageMotion>
       <div className="mdc-header">
         <h1 className="mdc-title pb-3">关于软件</h1>
         <p className="mdc-text-xs">短文本匹配工具 | Sentence Matching Toolkit</p>
@@ -57,7 +58,7 @@ const About: FC = () => {
           注：开发者不保证能够及时回复您的邮件，尤其是 2023 年 7 月之后。
         </p>
       </div>
-    </div>
+    </PageMotion>
   );
 };
 

@@ -96,10 +96,10 @@ impl CategoryHandler {
         }
 
         certainty_records.sort_by(|a, b| {
-            b.raw
+            a.raw
                 .company
                 .len()
-                .cmp(&a.raw.company.len())
+                .cmp(&b.raw.company.len())
                 .then(a.raw.company.cmp(&b.raw.company))
         });
         probably_records.sort_by(|a, b| {

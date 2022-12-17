@@ -16,6 +16,7 @@ import CategoryWindow from '../Category/CategoryWindow';
 import SubCategoryWindow from './SubCategoryWindow';
 import { useThemeContext } from '@/components/theme';
 import { AppStatus, BaseRecord, SubCategoryItem } from '@/api/core';
+import PageMotion from '@/components/transition/PageMotion';
 
 export interface SubWindowProps {
   displayList: SubCategoryItem[];
@@ -118,7 +119,7 @@ const SubCategory: FC = () => {
   }, [sourceFilePath, appStatus]);
 
   return (
-    <div className={clsx('mdc-paper')}>
+    <PageMotion>
       <div className="mdc-header">
         <h1 className="mdc-title pb-1.5">班级匹配</h1>
         <p className="mdc-text-sm">基于 N-Gram 算法模糊搜索，评分并匹配给定班级。</p>
@@ -158,7 +159,7 @@ const SubCategory: FC = () => {
           )}
         </>
       )}
-    </div>
+    </PageMotion>
   );
 };
 

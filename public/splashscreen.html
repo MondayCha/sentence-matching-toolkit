@@ -14,26 +14,6 @@
       body {
         height: 100%;
       }
-      .content {
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        flex-direction: column;
-        height: 100%;
-        background: #fafafa;
-        color: #202020;
-        position: relative;
-        border-radius: 16px;
-      }
-      h2 {
-        margin-bottom: 20px;
-      }
-      .content span {
-        font-size: 12px;
-        position: absolute;
-        right: 20px;
-        bottom: 20px;
-      }
       .titlebar {
         height: 30px;
         background: #fafafa;
@@ -45,13 +25,68 @@
         left: 0;
         right: 0;
       }
+      .content {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        flex-direction: column;
+        height: 100%;
+        background: #fafafa;
+        color: #202020;
+        position: relative;
+        border-radius: 16px;
+      }
+      .icon {
+        width: 100px;
+        height: 100px;
+        margin-bottom: 12px;
+      }
+      h2 {
+        margin-top: 16px;
+        font-size: large;
+        font-weight: 600;
+        color: #0284c7;
+      }
+      .content p {
+        font-size: 12px;
+        position: absolute;
+        right: 20px;
+        bottom: 12px;
+      }
+
+      .content p span {
+        color: #0284c7;
+      }
     </style>
   </head>
   <body>
     <div data-tauri-drag-region class="titlebar"></div>
     <div class="content">
-      <h2>短文本匹配工具</h2>
-      <span>Powered by Mondaycha</span>
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" class="icon">
+        <circle cx="256" cy="256" r="256" fill="#3b9bcb" />
+        <path
+          d="M506.532 308.824l-167.8-167.798-4.37 122.318-111.638-111.64-28.208 195.663-2.396 30.711 126.254 126.254c94.429-23.642 168.062-99.723 188.158-195.508z"
+          fill="#0284c7"
+        />
+        <path
+          d="M276.22 292.071a17.24 17.24 0 00-15.57-9.84h-37.926V151.704h-34.478v130.527H150.32c-6.654 0-12.714 3.831-15.57 9.84s-1.998 13.128 2.205 18.285l55.165 67.722a17.234 17.234 0 0026.73 0l55.165-67.722a17.235 17.235 0 002.205-18.285z"
+          fill="#fff"
+        />
+        <path
+          d="M276.22 292.071a17.24 17.24 0 00-15.57-9.84h-37.926V151.704h-16.429v232.682c4.88-.231 9.454-2.498 12.555-6.306l55.165-67.722a17.239 17.239 0 002.205-18.287z"
+          fill="#e6f3ff"
+        />
+        <path
+          d="M392.173 208.746l-53.441-67.722a17.24 17.24 0 00-27.066 0l-53.441 67.722a17.239 17.239 0 0013.534 27.918h36.202v130.527h34.478V236.665h36.202a17.24 17.24 0 0013.532-27.919z"
+          fill="#fff"
+        />
+        <path
+          d="M392.173 208.746l-53.441-67.722a17.242 17.242 0 00-13.488-6.558v232.726h17.194V236.665h36.202a17.24 17.24 0 0013.533-27.919z"
+          fill="#e6f3ff"
+        />
+      </svg>
+      <!-- <h2>短文本匹配工具</h2> -->
+      <p>Powered by <span>Mondaycha</span></p>
     </div>
   </body>
 </html>
