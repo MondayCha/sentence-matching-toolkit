@@ -338,7 +338,7 @@ const Category: FC = () => {
                   type="text"
                   id="simple-search"
                   value={searchKeyword}
-                  className="bg-haruki-50 border leading-none text-sm rounded focus:border-primary-light block w-full pl-10 pr-8 h-8 placeholder-zinc-400 dark:border-abyss-600 dark:bg-abyss-700 dark:border-opacity-50 dark:placeholder-zinc-500 dark:text-zinc-200 dark:focus:border-primary-dark text-abyss-900 focus:outline-none"
+                  className="bg-haruki-50 border leading-none text-sm rounded focus:border-primary-light-400 block w-full pl-10 pr-8 h-8 placeholder-zinc-400 dark:border-abyss-600 dark:bg-abyss-700 dark:border-opacity-50 dark:placeholder-zinc-500 dark:text-zinc-200 dark:focus:border-primary-dark-400 text-abyss-900 focus:outline-none"
                   placeholder="输入关键字"
                   autoComplete="off"
                   onChange={(e) => {
