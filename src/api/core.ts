@@ -131,3 +131,7 @@ export const getDictPath = () => invoke('get_dict_path');
 // get_sub_category_info
 export const getSubCategoryInfo = async () =>
   (await invoke('get_sub_category_state')) as SubCategoyrCSV;
+
+// rematch_sub_category
+export const rematchSubCategory = async (base: BaseRecord, name: string, company: string) =>
+  (await invoke('rematch_sub_category', { base, name, company })) as SubCategoryItem;

@@ -62,6 +62,7 @@ fn main() {
             sub_category::load_class_csv,
             sub_category::get_sub_category_state,
             sub_category::start_sub_category_matching,
+            sub_category::rematch_sub_category,
             dict::import_dictionary,
             dict::get_dict_size,
             dict::get_dict_path
