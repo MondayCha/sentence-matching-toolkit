@@ -5,7 +5,10 @@ use crate::utils::{
 use anyhow::{Context, Result};
 use csv::{Reader, ReaderBuilder};
 use serde::{Deserialize, Serialize};
-use std::{collections::BTreeSet, fs::File, io::Write, path::PathBuf};
+use std::{
+    borrow::Borrow, cmp::Ordering, collections::BTreeSet, fmt::Display, fs::File, io::Write,
+    path::PathBuf,
+};
 use tauri::PathResolver;
 
 /// nr  人名\
@@ -18,12 +21,46 @@ pub enum DictType {
     ORG,
 }
 
+/// Word is a wrapper for string
+#[derive(PartialEq, Eq, Clone, Serialize, Deserialize, Debug)]
+struct Word(String);
+
+impl From<String> for Word {
+    fn from(s: String) -> Self {
+        Word(s)
+    }
+}
+
+impl Borrow<String> for Word {
+    fn borrow(&self) -> &String {
+        &self.0
+    }
+}
+
+impl PartialOrd for Word {
+    fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
+        Some(self.cmp(other))
+    }
+}
+
+impl Ord for Word {
+    fn cmp(&self, other: &Self) -> Ordering {
+        other.0.len().cmp(&self.0.len()).then(self.0.cmp(&other.0))
+    }
+}
+
+impl Display for Word {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{}", self.0)
+    }
+}
+
 /// Receive name list to create name set
 #[derive(Default, Debug, Serialize, Deserialize)]
 pub struct DictHandler {
     pub dict_path: PathBuf,
-    per_dict: BTreeSet<String>,
-    org_dict: BTreeSet<String>,
+    per_dict: BTreeSet<Word>,
+    org_dict: BTreeSet<Word>,
 }
 
 impl DictHandler {
@@ -37,8 +74,8 @@ impl DictHandler {
             default_dict_handler.save()?;
             Ok(default_dict_handler)
         } else {
-            let mut per_dict = BTreeSet::new();
-            let mut org_dict = BTreeSet::new();
+            let mut per_dict: BTreeSet<Word> = BTreeSet::new();
+            let mut org_dict: BTreeSet<Word> = BTreeSet::new();
 
             // load set from txt "{} 5 nr" or "{} 5 nt"
             let input_file = File::open(&output_dict_path)?;
@@ -57,9 +94,9 @@ impl DictHandler {
                     .get(2)
                     .with_context(|| format!("行 {:?} 找不到标签", &record))?;
                 if tag == "nr" {
-                    per_dict.insert(name.to_string());
+                    per_dict.insert(name.to_string().into());
                 } else if tag == "nt" {
-                    org_dict.insert(name.to_string());
+                    org_dict.insert(name.to_string().into());
                 }
             }
             Ok(DictHandler {
@@ -88,9 +125,9 @@ impl DictHandler {
         }
         // if name is not in dict, add it
         if tag == DictType::PER {
-            self.per_dict.insert(name.to_string());
+            self.per_dict.insert(name.to_string().into());
         } else if tag == DictType::ORG {
-            self.org_dict.insert(name.to_string());
+            self.org_dict.insert(name.to_string().into());
         }
     }
 
@@ -137,7 +174,7 @@ impl DictHandler {
 
     pub fn get_name_from_dict(&self, info: &str) -> Option<String> {
         for key in self.per_dict.iter() {
-            if info.contains(key) {
+            if info.contains(&key.0) {
                 return Some(key.to_string());
             }
         }
