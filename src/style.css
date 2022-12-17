@@ -4,8 +4,9 @@
 
 @layer components {
   .mdc-btn-primary {
-    @apply bg-primary-light hover:brightness-110 active:brightness-100
-    dark:bg-primary-dark
+    @apply bg-primary-light-400 hover:bg-primary-light-500 active:bg-primary-light-700
+    dark:bg-primary-dark-400 dark:hover:bg-primary-dark-300 dark:active:bg-primary-dark-100
+    transition-colors ease-in-out
     text-white text-sm font-medium py-1.5 px-12 rounded shadow-md leading-normal;
   }
 
@@ -40,7 +41,7 @@
   }
 
   .mdc-text-heightlight {
-    @apply text-primary-light dark:text-primary-dark mx-0.5;
+    @apply text-primary-light-400 dark:text-primary-dark-400 mx-0.5;
   }
 
   .mdc-link {

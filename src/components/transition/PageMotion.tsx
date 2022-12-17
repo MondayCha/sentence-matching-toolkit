@@ -5,10 +5,10 @@ const PageMotion: FC<{ children: ReactNode }> = ({ children, ...others }) => {
   return (
     <motion.div
       className="mdc-paper"
-      initial={{ y: '10px', opacity: 0.5 }}
-      animate={{ y: 0, opacity: 1, transition: { duration: 0.2 } }}
-      // transition={{ ease: 'linear' }}
-      exit={{ opacity: 0, transition: { duration: 0.2 } }}
+      initial={{ y: 10, opacity: 0 }}
+      animate={{ y: 0, opacity: 1 }}
+      exit={{ y: -10, opacity: 0 }}
+      transition={{ duration: 0.2 }}
       {...others}
     >
       {children}

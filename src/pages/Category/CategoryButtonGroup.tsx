@@ -18,10 +18,10 @@ const CategoryButtonGroup: FC<{
 }> = ({ showInDict, listIndex, setListIndex }) => {
   const getButtonStyle = (matchIndex: ListIndex): string =>
     clsx(
-      'h-8 px-5 lg:px-6 mdc-text-sm bg-haruki-100 dark:bg-abyss-750 rounded-full border leading-none',
+      'h-8 px-5 lg:px-6 mdc-text-sm bg-haruki-100 dark:bg-abyss-750 rounded-full border leading-none transition-colors duration-200 ease-in-out',
       {
-        'border-primary-light text-primary-light \
-    dark:border-primary-dark dark:text-primary-dark \
+        'border-primary-light-400 text-primary-light-400 \
+    dark:border-primary-dark-400 dark:text-primary-dark-400 \
     hover:cursor-default': listIndex === matchIndex,
         'dark:text-zinc-200 dark:border-abyss-500 dark:hover:text-white dark:hover:bg-abyss-700 \
     text-abyss-900 border-zinc-300 hover:text-black hover:bg-haruki-50': listIndex !== matchIndex,

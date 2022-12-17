@@ -18,6 +18,8 @@ import {
 import { getTimestamp } from '@/middleware/utils';
 import { useThemeContext } from '@/components/theme';
 import PageMotion from '@/components/transition/PageMotion';
+import Processing from '@/assets/illustrations/Processing';
+import Collaboration from '@/assets/illustrations/Collaboration';
 
 const Upload: FC = () => {
   const [appStatus, setAppStatus] = useRecoilState(appStatusState);
@@ -104,24 +106,25 @@ const Upload: FC = () => {
         )}
       </div>
       <div className="mdc-body grow flex flex-col gap-4 overflow-hidden justify-between items-end">
-        <div className="mdc-item py-12 grow">
-          <div
-            className="flex h-full w-full flex-col items-center justify-center space-y-3 cursor-pointer"
-            onClick={selectFile}
-          >
+        <div
+          className="mdc-item py-12 h-full w-full flex flex-col items-center justify-center space-y-3 cursor-pointer"
+          onClick={selectFile}
+        >
+          {!!sourcePath.filename ? (
+            <Collaboration className="h-64 lg:h-72" theme={themeMode} />
+          ) : (
             <IconLoadFile className="h-64 lg:h-72" theme={themeMode} />
-            <div>
-              <p className="mdc-text-sm text-center">
-                {!!sourcePath.filename ? (
-                  <>
-                    已导入「<span className="mdc-text-heightlight">{sourcePath.filename}</span>」
-                  </>
-                ) : (
-                  '点击这里，导入需要统计的文件（支持 *.csv 格式）'
-                )}
-              </p>
-            </div>
-          </div>
+          )}
+
+          <p className="mdc-text-sm text-center">
+            {!!sourcePath.filename ? (
+              <>
+                已导入「<span className="mdc-text-heightlight">{sourcePath.filename}</span>」
+              </>
+            ) : (
+              '点击这里，导入需要统计的文件（支持 *.csv 格式）'
+            )}
+          </p>
         </div>
         {!!sourcePath.filename && (
           <button className="mdc-btn-primary p-1 w-32" onClick={navigateToCatrgory}>

@@ -35,7 +35,7 @@ const ListItemToggle: FC<{
             'bg-white',
             'dark:border-white border box-border border-abyss-500',
             "after:content-[''] after:absolute after:top-[4px] after:left-[4px] dark:after:bg-white after:bg-abyss-500 after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all",
-            'peer-checked:after:translate-x-5 peer-checked:after:border-white dark:peer-checked:after:border-abyss-700 peer-checked:after:bg-white dark:peer-checked:after:bg-abyss-700 peer-checked:bg-primary-light dark:peer-checked:bg-primary-dark peer-checked:border-none'
+            'peer-checked:after:translate-x-5 peer-checked:after:border-white dark:peer-checked:after:border-abyss-700 peer-checked:after:bg-white dark:peer-checked:after:bg-abyss-700 peer-checked:bg-primary-light-400 dark:peer-checked:bg-primary-dark-400 peer-checked:border-none'
           )}
         ></div>
       </label>

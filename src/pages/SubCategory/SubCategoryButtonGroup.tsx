@@ -17,8 +17,8 @@ const SubCategoryButtonGroup: FC<{
 }> = ({ subListIndex, setSubListIndex }) => {
   const getButtonStyle = (matchIndex: SubListIndex): string =>
     clsx('py-1 px-6 mdc-text-sm bg-haruki-100 dark:bg-abyss-750 rounded-full border', {
-      'border-primary-light text-primary-light \
-      dark:border-primary-dark dark:text-primary-dark \
+      'border-primary-light-400 text-primary-light-400 \
+      dark:border-primary-dark-400 dark:text-primary-dark-400 \
       hover:cursor-default': subListIndex === matchIndex,
       'dark:text-zinc-200 dark:border-abyss-500 dark:hover:text-white dark:hover:bg-abyss-700 \
       text-abyss-900 border-zinc-300 hover:text-black hover:bg-haruki-50':
