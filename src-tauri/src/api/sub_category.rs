@@ -4,6 +4,7 @@ use crate::handler::sub_category_handler::SubCategoryHandler;
 use crate::utils::classes::SubCategoryCSV;
 use crate::utils::errors::AResult;
 use crate::utils::errors::ChaosError;
+use crate::utils::records::base::BaseRecord;
 use crate::utils::records::sub_category::*;
 
 use anyhow::anyhow;
@@ -49,4 +50,20 @@ pub fn start_sub_category_matching(
     *state.path.sub_categories_path.write().unwrap() = sub_categories_path;
 
     Ok(sub_categories)
+}
+
+#[command]
+pub fn rematch_sub_category(
+    base: BaseRecord,
+    name: &str,
+    company: &str,
+    state: tauri::State<'_, AppState>,
+) -> AResult<SubCategory> {
+    let matching_rule = &state.rule.read().unwrap();
+    let dict_handler = &state.dict.read().unwrap();
+
+    let sub_category =
+        SubCategoryHandler::matching_one(&base, name, company, &matching_rule, &dict_handler)?;
+
+    Ok(sub_category)
 }

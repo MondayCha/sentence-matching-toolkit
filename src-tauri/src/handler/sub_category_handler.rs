@@ -1,16 +1,17 @@
 use std::{fs::File, io::Write, path::PathBuf};
 
 use crate::utils::{
-    matches::SubCategoryMatcher,
+    matches::{CategoryMatcher, SubCategoryMatcher},
     paths,
     records::{
-        category::ModifiedCategory,
+        base::BaseRecord,
+        category::{Category, ModifiedCategory},
         sub_category::{SubCategory, SubCategoryFlag, SubCategoryGroup},
     },
     rules::MatchingRule,
 };
 
-use super::dict_handler::DictHandler;
+use super::{dict_handler::DictHandler, t2s_handler::T2SHandler};
 
 use anyhow::{anyhow, Result};
 use rayon::prelude::*;
@@ -19,6 +20,46 @@ use tauri::PathResolver;
 pub struct SubCategoryHandler();
 
 impl SubCategoryHandler {
+    pub fn matching_one(
+        base_record: &BaseRecord,
+        name: &str,
+        company: &str,
+        rule: &MatchingRule,
+        dict_handler: &DictHandler,
+    ) -> Result<SubCategory> {
+        // create traditional to simplified handler
+        let t2s_handler = T2SHandler::new()?;
+        let t2s_convert = |s: &str| t2s_handler.convert(s);
+
+        // create matcher
+        let record_matcher = CategoryMatcher::new(rule, &dict_handler.dict_path)?;
+        let match_category = |r1: &str, r2: &str| record_matcher.match_category(r1, r2);
+
+        let category = Category::new(
+            &BaseRecord {
+                name: name.to_string(),
+                company: company.to_string(),
+                ..base_record.clone()
+            },
+            &t2s_convert,
+            &match_category,
+        );
+        let modified_category = ModifiedCategory::from(category);
+
+        // init dict and matcher
+        let get_name_from_dict = |r: &str| dict_handler.get_name_from_dict(r);
+        let sub_category_rule = rule
+            .sub_category
+            .as_ref()
+            .ok_or_else(|| anyhow!("未加载分类信息"))?;
+        let sub_category_matcher =
+            SubCategoryMatcher::new(sub_category_rule, &dict_handler.dict_path)?;
+        let match_sub_category =
+            |r: &str| sub_category_matcher.match_sub_category(r, &get_name_from_dict);
+
+        Ok(SubCategory::new(modified_category, &match_sub_category))
+    }
+
     pub fn matching(
         uuid: &str,
         accepted_categories_path: &PathBuf,

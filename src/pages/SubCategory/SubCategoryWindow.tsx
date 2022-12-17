@@ -17,7 +17,7 @@ import { BaseRecord, SubCategoryItem } from '@/api/core';
 const SubCategoryWindow: FC<{
   records: SubCategoryItem[];
   actionTag: string;
-  actionHandler: (index: number) => void;
+  actionHandler: (item: SubCategoryItem) => void;
 }> = ({ records, actionTag, actionHandler }) => {
   const { themeMode } = useThemeContext();
 
@@ -36,14 +36,14 @@ const SubCategoryWindow: FC<{
             </div>
             <div className="flex flex-row items-center justify-end space-x-2">
               {!!data[index].matchedClass && (
-                <div
-                  className="mdc-btn-secondary w-fit px-3 select-none cursor-pointer h-8"
-                  onClick={() => actionHandler(data[index].sub.index)}
-                >
+                <div className="mdc-btn-secondary w-fit px-3 select-none cursor-pointer h-8">
                   <p className="leading-normal">{data[index].matchedClass}</p>
                 </div>
               )}
-              <button className="mdc-btn-secondary h-8 w-8 flex items-center justify-center">
+              <button
+                className="mdc-btn-secondary h-8 w-8 flex items-center justify-center"
+                onClick={() => actionHandler(data[index])}
+              >
                 <Edit theme={themeMode} />
               </button>
               <button className="mdc-btn-secondary h-8 w-8 flex items-center justify-center">

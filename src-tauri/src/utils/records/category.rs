@@ -102,3 +102,15 @@ pub struct ModifiedCategory {
     pub cleaned: Option<CleanedCategory>,
     pub flag: CategoryFlag,
 }
+
+impl From<Category> for ModifiedCategory {
+    fn from(c: Category) -> Self {
+        ModifiedCategory {
+            raw: c.raw,
+            old: c.now.clone(),
+            new: c.now,
+            cleaned: c.cleaned,
+            flag: c.flag,
+        }
+    }
+}
