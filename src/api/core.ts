@@ -52,6 +52,7 @@ export interface SubCategoryItem {
   matchedClass?: string;
   simularity: number;
   flag: 'Normal' | 'Incomplete' | 'Suspension' | 'Mismatch';
+  isNameInDict: boolean;
 }
 
 export interface SubCategoryGroup {

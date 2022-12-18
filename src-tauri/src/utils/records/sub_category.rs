@@ -51,6 +51,8 @@ pub struct SubCategory {
     pub matched_class: Option<String>,
     pub simularity: f32,
     pub flag: SubCategoryFlag,
+    #[serde(rename = "isNameInDict")]
+    pub is_name_in_dict: bool,
 }
 
 impl SubCategory {
@@ -77,11 +79,16 @@ impl SubCategory {
             let mut sub_name = "".to_string();
             let mut sub_company = modified_category.new.company.clone();
             let mut sub_flag = SubCategoryFlag::Mismatch;
+            let mut sub_is_name_in_dict = false;
             let mut matched_class: Option<String> = None;
             let mut simularity = 0.0;
 
             if result_2.name_type == SubCategoryNameType::Dict {
                 sub_name = result_2.name;
+                sub_is_name_in_dict = true;
+            } else if result_1.name_type == SubCategoryNameType::Dict {
+                sub_name = result_1.name;
+                sub_is_name_in_dict = true;
             } else if !result_1.name.is_empty() {
                 sub_name = result_1.name;
             }
@@ -118,6 +125,7 @@ impl SubCategory {
                 matched_class,
                 simularity,
                 flag: sub_flag,
+                is_name_in_dict: sub_is_name_in_dict,
                 raw: modified_category.raw.clone(),
                 sub: BaseRecord {
                     name: sub_name,

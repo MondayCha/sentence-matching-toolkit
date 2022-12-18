@@ -2,7 +2,6 @@ import type { FC } from 'react';
 import log from '@/middleware/logger';
 import { useState, useEffect, useMemo } from 'react';
 import clsx from 'clsx';
-import IconPending from '@/assets/illustrations/Pending';
 import { useRecoilState, useRecoilValue, useRecoilValueLoadable, useSetRecoilState } from 'recoil';
 import {
   NavIndex,
@@ -14,14 +13,8 @@ import {
   sourceFilePathState,
   subCategoryState,
 } from '@/middleware/store';
-import Searching from '@/assets/illustrations/Searching';
-import SubCategoryButtonGroup, { SubListIndex } from './components/SubCategoryButtonGroup';
-import CategoryWindow from '../Category/CategoryWindow';
-import SubCategoryWindow from './components/SubCategoryWindow';
-import { useThemeContext } from '@/components/theme';
 import {
   AppStatus,
-  BaseRecord,
   ModifiedSubCategoryItem,
   SubCategoryItem,
   receiveModifiedSubCategory,
@@ -29,13 +22,16 @@ import {
 } from '@/api/core';
 import PageMotion from '@/components/transition/PageMotion';
 import { showConfirm, showMessage } from '@/middleware/message';
-import { ListIndex } from '../Category/CategoryButtonGroup';
 import NormalWindow from './components/NormalWindow';
-import Spin from '@/assets/others/Spin';
 import OtherWindow from './components/OtherWindow';
 import { AnimatePresence } from 'framer-motion';
 import RecycleWindow from './components/RecycleWindow';
 import { useDebounce } from 'usehooks-ts';
+import SearchInput from '@/components/Interaction/SearchInput';
+import IdlePlaceholder from '@/components/loading/IdlePlaceholder';
+import { SubCategoryIndex, listInfo } from './components/list';
+import ButtonGroup from '@/components/Interaction/ButtonGroup';
+import RematchModal, { CurrentInfo } from './components/RematchModal';
 
 export interface SubWindowProps {
   displayList: SubCategoryItem[];
@@ -50,15 +46,8 @@ const SubCategory: FC = () => {
   const sourceFilePath = useRecoilValue(sourceFilePathState);
   const subCategoryLoadable = useRecoilValueLoadable(getSubCategory);
   const [subCategory, setSubCategory] = useRecoilState(subCategoryState);
-
-  const { themeMode } = useThemeContext();
-
-  const [listIndex, setListIndex] = useState(SubListIndex.Normal);
+  const [listIndex, setListIndex] = useState(SubCategoryIndex.Normal);
   const [currentRecord, setCurrentRecord] = useState<SubCategoryItem | null>(null);
-  const [currentInfo, setCurrentInfo] = useState({
-    name: '',
-    company: '',
-  });
   const [isRematching, setIsRematching] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
 
@@ -80,16 +69,6 @@ const SubCategory: FC = () => {
   const isMatching = useMemo(() => {
     return !!sourceFilePath.filename && appStatus >= AppStatus.CanMatchClass;
   }, [sourceFilePath, appStatus]);
-
-  const shouldRematch = useMemo(() => {
-    if (currentRecord === null) {
-      return false;
-    }
-    return (
-      currentInfo.name !== currentRecord.raw.name ||
-      currentInfo.company !== currentRecord.raw.company
-    );
-  }, [currentInfo, currentRecord]);
 
   // list load effect
   useEffect(() => {
@@ -130,31 +109,31 @@ const SubCategory: FC = () => {
       setDisplayList: setNormalList,
     };
     switch (listIndex) {
-      case SubListIndex.Normal:
+      case SubCategoryIndex.Normal:
         props = {
           displayList: normalList,
           setDisplayList: setNormalList,
         };
         break;
-      case SubListIndex.Incomplete:
+      case SubCategoryIndex.Incomplete:
         props = {
           displayList: incompleteList,
           setDisplayList: setIncompleteList,
         };
         break;
-      case SubListIndex.Suspension:
+      case SubCategoryIndex.Suspension:
         props = {
           displayList: suspensionList,
           setDisplayList: setSuspensionList,
         };
         break;
-      case SubListIndex.Mismatch:
+      case SubCategoryIndex.Mismatch:
         props = {
           displayList: mismatchList,
           setDisplayList: setMismatchList,
         };
         break;
-      case SubListIndex.Recycled:
+      case SubCategoryIndex.Recycled:
         props = {
           displayList: recycledList,
           setDisplayList: setRecycledList,
@@ -162,13 +141,23 @@ const SubCategory: FC = () => {
         break;
     }
     if (debouncedSearchKeyword.length > 0) {
-      props.displayList = props.displayList.filter((item) => {
-        return (
-          item.sub.company.includes(debouncedSearchKeyword) ||
-          item.sub.name.includes(debouncedSearchKeyword) ||
-          item.matchedClass?.includes(debouncedSearchKeyword)
+      // debug
+      if (debouncedSearchKeyword === 'calc') {
+        props.displayList = props.displayList.filter((item) => item.isNameInDict === false);
+      } else if (debouncedSearchKeyword === 'with') {
+        props.displayList = props.displayList.filter(
+          (item) => item.isNameInDict === false && item.sub.name.length > 0
         );
-      });
+      } else if (debouncedSearchKeyword === 'without') {
+        props.displayList = props.displayList.filter((item) => item.sub.name === '');
+      } else {
+        props.displayList = props.displayList.filter(
+          (item) =>
+            item.sub.company.includes(debouncedSearchKeyword) ||
+            item.sub.name.includes(debouncedSearchKeyword) ||
+            item.matchedClass?.includes(debouncedSearchKeyword)
+        );
+      }
     }
     return props;
   }, [
@@ -194,15 +183,13 @@ const SubCategory: FC = () => {
       }
     }
     setCurrentRecord(null);
-    setCurrentInfo({ name: '', company: '' });
   };
 
   const modifyStartHandler = (item: SubCategoryItem) => {
     setCurrentRecord(item);
-    setCurrentInfo({ name: item.raw.name, company: item.raw.company });
   };
 
-  const handleRematch = () => {
+  const handleRematch = (currentInfo: CurrentInfo) => {
     if (currentRecord && !isRematching) {
       setIsRematching(true);
       rematchSubCategory(currentRecord.raw, currentInfo.name, currentInfo.company)
@@ -316,29 +303,33 @@ const SubCategory: FC = () => {
       </div>
       {shouldShowList ? (
         <div className="flex flex-col items-end w-full h-full space-y-4">
-          <SubCategoryButtonGroup subListIndex={listIndex} setSubListIndex={setListIndex} />
+          <ButtonGroup<SubCategoryIndex>
+            infoList={listInfo}
+            currentIndex={listIndex}
+            setCurrentIndex={setListIndex}
+          />
           <AnimatePresence mode="wait">
-            {listIndex === SubListIndex.Normal ? (
+            {listIndex === SubCategoryIndex.Normal ? (
               <NormalWindow
                 records={windowProps.displayList}
                 modifyHandler={modifyStartHandler}
                 deleteHandler={deleteHandler}
               />
-            ) : listIndex === SubListIndex.Incomplete ? (
+            ) : listIndex === SubCategoryIndex.Incomplete ? (
               <OtherWindow
                 key={'Incomplete'}
                 records={windowProps.displayList}
                 modifyHandler={modifyStartHandler}
                 deleteHandler={deleteHandler}
               />
-            ) : listIndex === SubListIndex.Suspension ? (
+            ) : listIndex === SubCategoryIndex.Suspension ? (
               <OtherWindow
                 key={'Suspension'}
                 records={windowProps.displayList}
                 modifyHandler={modifyStartHandler}
                 deleteHandler={deleteHandler}
               />
-            ) : listIndex === SubListIndex.Mismatch ? (
+            ) : listIndex === SubCategoryIndex.Mismatch ? (
               <OtherWindow
                 key={'Mismatch'}
                 records={windowProps.displayList}
@@ -349,180 +340,32 @@ const SubCategory: FC = () => {
               <RecycleWindow records={windowProps.displayList} cancelHandler={cancelHandler} />
             )}
           </AnimatePresence>
-          <div className="pl-4 lg:pl-6 flex flex-row justify-between items-center h-8 lg:h-9 w-full lg:pt-1">
-            <form className="flex items-center">
-              <label htmlFor="simple-search" className="sr-only">
-                Search
-              </label>
-              <div className="relative w-full">
-                <div className="absolute inset-y-0 left-0 flex items-center pl-4 pointer-events-none">
-                  <svg
-                    aria-hidden="true"
-                    className="w-4 h-4 text-zinc-500 dark:text-zinc-400"
-                    fill="currentColor"
-                    viewBox="0 0 20 20"
-                    xmlns="http://www.w3.org/2000/svg"
-                  >
-                    <path
-                      fillRule="evenodd"
-                      d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z"
-                      clipRule="evenodd"
-                    ></path>
-                  </svg>
-                </div>
-                <input
-                  type="text"
-                  id="simple-search"
-                  value={searchKeyword}
-                  className="bg-haruki-50 border leading-none text-sm rounded focus:border-primary-light-400 block w-full pl-10 pr-8 h-8 placeholder-zinc-400 dark:border-abyss-600 dark:bg-abyss-700 dark:border-opacity-50 dark:placeholder-zinc-500 dark:text-zinc-200 dark:focus:border-primary-dark-400 text-abyss-900 focus:outline-none"
-                  placeholder="输入关键字"
-                  autoComplete="off"
-                  onChange={(e) => {
-                    setSearchKeyword(e.target.value);
-                  }}
-                  required
-                />
-                <div className="absolute inset-y-0 right-0 flex items-center pr-2">
-                  <button
-                    type="button"
-                    className={clsx(
-                      'inline-flex items-center p-0.5 ml-2 text-sm text-zinc-400 dark:text-zinc-500 bg-transparent rounded-full hover:bg-haruki-300 dark:hover:bg-abyss-600',
-                      {
-                        hidden: debouncedSearchKeyword.length === 0,
-                      }
-                    )}
-                    onClick={() => {
-                      setSearchKeyword('');
-                    }}
-                  >
-                    <svg
-                      className="w-3.5 h-3.5"
-                      fill="currentColor"
-                      viewBox="0 0 20 20"
-                      xmlns="http://www.w3.org/2000/svg"
-                    >
-                      <path
-                        fill-rule="evenodd"
-                        d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z"
-                        clip-rule="evenodd"
-                      ></path>
-                    </svg>
-                    <span className="sr-only">Remove badge</span>
-                  </button>
-                </div>
-              </div>
-            </form>
-            <button className="mdc-btn-primary p-1 w-32 mr-12 lg:mr-14" onClick={saveHandler}>
-              {isSaving ? <Spin /> : '提交'}
-            </button>
-          </div>
+          <SearchInput
+            searchKeyword={searchKeyword}
+            setSearchKeyword={setSearchKeyword}
+            debouncedSearchKeyword={debouncedSearchKeyword}
+            isLoading={isSaving}
+            clickHandler={saveHandler}
+          />
         </div>
       ) : (
-        <>
-          {isMatching ? (
-            <div className="mdc-body grow flex flex-col gap-4 overflow-hidden justify-between items-end">
-              <div className="mdc-item py-12 grow">
-                <div className="flex h-full w-full flex-col items-center justify-center space-y-3 ">
-                  <Searching theme={themeMode} />
-                  <p className="mdc-text-sm text-center">正在匹配</p>
-                </div>
-              </div>
-            </div>
-          ) : (
-            <div className="mdc-body grow flex flex-col gap-4 overflow-hidden justify-between items-end">
-              <div className="mdc-item py-12 grow">
-                <div className="flex h-full w-full flex-col items-center justify-center space-y-3 ">
-                  <IconPending theme={themeMode} />
-                  <p className="mdc-text-sm text-center">应用空闲，可在「设置」修改班级信息</p>
-                </div>
-              </div>
-            </div>
-          )}
-        </>
+        <IdlePlaceholder
+          isMatching={isMatching}
+          idlePlaceholder={'应用空闲，可在「设置」修改班级信息'}
+          matchingPlaceholder={'正在匹配'}
+        />
       )}
       {/* <!-- Main modal --> */}
       {currentRecord !== null && (
-        <div
-          id="defaultModal"
-          tabIndex={-1}
-          className={clsx(
-            'absolute inset-0 z-50 w-full h-full overflow-x-hidden overflow-y-auto flex justify-center items-center'
-          )}
-        >
-          {/* <!-- Modal content --> */}
-          <div className="bg-white rounded-lg shadow-xl border dark:border-haruki-400 dark:border-opacity-10 p-4 dark:bg-abyss-850 max-h-96 w-3/5 max-w-xl flex flex-col">
-            {/* <!-- Modal body --> */}
-            <div className=" overflow-y-auto mdc-scroolbar grow space-y-3">
-              <p className="mdc-text-xs leading-tight">用户数据-姓名：{currentRecord.raw.name}</p>
-              <p className="mdc-text-xs leading-tight">
-                用户数据-单位：{currentRecord.raw.company}
-              </p>
-              <p className="mdc-text-xs leading-tight">
-                软件提取-姓名：
-                <span className="mdc-text-heightlight">{currentRecord.sub.name}</span>
-              </p>
-              <p className="mdc-text-xs leading-tight">
-                软件提取-班级：
-                <span className="mdc-text-heightlight">{currentRecord.sub.company}</span>
-              </p>
-              <p className="mdc-text-xs leading-tight">
-                软件提取-匹配：
-                <span className="mdc-text-heightlight">{currentRecord.matchedClass ?? '无'}</span>
-              </p>
-              <input
-                type="text"
-                value={currentInfo.name}
-                className="bg-haruki-50 border leading-none mdc-text-xs rounded focus:border-primary-light-400 block w-full px-4 h-8 placeholder-zinc-400 dark:border-abyss-600 dark:bg-abyss-700 dark:border-opacity-50 dark:placeholder-zinc-500 dark:text-zinc-200 dark:focus:border-primary-dark-400 text-abyss-900 focus:outline-none"
-                autoComplete="off"
-                autoCorrect="off"
-                spellCheck="false"
-                autoCapitalize="off"
-                onChange={(e) => {
-                  setCurrentInfo((prev) => ({
-                    name: e.target.value,
-                    company: prev.company,
-                  }));
-                }}
-              />
-              <input
-                type="text"
-                value={currentInfo.company}
-                className="bg-haruki-50 border leading-none mdc-text-xs rounded focus:border-primary-light-400 block w-full px-4 h-8 placeholder-zinc-400 dark:border-abyss-600 dark:bg-abyss-700 dark:border-opacity-50 dark:placeholder-zinc-500 dark:text-zinc-200 dark:focus:border-primary-dark-400 text-abyss-900 focus:outline-none"
-                autoComplete="off"
-                autoCorrect="off"
-                spellCheck="false"
-                autoCapitalize="off"
-                onChange={(e) => {
-                  setCurrentInfo((prev) => ({
-                    name: prev.name,
-                    company: e.target.value,
-                  }));
-                }}
-              />
-            </div>
-            {/* <!-- Modal footer --> */}
-            <div className="flex items-center pt-3 justify-end space-x-3 border-gray-200 rounded-b dark:border-gray-600">
-              <button
-                data-modal-toggle="defaultModal"
-                type="button"
-                className="mdc-btn-secondary h-8 leading-none w-32"
-                onClick={() => {
-                  setCurrentRecord(null);
-                }}
-              >
-                取消
-              </button>
-              <button
-                data-modal-toggle="defaultModal"
-                type="button"
-                className="mdc-btn-primary h-8 leading-none w-32"
-                onClick={shouldRematch ? handleRematch : handleSave}
-              >
-                {shouldRematch ? isRematching ? <Spin /> : '匹配' : '保存'}
-              </button>
-            </div>
-          </div>
-        </div>
+        <RematchModal
+          currentRecord={currentRecord}
+          handleCancel={() => {
+            setCurrentRecord(null);
+          }}
+          handleRematch={handleRematch}
+          handleSave={handleSave}
+          isRematching={isRematching}
+        />
       )}
     </PageMotion>
   );
