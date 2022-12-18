@@ -127,6 +127,7 @@ impl SubCategoryHandler {
             a.matched_class
                 .cmp(&b.matched_class)
                 .then(a.sub.company.cmp(&b.sub.company))
+                .then(a.sub.name.cmp(&b.sub.name))
         });
 
         let sub_category_record_group = SubCategoryGroup {

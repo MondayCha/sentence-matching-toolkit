@@ -25,7 +25,7 @@ const BaseRow: FC<{
                 {!!subTitle && subTitle.length > 0 ? (
                   subTitle
                 ) : (
-                  <span className="mdc-text-heightlight">获取失败</span>
+                  <span className="mdc-text-heightlight mx-0">获取失败</span>
                 )}
               </p>
             </div>
