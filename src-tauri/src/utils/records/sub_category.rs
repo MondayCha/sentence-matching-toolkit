@@ -1,3 +1,5 @@
+use std::cmp::Ordering;
+
 use super::{base::BaseRecord, category::ModifiedCategory};
 use anyhow::Result;
 use serde::{Deserialize, Serialize};
@@ -72,7 +74,7 @@ impl SubCategory {
                 Err(_) => return default,
             };
 
-            let mut sub_name = modified_category.new.name.clone();
+            let mut sub_name = "".to_string();
             let mut sub_company = modified_category.new.company.clone();
             let mut sub_flag = SubCategoryFlag::Mismatch;
             let mut matched_class: Option<String> = None;
@@ -139,4 +141,63 @@ pub struct SubCategoryGroup {
     pub suspension_records: Vec<SubCategory>,
     #[serde(rename = "mismatchRecords")]
     pub mismatch_records: Vec<SubCategory>,
+}
+
+#[derive(Default, Debug, Serialize, Deserialize, Clone, PartialEq, Eq)]
+pub struct ModifiedSubCategory {
+    pub index: i32,
+    pub name: String,
+    #[serde(rename = "matchedClass")]
+    pub matched_class: String,
+}
+
+impl PartialOrd for ModifiedSubCategory {
+    fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
+        Some(self.cmp(other))
+    }
+}
+
+impl Ord for ModifiedSubCategory {
+    fn cmp(&self, other: &Self) -> Ordering {
+        if self.matched_class.is_empty() {
+            return Ordering::Greater;
+        } else if other.matched_class.is_empty() {
+            return Ordering::Less;
+        }
+        self.matched_class.cmp(&other.matched_class)
+    }
+}
+
+#[derive(Default, Debug, Serialize, Deserialize)]
+pub struct OutputRecord {
+    #[serde(rename = "序号")]
+    pub index: usize,
+    #[serde(rename = "姓名")]
+    pub name: String,
+    #[serde(rename = "提交时间")]
+    pub timestamp: String,
+    #[serde(rename = "单位")]
+    pub company: String,
+    #[serde(rename = "班级")]
+    pub class: String,
+    #[serde(rename = "原始数据")]
+    pub info: String,
+}
+
+impl OutputRecord {
+    pub fn new(
+        index: usize,
+        company: &str,
+        sub_category: &SubCategory,
+        modified_sub_category: &ModifiedSubCategory,
+    ) -> Self {
+        OutputRecord {
+            index,
+            name: modified_sub_category.name.clone(),
+            timestamp: sub_category.raw.timestamp.clone(),
+            company: company.to_string(),
+            class: modified_sub_category.matched_class.clone(),
+            info: format!("{} {}", sub_category.raw.name, sub_category.raw.company),
+        }
+    }
 }

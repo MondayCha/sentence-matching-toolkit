@@ -401,7 +401,7 @@ impl SubCategoryMatcher {
                 cleaned_sub_category.simularity = search_result.similarity;
 
                 if cleaned_sub_category.name_type == SubCategoryNameType::Calc {
-                    cleaned_sub_category.name = splitted_name;
+                    cleaned_sub_category.name = self.extracter.get_chinese(&splitted_name);
                 }
 
                 println!("Normal sub category: {:?}", &category.name);

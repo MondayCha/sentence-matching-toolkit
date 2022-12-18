@@ -63,6 +63,7 @@ fn main() {
             sub_category::get_sub_category_state,
             sub_category::start_sub_category_matching,
             sub_category::rematch_sub_category,
+            sub_category::receive_modified_sub_category,
             dict::import_dictionary,
             dict::get_dict_size,
             dict::get_dict_path

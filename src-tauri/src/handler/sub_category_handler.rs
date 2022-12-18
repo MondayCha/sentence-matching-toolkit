@@ -1,4 +1,9 @@
-use std::{fs::File, io::Write, path::PathBuf};
+use std::{
+    collections::HashMap,
+    fs::File,
+    io::{Read, Write},
+    path::PathBuf,
+};
 
 use crate::utils::{
     matches::{CategoryMatcher, SubCategoryMatcher},
@@ -6,14 +11,16 @@ use crate::utils::{
     records::{
         base::BaseRecord,
         category::{Category, ModifiedCategory},
-        sub_category::{SubCategory, SubCategoryFlag, SubCategoryGroup},
+        sub_category::{
+            ModifiedSubCategory, OutputRecord, SubCategory, SubCategoryFlag, SubCategoryGroup,
+        },
     },
     rules::MatchingRule,
 };
 
-use super::{dict_handler::DictHandler, t2s_handler::T2SHandler};
+use super::{csv_handler::CsvHandler, dict_handler::DictHandler, t2s_handler::T2SHandler};
 
-use anyhow::{anyhow, Result};
+use anyhow::{anyhow, Context, Result};
 use rayon::prelude::*;
 use tauri::PathResolver;
 
@@ -136,5 +143,78 @@ impl SubCategoryHandler {
         f.write_all(accepted_records_data.as_bytes())?;
 
         Ok((sub_category_record_group, history_sorted_class_path))
+    }
+
+    /// `receiving` 从 `APP_DATA/history/uuid` 目录下的文件中读取原始数据，\
+    /// 并和前端传来的数据进行整合，\
+    /// 将整合后的数据写入 `APP_DATA/history/uuid` 目录下的文件中。
+    pub fn receiving(
+        uuid: &str,
+        sub_categories_path: &PathBuf,
+        mut records: Vec<ModifiedSubCategory>,
+        with_bom: bool,
+        rule: &MatchingRule,
+        path_resolver: &PathResolver,
+    ) -> Result<PathBuf> {
+        // load records map indexed by index from record_group_path
+        let mut records_map = HashMap::new();
+        let mut f = File::open(sub_categories_path)?;
+        let mut sub_category_group_data = String::new();
+        f.read_to_string(&mut sub_category_group_data)?;
+        let category_group: SubCategoryGroup = serde_json::from_str(&sub_category_group_data)?;
+
+        for record in category_group.normal_records {
+            records_map.insert(record.raw.index, record);
+        }
+        for record in category_group.incomplete_records {
+            records_map.insert(record.raw.index, record);
+        }
+        for record in category_group.suspension_records {
+            records_map.insert(record.raw.index, record);
+        }
+        for record in category_group.mismatch_records {
+            records_map.insert(record.raw.index, record);
+        }
+
+        records.sort();
+
+        // update records
+        let mut modified_records = Vec::new();
+
+        for (i, record) in records.iter().enumerate() {
+            // put record into modified_records
+            if !records_map.contains_key(&record.index) {
+                continue;
+            }
+            let sub_category = records_map
+                .get(&record.index)
+                .with_context(|| "无法读取历史记录，保存失败")?
+                .clone();
+
+            let modified_record = OutputRecord::new(i + 1, &rule.rule_name, &sub_category, record);
+            modified_records.push(modified_record);
+        }
+
+        // save modified_records to accepted_records_path in json format
+        let accepted_records_path = paths::history_accepted_class_path(&path_resolver, uuid)?;
+        let data = serde_json::to_string(&modified_records)?;
+        let mut f = File::create(&accepted_records_path)?;
+        f.write_all(data.as_bytes())?;
+
+        // save the "new" in modified_records to accepted_records_csv_path in csv format
+        let accepted_records_csv_path =
+            paths::history_accepted_class_csv_path(&path_resolver, uuid)?;
+
+        let mut wtr = csv::Writer::from_path(&accepted_records_csv_path)?;
+        for record in modified_records {
+            wtr.serialize(record)?;
+        }
+
+        // if params.with_bom is true, reopen csv file, add BOM to the head
+        if with_bom {
+            CsvHandler::add_utf8_bom(&accepted_records_csv_path)?;
+        }
+
+        Ok(accepted_records_path)
     }
 }

@@ -67,3 +67,27 @@ pub fn rematch_sub_category(
 
     Ok(sub_category)
 }
+
+#[command]
+pub fn receive_modified_sub_category(
+    records: Vec<ModifiedSubCategory>,
+    uuid: &str,
+    with_bom: bool,
+    state: tauri::State<'_, AppState>,
+    app_handle: AppHandle,
+) -> AResult<()> {
+    let matching_rule = &state.rule.read().unwrap();
+    let sub_categories_path = &state.path.sub_categories_path.read().unwrap();
+
+    let accepted_records_path = SubCategoryHandler::receiving(
+        uuid,
+        sub_categories_path,
+        records,
+        with_bom,
+        matching_rule,
+        &app_handle.path_resolver(),
+    )?;
+
+    *state.path.accepted_sub_categories_path.write().unwrap() = accepted_records_path;
+    Ok(())
+}
