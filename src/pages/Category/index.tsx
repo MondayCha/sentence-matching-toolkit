@@ -39,11 +39,11 @@ export interface WindowProps {
 
 const Category: FC = () => {
   const [appStatus, setAppStatus] = useRecoilState(appStatusState);
+  const uuid = useRecoilValue(getUuid);
   const isWin32 = useRecoilValue(getIsWin32);
   const setNavIndex = useSetRecoilState(navIndexState);
   const subCategoryInfo = useRecoilValue(subCategoryInfoState);
   const matchingRule = useRecoilValue(matchingRuleState);
-  const uuid = useRecoilValue(getUuid);
   const categoryLoadable = useRecoilValueLoadable(getCategory);
   const [category, setCategory] = useRecoilState(categoryState);
   const setSubCategoryUpdateTrigger = useSetRecoilState(subCategoryUpdateTriggerState);
@@ -214,6 +214,9 @@ const Category: FC = () => {
   ]);
 
   const handleSubmit = async () => {
+    if (isLoading) {
+      return;
+    }
     log.info('submit');
     setIsLoading(true);
     setCategory({

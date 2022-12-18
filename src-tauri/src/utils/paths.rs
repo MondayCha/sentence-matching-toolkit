@@ -116,6 +116,18 @@ pub fn history_accepted_class_path(path_resolver: &PathResolver, uuid: &str) -> 
     )))
 }
 
+/// $APP_DATA/history/2022-11-25-15-00-00/2_accepted_records.csv
+pub fn history_accepted_class_csv_path(
+    path_resolver: &PathResolver,
+    uuid: &str,
+) -> Result<PathBuf> {
+    let history_today_dir = history_uuid_dir(path_resolver, uuid)?;
+    Ok(history_today_dir.join(format!(
+        "4_accepted_class_records_{}.csv",
+        get_current_time()
+    )))
+}
+
 /// $APP_DATA/config/rule.json
 pub fn rule_path(path_resolver: &PathResolver) -> Result<PathBuf> {
     let app_data_dir = config_dir(path_resolver)?;

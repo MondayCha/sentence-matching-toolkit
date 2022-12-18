@@ -66,6 +66,12 @@ export type BaseSubCategoryGroup = SubCategoryGroup & {
   recycledRecords: SubCategoryItem[];
 };
 
+export interface ModifiedSubCategoryItem {
+  index: number;
+  name: string;
+  matchedClass?: string;
+}
+
 export interface SubCategoyrCSV {
   name: string;
 }
@@ -135,3 +141,10 @@ export const getSubCategoryInfo = async () =>
 // rematch_sub_category
 export const rematchSubCategory = async (base: BaseRecord, name: string, company: string) =>
   (await invoke('rematch_sub_category', { base, name, company })) as SubCategoryItem;
+
+// receive_modified_records
+export const receiveModifiedSubCategory = async (
+  records: ModifiedSubCategoryItem[],
+  uuid: string,
+  withBom: boolean
+) => (await invoke('receive_modified_sub_category', { records, uuid, withBom })) as string;
