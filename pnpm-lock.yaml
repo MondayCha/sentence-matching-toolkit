@@ -28,7 +28,7 @@ specifiers:
   recoil: ^0.7.6
   tailwind-scrollbar: ^2.0.1
   tailwindcss: ^3.2.4
-  tauri-plugin-store-api: git+ssh://git@github.com:tauri-apps/tauri-plugin-store.git
+  tauri-plugin-store-api: ./libs/ts/store
   typescript: ^4.6.4
   usehooks-ts: ^2.9.1
   vite: ^3.0.2
@@ -45,7 +45,7 @@ dependencies:
   react-virtualized-auto-sizer: 1.0.7_biqbaboplfbrettd7655fr4n2y
   react-window: 1.8.8_biqbaboplfbrettd7655fr4n2y
   recoil: 0.7.6_biqbaboplfbrettd7655fr4n2y
-  tauri-plugin-store-api: github.com/tauri-apps/tauri-plugin-store/9bd993aa67766596638bbfd91e79a1bf8f632014
+  tauri-plugin-store-api: link:libs/ts/store
   usehooks-ts: 2.9.1_biqbaboplfbrettd7655fr4n2y
 
 devDependencies:
@@ -711,14 +711,6 @@ packages:
         tarball: https://registry.npm.taobao.org/@remix-run/router/-/router-1.0.3.tgz,
       }
     engines: { node: '>=14' }
-    dev: false
-
-  /@tauri-apps/api/1.1.0:
-    resolution:
-      {
-        integrity: sha512-n13pIqdPd3KtaMmmAcrU7BTfdMtIlGNnfZD0dNX8L4p8dgmuNyikm6JAA+yCpl9gqq6I8x5cV2Y0muqdgD0cWw==,
-      }
-    engines: { node: '>= 12.22.0', npm: '>= 6.6.0', yarn: '>= 1.19.1' }
     dev: false
 
   /@tauri-apps/api/1.2.0:
@@ -3223,17 +3215,3 @@ packages:
       }
     engines: { node: '>= 14' }
     dev: true
-
-  github.com/tauri-apps/tauri-plugin-store/9bd993aa67766596638bbfd91e79a1bf8f632014:
-    resolution:
-      {
-        commit: 9bd993aa67766596638bbfd91e79a1bf8f632014,
-        repo: git+ssh://git@github.com/tauri-apps/tauri-plugin-store.git,
-        type: git,
-      }
-    name: tauri-plugin-store-api
-    version: 0.1.0
-    dependencies:
-      '@tauri-apps/api': 1.1.0
-      tslib: 2.4.0
-    dev: false
