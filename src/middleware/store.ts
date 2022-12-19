@@ -1,5 +1,5 @@
 import { atom, selector } from 'recoil';
-import { Store } from 'tauri-plugin-store-api';
+import { Store } from './storeApi';
 import { platform } from '@tauri-apps/api/os';
 
 import {
