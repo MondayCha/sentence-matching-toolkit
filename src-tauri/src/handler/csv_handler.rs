@@ -28,7 +28,7 @@ impl CsvHandler {
     /// 3. 列名是否符合要求
     ///
     /// 如果符合要求，返回 `Ok(String)`，其中 `String` 为文件名
-    pub fn check_csv_availablity(&self, csv_path: &str) -> Result<String> {
+    pub fn check_csv_availablity(&self, csv_path: &str) -> Result<(String, String, String)> {
         let path = std::path::Path::new(csv_path);
         if !path.exists() {
             return Err(anyhow!("文件 {:?} 不存在", csv_path));
@@ -77,12 +77,12 @@ impl CsvHandler {
 
         let csv_name = get_filename_from_path(&pathbuf);
         let sub_category_csv = SubCategoryCSV {
-            name: csv_name.clone(),
+            name: csv_name.0.clone(),
             available_grade: vec![],
             available_sequence: vec![],
             classes,
         };
-        Ok((sub_category_csv, csv_name))
+        Ok((sub_category_csv, csv_name.0))
     }
 
     /// `add_utf8_bom` 为输入的 CSV 文件添加 UTF-8 BOM 头\
@@ -94,6 +94,7 @@ impl CsvHandler {
         f.read_to_end(&mut content)?;
 
         if content.starts_with(b"\xEF\xBB\xBF") {
+            println!("文件 {:?} 已经有 UTF-8 BOM 头，不做任何操作。", csv_path);
             return Ok(());
         }
 

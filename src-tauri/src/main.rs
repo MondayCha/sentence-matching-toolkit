@@ -27,7 +27,30 @@ fn setup_dirs(path_resolver: &PathResolver) -> Result<()> {
     }
     if !history_dir.exists() {
         fs::create_dir_all(&history_dir)?;
+    } else {
+        // remove history_uuid_dir (history_dir/2022.11.25_15.00.00/) 1 days ago
+        let history_uuid_dirs = fs::read_dir(&history_dir)?;
+        for history_uuid_dir in history_uuid_dirs {
+            let history_uuid_dir = history_uuid_dir?;
+            let history_uuid_dir_path = history_uuid_dir.path();
+            let history_uuid_dir = history_uuid_dir_path.to_str().unwrap();
+            // split / or \\ to get last element
+            let history_uuid_dir = history_uuid_dir
+                .split(|c| c == '/' || c == '\\')
+                .last()
+                .unwrap();
+            let history_uuid_dir =
+                chrono::NaiveDateTime::parse_from_str(history_uuid_dir, "%Y.%m.%d_%H.%M.%S");
+            if let Ok(history_uuid_dir) = history_uuid_dir {
+                let now = chrono::Local::now().naive_local();
+                let diff = now - history_uuid_dir;
+                if diff.num_days() > 1 {
+                    fs::remove_dir_all(&history_uuid_dir_path)?;
+                }
+            }
+        }
     }
+
     if !config_dir.exists() {
         fs::create_dir_all(&config_dir)?;
     }
@@ -66,7 +89,9 @@ fn main() {
             sub_category::receive_modified_sub_category,
             dict::import_dictionary,
             dict::get_dict_size,
-            dict::get_dict_path
+            dict::get_dict_path,
+            export::export_sub_category,
+            export::get_vba_snippet,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

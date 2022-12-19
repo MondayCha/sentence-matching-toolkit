@@ -7,7 +7,7 @@ use tauri::regex::Regex;
 
 #[derive(RustEmbed)]
 #[folder = "resources/"]
-struct Asset;
+pub struct Asset;
 
 pub struct T2SHandler {
     dict: HashMap<String, String>,

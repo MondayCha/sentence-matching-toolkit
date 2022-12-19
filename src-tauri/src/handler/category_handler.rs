@@ -235,7 +235,7 @@ impl CategoryHandler {
             let sr = SourceRecord::from(record);
             wtr.serialize(sr)?;
         }
-
+        wtr.flush()?;
         // if params.with_bom is true, reopen csv file, add BOM to the head
         if with_bom {
             CsvHandler::add_utf8_bom(&accepted_records_csv_path)?;

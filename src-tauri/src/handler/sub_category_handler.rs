@@ -154,9 +154,10 @@ impl SubCategoryHandler {
         sub_categories_path: &PathBuf,
         mut records: Vec<ModifiedSubCategory>,
         with_bom: bool,
+        auto_import: bool,
         rule: &MatchingRule,
         path_resolver: &PathResolver,
-    ) -> Result<PathBuf> {
+    ) -> Result<(PathBuf, Option<Vec<String>>)> {
         // load records map indexed by index from record_group_path
         let mut records_map = HashMap::new();
         let mut f = File::open(sub_categories_path)?;
@@ -210,12 +211,25 @@ impl SubCategoryHandler {
         for record in modified_records {
             wtr.serialize(record)?;
         }
-
+        wtr.flush()?;
         // if params.with_bom is true, reopen csv file, add BOM to the head
         if with_bom {
             CsvHandler::add_utf8_bom(&accepted_records_csv_path)?;
         }
 
-        Ok(accepted_records_path)
+        let names = if auto_import {
+            // collect record.name in records which is_name_in_dict is false and name is not empty
+            let mut names = vec![];
+            for record in records.iter() {
+                if !record.is_name_in_dict && !record.name.is_empty() {
+                    names.push(record.name.clone());
+                }
+            }
+            Some(names)
+        } else {
+            None
+        };
+
+        Ok((accepted_records_path, names))
     }
 }

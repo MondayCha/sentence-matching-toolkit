@@ -16,7 +16,7 @@ import { useThemeContext } from '@/components/theme';
 const DictManage: FC = () => {
   const [dictEnabled, setDictEnabled] = useRecoilState(dictState);
   const [dictSize, setDictSize] = useRecoilState(dictSizeState);
-  const { themeMode, toggleTheme } = useThemeContext();
+  const { themeMode } = useThemeContext();
 
   const changeHandler = async (index: number, state: boolean) => {
     await store.set(DICT_SETTING_KEY, state);
@@ -77,19 +77,12 @@ const DictManage: FC = () => {
       <ListItemToggle
         index={0}
         title="自动导入"
-        subtitle="导出匹配结果时，同时将新名词添加到词典"
+        subtitle="生成匹配结果时，同时将新名词添加到词典"
         icon={<Book theme={themeMode} />}
         toggleState={dictEnabled}
         changeHandler={changeHandler}
       />
-      <ListItemToggle
-        index={0}
-        title="夜间模式"
-        subtitle="设置夜间模式"
-        icon={<Book theme={themeMode} />}
-        toggleState={themeMode === 'dark'}
-        changeHandler={toggleTheme}
-      />
+
       <div className="mt-1.5 mr-4 flex flex-row space-x-2.5">
         <button className="mdc-btn-primary p-1 w-32" onClick={selectFile}>
           导入词典

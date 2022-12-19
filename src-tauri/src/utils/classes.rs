@@ -6,7 +6,7 @@ pub struct ClassInfo {
     #[serde(rename = "班级")]
     name: String,
     #[serde(rename = "班级人数")]
-    size: i32,
+    size: usize,
 }
 
 impl From<IntermediateClassInfo> for ClassInfo {
@@ -21,7 +21,7 @@ impl From<IntermediateClassInfo> for ClassInfo {
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct IntermediateClassInfo {
     pub name: String,
-    pub size: i32,
+    pub size: usize,
     pub grade: Option<String>,
     pub identity: Option<String>,
     pub sequence: Option<String>,

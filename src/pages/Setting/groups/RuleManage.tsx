@@ -123,7 +123,7 @@ const RuleManage: FC = () => {
         actionHandler={loadSubCategory}
       />
       <div className="mt-1.5 mr-4 flex flex-row space-x-2.5">
-        <button className="mdc-btn-primary p-1 w-32">导出规则</button>
+        <button className="mdc-btn-primary">导出规则</button>
       </div>
     </div>
   );

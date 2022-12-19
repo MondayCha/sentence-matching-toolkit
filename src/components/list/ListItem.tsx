@@ -12,7 +12,7 @@ const ListItem: FC<{
 
   return (
     <li className="mdc-item">
-      <div className="flex flex-row justify-between items-start">
+      <div className="flex flex-row justify-between items-center">
         <div className="flex flex-row justify-start items-center space-x-3 2xl:space-x-4">
           {icon && icon}
           <div className="flex flex-col space-y-2">

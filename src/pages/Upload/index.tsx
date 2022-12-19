@@ -60,6 +60,8 @@ const Upload: FC = () => {
       setSourcePath({
         path: '',
         filename: '',
+        filenameWithoutExt: '',
+        parent: '',
         timestamp: getTimestamp(),
       });
       return;
@@ -69,11 +71,13 @@ const Upload: FC = () => {
 
     checkCsvAvailability(fullPath)
       .then((res) => {
-        const filename = res as string;
+        const [filename, filenameWithoutExt, parent] = res;
         log.info(filename);
         setSourcePath({
           path: fullPath,
           filename,
+          filenameWithoutExt,
+          parent,
           timestamp: getTimestamp(),
         });
       })
@@ -83,6 +87,8 @@ const Upload: FC = () => {
         setSourcePath({
           path: '',
           filename: '',
+          filenameWithoutExt: '',
+          parent: '',
           timestamp: getTimestamp(),
         });
         setAppStatus(AppStatus.Idle);
@@ -107,7 +113,7 @@ const Upload: FC = () => {
       </div>
       <div className="mdc-body grow flex flex-col gap-4 overflow-hidden justify-between items-end">
         <div
-          className="mdc-item py-12 h-full w-full flex flex-col items-center justify-center space-y-3 cursor-pointer"
+          className="mdc-item py-12 grow w-full flex flex-col items-center justify-center space-y-3 cursor-pointer"
           onClick={selectFile}
         >
           {!!sourcePath.filename ? (
@@ -127,7 +133,7 @@ const Upload: FC = () => {
           </p>
         </div>
         {!!sourcePath.filename && (
-          <button className="mdc-btn-primary p-1 w-32" onClick={navigateToCatrgory}>
+          <button className="mdc-btn-primary" onClick={navigateToCatrgory}>
             开始统计
           </button>
         )}

@@ -96,7 +96,7 @@ const RematchModal: FC<{
           <button
             data-modal-toggle="defaultModal"
             type="button"
-            className="mdc-btn-secondary h-8 leading-none w-32"
+            className="mdc-btn-secondary"
             onClick={handleCancel}
           >
             取消
@@ -104,7 +104,7 @@ const RematchModal: FC<{
           <button
             data-modal-toggle="defaultModal"
             type="button"
-            className="mdc-btn-primary h-8 leading-none w-32"
+            className="mdc-btn-primary"
             onClick={shouldRematch ? () => handleRematch(currentInfo) : handleSave}
           >
             {shouldRematch ? isRematching ? <Spin /> : '匹配' : '保存'}

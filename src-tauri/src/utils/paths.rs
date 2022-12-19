@@ -8,14 +8,25 @@ fn get_current_time() -> String {
     now.format("%H_%M_%S").to_string()
 }
 
-pub fn get_filename_from_path(path: &Path) -> String {
-    path.file_name()
+pub fn get_filename_from_path(path: &Path) -> (String, String, String) {
+    let filename = path
+        .file_name()
         .map(|os_s| {
             os_s.to_str()
                 .map(|s| s.to_string())
-                .unwrap_or_else(|| "unknown".to_string())
+                .unwrap_or_else(|| "".to_string())
         })
-        .unwrap_or_else(|| "unknown".to_string())
+        .unwrap_or_else(|| "".to_string());
+    let filename_without_extension = filename.split('.').next().unwrap_or("").to_string();
+    let parent_dir = path
+        .parent()
+        .map(|os_s| {
+            os_s.to_str()
+                .map(|s| s.to_string())
+                .unwrap_or_else(|| "".to_string())
+        })
+        .unwrap_or_else(|| "".to_string());
+    (filename, filename_without_extension, parent_dir)
 }
 
 pub fn pathbuf_to_string(pathbuf: &PathBuf) -> Result<String> {
