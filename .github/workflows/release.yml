@@ -17,6 +17,30 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v3
 
+      - name: Sync node version
+        uses: actions/setup-node@v3
+        with:
+          node-version: 'lts/*'
+
+      - name: Pnpm setup
+        uses: pnpm/action-setup@v2.2.4
+        with:
+          version: 7
+          run_install: false
+
+      - name: Get pnpm store directory
+        id: pnpm-cache
+        run: |
+          echo "::set-output name=pnpm_cache_dir::$(pnpm store path)"
+
+      - name: Setup pnpm cache
+        uses: actions/cache@v3
+        with:
+          path: ${{ steps.pnpm-cache.outputs.pnpm_cache_dir }}
+          key: ${{ runner.os }}-pnpm-store-${{ hashFiles('**/pnpm-lock.yaml') }}
+          restore-keys: |
+            ${{ runner.os }}-pnpm-store-
+
       - name: Install dependencies (ubuntu only)
         if: matrix.platform == 'ubuntu-20.04'
         # You can remove libayatana-appindicator3-dev if you don't use the system tray feature.
@@ -32,20 +56,9 @@ jobs:
         with:
           workspaces: './src-tauri -> target'
 
-      - name: Pnpm setup
-        uses: pnpm/action-setup@v2
-        with:
-          version: 7
-
-      - name: Sync node version and setup cache
-        uses: actions/setup-node@v3
-        with:
-          node-version: 'lts/*'
-          cache: 'pnpm' # Set this to npm, yarn or pnpm.
-
       - name: Install app dependencies and build web
         # Remove `&& yarn build` if you build your frontend in `beforeBuildCommand`
-        run: pnpm install && pnpm build # Change this to npm, yarn or pnpm.
+        run: pnpm install --frozen-lockfile && pnpm build # Change this to npm, yarn or pnpm.
 
       - name: Build the app
         uses: tauri-apps/tauri-action@v0
