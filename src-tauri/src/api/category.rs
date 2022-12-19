@@ -10,7 +10,7 @@ use tauri::AppHandle;
 
 /// `check_csv_headers` 检查 csv 文件是否有必要的列名，如果有则返回 csv 文件名，如果没有则返回错误。
 #[command]
-pub fn check_csv_headers(path: &str) -> AResult<String> {
+pub fn check_csv_headers(path: &str) -> AResult<(String, String, String)> {
     // check if file exists
     let csv_hander = CsvHandler::new(vec![
         "序号".to_string(),

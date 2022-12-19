@@ -71,6 +71,7 @@ export interface ModifiedSubCategoryItem {
   index: number;
   name: string;
   matchedClass?: string;
+  isNameInDict: boolean;
 }
 
 export interface SubCategoyrCSV {
@@ -102,7 +103,7 @@ export const loadSubCategoryCSV = (path: string) => invoke('load_class_csv', { p
  * @throws Error if the csv file is not available.
  */
 export const checkCsvAvailability = async (path: string) =>
-  (await invoke('check_csv_headers', { path })) as string;
+  (await invoke('check_csv_headers', { path })) as string[];
 
 export const startCategoryMatching = async (path: string, uuid: string) =>
   (await invoke('start_category_matching', { path, uuid })) as CategoryGroup;
@@ -130,7 +131,7 @@ export const openCacheDir = () => invoke('open_cache_dir');
 export const removeHistoryAndCache = () => invoke('remove_history_and_cache');
 
 // get_dict_size
-export const getDictSize = () => invoke('get_dict_size');
+export const getDictSize = async () => (await invoke('get_dict_size')) as number;
 
 // get_dict_path
 export const getDictPath = () => invoke('get_dict_path');
@@ -147,5 +148,14 @@ export const rematchSubCategory = async (base: BaseRecord, name: string, company
 export const receiveModifiedSubCategory = async (
   records: ModifiedSubCategoryItem[],
   uuid: string,
-  withBom: boolean
-) => (await invoke('receive_modified_sub_category', { records, uuid, withBom })) as string;
+  withBom: boolean,
+  autoImport: boolean
+) =>
+  (await invoke('receive_modified_sub_category', { records, uuid, withBom, autoImport })) as string;
+
+// export_sub_category
+export const exportSubCategory = async (path: string, withBom: boolean) =>
+  (await invoke('export_sub_category', { path, withBom })) as string;
+
+// get_vba_snippet
+export const getVbaSnippet = async () => (await invoke('get_vba_snippet')) as string;

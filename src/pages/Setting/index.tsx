@@ -2,16 +2,16 @@
  * suspense fallback component
  */
 import type { FC } from 'react';
-import { motion } from 'framer-motion';
-import { Suspense } from 'react';
-import clsx from 'clsx';
 import DataStorage from './groups/DataStorage';
 import RuleManage from './groups/RuleManage';
 import DictManage from './groups/DictManage';
-import Skeleton from '@/components/loading/Skeleton';
 import PageMotion from '@/components/transition/PageMotion';
+import ListItemToggle from '@/components/list/ListItemToggle';
+import { useThemeContext } from '@/components/theme';
+import DarkMode from '@/assets/descriptions/DarkMode';
 
 const Setting: FC = () => {
+  const { themeMode, toggleTheme } = useThemeContext();
   return (
     <PageMotion>
       <div className="mdc-header">
@@ -22,6 +22,16 @@ const Setting: FC = () => {
         <RuleManage />
         <DictManage />
         <DataStorage />
+        <div className="mdc-item-group">
+          <ListItemToggle
+            index={0}
+            title="夜间模式"
+            subtitle="设置夜间模式"
+            icon={<DarkMode theme={themeMode} />}
+            toggleState={themeMode === 'dark'}
+            changeHandler={toggleTheme}
+          />
+        </div>
       </ul>
     </PageMotion>
   );

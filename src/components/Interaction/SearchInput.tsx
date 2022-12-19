@@ -75,7 +75,7 @@ const SearchInput: FC<{
           </div>
         </div>
       </form>
-      <button className="mdc-btn-primary p-1 w-32 mr-12 lg:mr-14" onClick={clickHandler}>
+      <button className="mdc-btn-primary mr-12 lg:mr-14" onClick={clickHandler}>
         {isLoading ? <Spin /> : '提交'}
       </button>
     </div>

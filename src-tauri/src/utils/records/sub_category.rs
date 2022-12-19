@@ -157,6 +157,8 @@ pub struct ModifiedSubCategory {
     pub name: String,
     #[serde(rename = "matchedClass")]
     pub matched_class: String,
+    #[serde(rename = "isNameInDict")]
+    pub is_name_in_dict: bool,
 }
 
 impl PartialOrd for ModifiedSubCategory {
@@ -182,12 +184,12 @@ pub struct OutputRecord {
     pub index: usize,
     #[serde(rename = "姓名")]
     pub name: String,
-    #[serde(rename = "提交时间")]
-    pub timestamp: String,
-    #[serde(rename = "单位")]
-    pub company: String,
     #[serde(rename = "班级")]
     pub class: String,
+    #[serde(rename = "学校")]
+    pub company: String,
+    #[serde(rename = "提交时间")]
+    pub timestamp: String,
     #[serde(rename = "原始数据")]
     pub info: String,
 }
@@ -206,6 +208,26 @@ impl OutputRecord {
             company: company.to_string(),
             class: modified_sub_category.matched_class.clone(),
             info: format!("{} {}", sub_category.raw.name, sub_category.raw.company),
+        }
+    }
+}
+
+#[derive(Default, Debug, Serialize, Deserialize)]
+pub struct OutputClass {
+    #[serde(rename = "班级")]
+    pub class: String,
+    #[serde(rename = "总人数")]
+    pub total: usize,
+    #[serde(rename = "学习人次")]
+    pub current: usize,
+}
+
+impl OutputClass {
+    pub fn new(class: &str, total: usize, current: usize) -> Self {
+        OutputClass {
+            class: class.to_string(),
+            current: total.min(current),
+            total,
         }
     }
 }

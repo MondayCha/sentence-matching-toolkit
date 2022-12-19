@@ -8,7 +8,7 @@ export const enum SubCategoryIndex {
   Recycled,
 }
 
-export const listInfo: ButtonInfo<SubCategoryIndex>[] = [
+export const subCategoryInfo: ButtonInfo<SubCategoryIndex>[] = [
   {
     name: '正常',
     index: SubCategoryIndex.Normal,
@@ -28,5 +28,31 @@ export const listInfo: ButtonInfo<SubCategoryIndex>[] = [
   {
     name: '回收站',
     index: SubCategoryIndex.Recycled,
+  },
+];
+
+export const enum NameCheckIndex {
+  Calc = 0,
+  None,
+  Other,
+  Recycled,
+}
+
+export const nameCheckInfo: ButtonInfo<NameCheckIndex>[] = [
+  {
+    name: '不在字典中',
+    index: NameCheckIndex.Calc,
+  },
+  {
+    name: '无',
+    index: NameCheckIndex.None,
+  },
+  {
+    name: '其他',
+    index: NameCheckIndex.Other,
+  },
+  {
+    name: '回收站',
+    index: NameCheckIndex.Recycled,
   },
 ];

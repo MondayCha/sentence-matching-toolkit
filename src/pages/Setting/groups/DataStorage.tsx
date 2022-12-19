@@ -38,7 +38,7 @@ const DataStorage: FC = () => {
         actionHandler={openCacheDir}
       />
       <div className="mt-1.5 mr-4 flex flex-row space-x-2.5">
-        <button className="mdc-btn-primary p-1 w-32" onClick={cleanData}>
+        <button className="mdc-btn-primary" onClick={cleanData}>
           清除数据
         </button>
       </div>

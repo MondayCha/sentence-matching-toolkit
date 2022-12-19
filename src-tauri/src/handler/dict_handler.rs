@@ -172,6 +172,14 @@ impl DictHandler {
         Ok(())
     }
 
+    pub fn load_vec(&mut self, vec: Vec<String>, tag: Option<DictType>) -> Result<()> {
+        for str in vec.iter() {
+            self.add(str, tag.unwrap_or(DictType::ORG));
+        }
+        self.save()?;
+        Ok(())
+    }
+
     pub fn get_name_from_dict(&self, info: &str) -> Option<String> {
         for key in self.per_dict.iter() {
             if info.contains(&key.0) {

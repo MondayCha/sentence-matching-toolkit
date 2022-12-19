@@ -1,5 +1,6 @@
 use super::rule::AppState;
 use crate::handler::csv_handler::CsvHandler;
+use crate::handler::dict_handler::DictType;
 use crate::handler::sub_category_handler::SubCategoryHandler;
 use crate::utils::classes::SubCategoryCSV;
 use crate::utils::errors::AResult;
@@ -73,21 +74,27 @@ pub fn receive_modified_sub_category(
     records: Vec<ModifiedSubCategory>,
     uuid: &str,
     with_bom: bool,
+    auto_import: bool,
     state: tauri::State<'_, AppState>,
     app_handle: AppHandle,
 ) -> AResult<()> {
     let matching_rule = &state.rule.read().unwrap();
     let sub_categories_path = &state.path.sub_categories_path.read().unwrap();
 
-    let accepted_records_path = SubCategoryHandler::receiving(
+    let (accepted_records_path, names) = SubCategoryHandler::receiving(
         uuid,
         sub_categories_path,
         records,
         with_bom,
+        auto_import,
         matching_rule,
         &app_handle.path_resolver(),
     )?;
 
     *state.path.accepted_sub_categories_path.write().unwrap() = accepted_records_path;
+    if let Some(names) = names {
+        let dict_handler = &mut *state.dict.write().unwrap();
+        dict_handler.load_vec(names, Some(DictType::PER))?;
+    }
     Ok(())
 }

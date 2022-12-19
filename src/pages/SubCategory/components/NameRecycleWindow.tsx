@@ -1,33 +1,25 @@
-import type { FC } from 'react';
+import { FC } from 'react';
 import clsx from 'clsx';
 import { SubCategoryItem } from '@/api/core';
 import AutoSizer from 'react-virtualized-auto-sizer';
 import { FixedSizeList as List, ListChildComponentProps } from 'react-window';
 import PlaceHolder from './PlaceHolder';
 import { useThemeContext } from '@/components/theme';
-import Edit from '@/assets/operations/Edit';
-import Delete from '@/assets/operations/Delete';
 import BaseRow from './BaseRow';
 import ListMotion from '@/components/transition/ListMotion';
+import Return from '@/assets/operations/Return';
 
-const OtherWindow: FC<{
+const NameRecycleWindow: FC<{
   records: SubCategoryItem[];
-  modifyHandler: (item: SubCategoryItem) => void;
-  deleteHandler: (item: SubCategoryItem) => void;
-}> = ({ records, modifyHandler, deleteHandler }) => {
+  cancelHandler: (item: SubCategoryItem) => void;
+}> = ({ records, cancelHandler }) => {
   const { themeMode } = useThemeContext();
 
   const Row: FC<ListChildComponentProps<SubCategoryItem[]>> = ({ index, style, data }) => {
     return (
-      <BaseRow style={style} title={data[index].sub.company} subTitle={data[index].sub.name}>
-        <button
-          className="mdc-btn-secondary h-8 w-8 flex items-center justify-center"
-          onClick={() => modifyHandler(data[index])}
-        >
-          <Edit theme={themeMode} />
-        </button>
+      <BaseRow style={style} title={data[index].raw.name} subTitle={data[index].raw.company}>
         <button className="mdc-btn-secondary h-8 w-8 flex items-center justify-center">
-          <Delete theme={themeMode} onClick={() => deleteHandler(data[index])} />
+          <Return theme={themeMode} onClick={() => cancelHandler(data[index])} />
         </button>
       </BaseRow>
     );
@@ -59,4 +51,4 @@ const OtherWindow: FC<{
   );
 };
 
-export default OtherWindow;
+export default NameRecycleWindow;

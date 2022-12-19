@@ -146,6 +146,8 @@ export const sourceFilePathState = atom({
   default: {
     path: '',
     filename: '',
+    filenameWithoutExt: '',
+    parent: '',
     timestamp: getTimestamp(),
   },
 });

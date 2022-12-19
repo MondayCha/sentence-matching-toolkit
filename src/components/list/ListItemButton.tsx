@@ -20,7 +20,7 @@ const ListItemButton: FC<{
   return (
     <ListItem {...other}>
       <button className="mdc-btn-secondary" onClick={handleButtonClick}>
-        <p className="leading-normal">{actionText as string}</p>
+        {actionText as string}
       </button>
     </ListItem>
   );

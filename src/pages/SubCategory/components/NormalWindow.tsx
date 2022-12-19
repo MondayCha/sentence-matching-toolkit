@@ -25,7 +25,7 @@ const NormalWindow: FC<{
     return (
       <BaseRow style={style} title={data[index].sub.company} subTitle={data[index].sub.name}>
         {!!data[index].matchedClass && (
-          <div className="mdc-btn-secondary w-fit px-3 select-none cursor-pointer h-8">
+          <div className="mdc-btn-secondary w-fit px-3 select-none cursor-none h-8">
             <p className="leading-normal">{data[index].matchedClass}</p>
           </div>
         )}
