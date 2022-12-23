@@ -280,6 +280,12 @@ impl SubCategoryMatcher {
                 record = record.replace(c, "");
             }
         }
+        // replace str in regex.replace.user
+        if let Some(user_map) = &self.regex.replace.user {
+            for (k, v) in user_map.iter() {
+                record = record.replace(k, v);
+            }
+        }
         record
     }
 
@@ -329,7 +335,7 @@ impl SubCategoryMatcher {
         cleaned_sub_category.replaced_info = record.clone();
 
         // try to get name from dict
-        if let Some(author) = get_name_from_dict(&record_identity) {
+        if let Some(author) = get_name_from_dict(&record) {
             cleaned_sub_category.name = author;
             cleaned_sub_category.name_type = SubCategoryNameType::Dict;
         } else {
@@ -423,7 +429,8 @@ impl SubCategoryMatcher {
 
     // split info into name and subcategory
     fn split_name_and_subcategory(&self, info: &str, target_category: &str) -> (String, String) {
-        let info_vec = self.jieba.cut(info);
+        // make info into String vector
+        let info_vec = info.chars().map(|c| c.to_string()).collect::<Vec<String>>();
         let mut ans_cadidates = vec![];
         for split_point in 0..info_vec.len() {
             let head_candidate = info_vec[0..split_point].join("");

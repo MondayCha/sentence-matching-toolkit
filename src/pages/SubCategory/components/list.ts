@@ -6,9 +6,10 @@ export const enum SubCategoryIndex {
   Suspension,
   Mismatch,
   Recycled,
+  Rule,
 }
 
-export const subCategoryInfo: ButtonInfo<SubCategoryIndex>[] = [
+export const subCategoryInfo = (showRule: boolean): ButtonInfo<SubCategoryIndex>[] => [
   {
     name: '正常',
     index: SubCategoryIndex.Normal,
@@ -29,6 +30,14 @@ export const subCategoryInfo: ButtonInfo<SubCategoryIndex>[] = [
     name: '回收站',
     index: SubCategoryIndex.Recycled,
   },
+  ...(showRule
+    ? [
+        {
+          name: '规则',
+          index: SubCategoryIndex.Rule,
+        },
+      ]
+    : []),
 ];
 
 export const enum NameCheckIndex {

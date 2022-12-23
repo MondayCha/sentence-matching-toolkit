@@ -56,15 +56,27 @@ pub fn start_sub_category_matching(
 #[command]
 pub fn rematch_sub_category(
     base: BaseRecord,
-    name: &str,
-    company: &str,
+    old: &str,     // 旧的班级
+    name: &str,    // 新的姓名
+    company: &str, // 新的单位
     state: tauri::State<'_, AppState>,
 ) -> AResult<SubCategory> {
     let matching_rule = &state.rule.read().unwrap();
     let dict_handler = &state.dict.read().unwrap();
 
-    let sub_category =
+    let mut sub_category =
         SubCategoryHandler::matching_one(&base, name, company, &matching_rule, &dict_handler)?;
+
+    if sub_category.flag == SubCategoryFlag::Normal {
+        let new_user_input_class = sub_category.sub.company.clone();
+        let old_user_input_class = old.replace(&sub_category.sub.name, "");
+        println!(
+            "new_user_input_class: {}, old_user_input_class: {}",
+            new_user_input_class, old_user_input_class
+        );
+        sub_category.cat.index = -1;
+        sub_category.cat.company = old_user_input_class;
+    }
 
     Ok(sub_category)
 }

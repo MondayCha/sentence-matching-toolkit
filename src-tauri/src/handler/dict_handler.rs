@@ -181,7 +181,9 @@ impl DictHandler {
     }
 
     pub fn get_name_from_dict(&self, info: &str) -> Option<String> {
+        println!("info: {}", info);
         for key in self.per_dict.iter() {
+            println!("key: {}", key);
             if info.contains(&key.0) {
                 return Some(key.to_string());
             }

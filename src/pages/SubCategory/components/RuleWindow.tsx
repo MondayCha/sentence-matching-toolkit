@@ -1,6 +1,4 @@
 import type { FC } from 'react';
-import { useState, useEffect } from 'react';
-import log from '@/middleware/logger';
 import clsx from 'clsx';
 import { SubCategoryItem } from '@/api/core';
 import AutoSizer from 'react-virtualized-auto-sizer';
@@ -10,31 +8,17 @@ import { useThemeContext } from '@/components/theme';
 import Edit from '@/assets/operations/Edit';
 import Delete from '@/assets/operations/Delete';
 import BaseRow from './BaseRow';
-import { showConfirm, showMessage } from '@/middleware/message';
-import { motion } from 'framer-motion';
 import ListMotion from '@/components/transition/ListMotion';
 
-const NormalWindow: FC<{
+const RuleWindow: FC<{
   records: SubCategoryItem[];
-  modifyHandler: (item: SubCategoryItem) => void;
   deleteHandler: (item: SubCategoryItem) => void;
-}> = ({ records, modifyHandler, deleteHandler }) => {
+}> = ({ records, deleteHandler }) => {
   const { themeMode } = useThemeContext();
 
   const Row: FC<ListChildComponentProps<SubCategoryItem[]>> = ({ index, style, data }) => {
     return (
-      <BaseRow style={style} title={data[index].sub.company} subTitle={data[index].sub.name}>
-        {!!data[index].matchedClass && (
-          <div className="mdc-btn-secondary w-fit px-3 select-none cursor-none h-8 flex justify-center items-center">
-            <p className="leading-normal">{data[index].matchedClass}</p>
-          </div>
-        )}
-        <button
-          className="mdc-btn-secondary h-8 w-8 flex items-center justify-center"
-          onClick={() => modifyHandler(data[index])}
-        >
-          <Edit theme={themeMode} />
-        </button>
+      <BaseRow style={style} title={data[index].sub.company} subTitle={data[index].cat.company}>
         <button className="mdc-btn-secondary h-8 w-8 flex items-center justify-center">
           <Delete theme={themeMode} onClick={() => deleteHandler(data[index])} />
         </button>
@@ -68,4 +52,4 @@ const NormalWindow: FC<{
   );
 };
 
-export default NormalWindow;
+export default RuleWindow;

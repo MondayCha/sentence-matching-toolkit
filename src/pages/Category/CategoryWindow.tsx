@@ -11,6 +11,7 @@ import AutoSizer from 'react-virtualized-auto-sizer';
 import IconNotFound from '@/assets/illustrations/NotFound';
 import { BaseRecord } from '@/api/core';
 import { useThemeContext } from '@/components/theme';
+import ListMotion from '@/components/transition/ListMotion';
 
 const CategoryWindow: FC<{
   records: BaseRecord[];
@@ -38,7 +39,7 @@ const CategoryWindow: FC<{
   );
 
   return (
-    <>
+    <ListMotion>
       {records.length > 0 ? (
         <div className="mdc-body h-full pr-0">
           <AutoSizer>
@@ -66,7 +67,7 @@ const CategoryWindow: FC<{
           </div>
         </div>
       )}
-    </>
+    </ListMotion>
   );
 };
 

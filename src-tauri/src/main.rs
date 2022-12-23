@@ -75,6 +75,7 @@ fn main() {
         })
         .invoke_handler(tauri::generate_handler![
             rule::load_matching_rule,
+            rule::load_user_replace,
             shell::close_splashscreen,
             shell::open_history_dir,
             shell::open_cache_dir,

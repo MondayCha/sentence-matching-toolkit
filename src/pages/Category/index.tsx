@@ -30,6 +30,7 @@ import SearchInput from '@/components/Interaction/SearchInput';
 import IdlePlaceholder from '@/components/loading/IdlePlaceholder';
 import ButtonGroup from '@/components/Interaction/ButtonGroup';
 import { CategoryIndex, listInfoWithSub, listInfoWithoutSub } from './components/list';
+import { AnimatePresence } from 'framer-motion';
 
 export interface WindowProps {
   displayList: BaseRecord[];
@@ -310,11 +311,14 @@ const Category: FC = () => {
             currentIndex={listIndex}
             setCurrentIndex={setListIndex}
           />
-          <CategoryWindow
-            records={windowProps.displayList}
-            actionTag={windowProps.actionTag}
-            actionHandler={windowProps.actionHandler}
-          />
+          <AnimatePresence mode="wait">
+            <CategoryWindow
+              key={`category-window-${listIndex}`}
+              records={windowProps.displayList}
+              actionTag={windowProps.actionTag}
+              actionHandler={windowProps.actionHandler}
+            />
+          </AnimatePresence>
           <SearchInput
             searchKeyword={searchKeyword}
             setSearchKeyword={setSearchKeyword}

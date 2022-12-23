@@ -20,6 +20,7 @@ import {
   ModifiedSubCategoryItem,
   SubCategoryItem,
   getDictSize,
+  loadUserReplace,
   receiveModifiedSubCategory,
   rematchSubCategory,
 } from '@/api/core';
@@ -42,6 +43,7 @@ import ButtonGroup from '@/components/Interaction/ButtonGroup';
 import RematchModal, { CurrentInfo } from './components/RematchModal';
 import NameCheckWindow from './components/NameCheckWindow';
 import NameRecycleWindow from './components/NameRecycleWindow';
+import RuleWindow from './components/RuleWindow';
 
 export interface SubWindowProps {
   displayList: SubCategoryItem[];
@@ -73,6 +75,7 @@ const SubCategory: FC = () => {
   const [suspensionList, setSuspensionList] = useState<SubCategoryItem[]>([]);
   const [mismatchList, setMismatchList] = useState<SubCategoryItem[]>([]);
   const [recycledList, setRecycledList] = useState<SubCategoryItem[]>([]);
+  const [ruleList, setRuleList] = useState<SubCategoryItem[]>([]);
 
   // name check
   const [calcList, setCalcList] = useState<SubCategoryItem[]>([]);
@@ -91,7 +94,7 @@ const SubCategory: FC = () => {
   }, [sourceFilePath, appStatus]);
 
   const shouldShowNameCheck = useMemo(() => {
-    return otherList.length > 0;
+    return otherList.length > 0 || calcList.length > 0 || noneList.length > 0;
   }, [otherList]);
 
   // list load effect
@@ -103,6 +106,7 @@ const SubCategory: FC = () => {
         suspensionRecords: subCategoryLoadable.contents.suspensionRecords,
         mismatchRecords: subCategoryLoadable.contents.mismatchRecords,
         recycledRecords: [],
+        ruleRecords: [],
         shouldRerender: true,
       });
     } else {
@@ -123,6 +127,7 @@ const SubCategory: FC = () => {
       setIncompleteList(subCategory.incompleteRecords);
       setMismatchList(subCategory.mismatchRecords);
       setRecycledList(subCategory.recycledRecords);
+      setRuleList(subCategory.ruleRecords);
     }
   }, [subCategory]);
 
@@ -245,6 +250,9 @@ const SubCategory: FC = () => {
       );
       if (currentRecord.flag === 'Normal') {
         setNormalList((prev) => [currentRecord, ...prev]);
+        if (currentRecord.cat.index === -1) {
+          setRuleList((prev) => [currentRecord, ...prev]);
+        }
       } else {
         setMismatchList((prev) => [currentRecord, ...prev]);
       }
@@ -289,15 +297,24 @@ const SubCategory: FC = () => {
   const handleRematch = (currentInfo: CurrentInfo) => {
     if (currentRecord && !isRematching) {
       setIsRematching(true);
-      rematchSubCategory(currentRecord.raw, currentInfo.name, currentInfo.company)
-        .then((res) => {
-          setCurrentRecord(res);
-          setIsRematching(false);
-        })
-        .catch((e) => {
-          showMessage(e, 'error');
-          setIsRematching(false);
-        });
+      const rawRecord = windowProps.displayList.find(
+        (s) => s.raw.index === currentRecord.raw.index
+      );
+      rawRecord &&
+        rematchSubCategory(
+          rawRecord.raw,
+          rawRecord.sub.company,
+          currentInfo.name,
+          currentInfo.company
+        )
+          .then((res) => {
+            setCurrentRecord(res);
+            setIsRematching(false);
+          })
+          .catch((e) => {
+            showMessage(e, 'error');
+            setIsRematching(false);
+          });
     }
   };
 
@@ -342,6 +359,7 @@ const SubCategory: FC = () => {
   };
 
   const startNameCheckHandler = () => {
+    ruleList.length > 0 && loadUserReplace(ruleList.map((r) => [r.cat.company, r.sub.company]));
     setSubCategory({
       shouldRerender: false,
       normalRecords: normalList,
@@ -349,6 +367,7 @@ const SubCategory: FC = () => {
       suspensionRecords: suspensionList,
       mismatchRecords: mismatchList,
       recycledRecords: recycledList,
+      ruleRecords: ruleList,
     });
     let allList = [...normalList, ...incompleteList, ...suspensionList, ...mismatchList];
     if (allList.length > 0) {
@@ -437,7 +456,13 @@ const SubCategory: FC = () => {
                 条，信息不完整<span className=" mdc-text-heightlight">{incompleteList.length}</span>
                 条， 异常<span className=" mdc-text-heightlight">{suspensionList.length}</span>条，
                 无班级信息<span className=" mdc-text-heightlight">{mismatchList.length}</span>
-                条， 回收站<span className=" mdc-text-heightlight">{recycledList.length}</span>条。
+                条， 回收站<span className=" mdc-text-heightlight">{recycledList.length}</span>条
+                {ruleList.length > 0 && (
+                  <>
+                    ，规则<span className=" mdc-text-heightlight">{ruleList.length}</span>条
+                  </>
+                )}
+                。
               </>
             ) : (
               <>
@@ -508,7 +533,7 @@ const SubCategory: FC = () => {
         ) : (
           <div className="flex flex-col items-end w-full h-full space-y-4">
             <ButtonGroup<SubCategoryIndex>
-              infoList={subCategoryInfo}
+              infoList={subCategoryInfo(ruleList.length > 0)}
               currentIndex={listIndex}
               setCurrentIndex={setListIndex}
             />
@@ -519,29 +544,22 @@ const SubCategory: FC = () => {
                   modifyHandler={modifyStartHandler}
                   deleteHandler={deleteHandler}
                 />
-              ) : listIndex === SubCategoryIndex.Incomplete ? (
-                <OtherWindow
-                  key={'Incomplete'}
-                  records={windowProps.displayList}
-                  modifyHandler={modifyStartHandler}
-                  deleteHandler={deleteHandler}
-                />
-              ) : listIndex === SubCategoryIndex.Suspension ? (
-                <OtherWindow
-                  key={'Suspension'}
-                  records={windowProps.displayList}
-                  modifyHandler={modifyStartHandler}
-                  deleteHandler={deleteHandler}
-                />
-              ) : listIndex === SubCategoryIndex.Mismatch ? (
-                <OtherWindow
-                  key={'Mismatch'}
-                  records={windowProps.displayList}
-                  modifyHandler={modifyStartHandler}
-                  deleteHandler={deleteHandler}
+              ) : listIndex === SubCategoryIndex.Recycled ? (
+                <RecycleWindow records={windowProps.displayList} cancelHandler={cancelHandler} />
+              ) : listIndex === SubCategoryIndex.Rule ? (
+                <RuleWindow
+                  records={ruleList}
+                  deleteHandler={(item) =>
+                    setRuleList((prev) => prev.filter((s) => s.raw.index !== item.raw.index))
+                  }
                 />
               ) : (
-                <RecycleWindow records={windowProps.displayList} cancelHandler={cancelHandler} />
+                <OtherWindow
+                  key={`${listIndex}`}
+                  records={windowProps.displayList}
+                  modifyHandler={modifyStartHandler}
+                  deleteHandler={deleteHandler}
+                />
               )}
             </AnimatePresence>
             <SearchInput
