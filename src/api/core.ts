@@ -65,6 +65,7 @@ export interface SubCategoryGroup {
 export type BaseSubCategoryGroup = SubCategoryGroup & {
   shouldRerender: boolean;
   recycledRecords: SubCategoryItem[];
+  ruleRecords: SubCategoryItem[];
 };
 
 export interface ModifiedSubCategoryItem {
@@ -141,8 +142,12 @@ export const getSubCategoryInfo = async () =>
   (await invoke('get_sub_category_state')) as SubCategoyrCSV;
 
 // rematch_sub_category
-export const rematchSubCategory = async (base: BaseRecord, name: string, company: string) =>
-  (await invoke('rematch_sub_category', { base, name, company })) as SubCategoryItem;
+export const rematchSubCategory = async (
+  base: BaseRecord,
+  old: string,
+  name: string,
+  company: string
+) => (await invoke('rematch_sub_category', { base, old, name, company })) as SubCategoryItem;
 
 // receive_modified_records
 export const receiveModifiedSubCategory = async (
@@ -159,3 +164,7 @@ export const exportSubCategory = async (path: string, withBom: boolean) =>
 
 // get_vba_snippet
 export const getVbaSnippet = async () => (await invoke('get_vba_snippet')) as string;
+
+// load_user_replace
+export const loadUserReplace = async (patterns: string[][]) =>
+  await invoke('load_user_replace', { patterns });

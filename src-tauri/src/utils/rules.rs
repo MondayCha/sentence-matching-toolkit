@@ -131,4 +131,17 @@ impl MatchingRule {
         self.save()?;
         Ok(())
     }
+
+    pub fn update_user_replace(
+        &mut self,
+        user_replace_patterns: Vec<(String, String)>,
+    ) -> Result<()> {
+        if let Some(sub_category) = &mut self.sub_category {
+            for (k, v) in user_replace_patterns {
+                sub_category.regex.replace.add_user_replace(k, v);
+            }
+        }
+        self.save()?;
+        Ok(())
+    }
 }

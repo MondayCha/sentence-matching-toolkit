@@ -73,6 +73,16 @@ pub struct SubCategoryReplace {
     pub identity: Option<IndexMap<String, String>>,
     pub sequence: Option<IndexMap<String, String>>,
     pub after: Option<String>,
+    pub user: Option<IndexMap<String, String>>,
+}
+
+impl SubCategoryReplace {
+    pub fn add_user_replace(&mut self, key: String, value: String) {
+        if self.user.is_none() {
+            self.user = Some(IndexMap::new());
+        }
+        self.user.as_mut().unwrap().insert(key, value);
+    }
 }
 
 #[derive(Default, Debug, Serialize, Deserialize, Clone)]

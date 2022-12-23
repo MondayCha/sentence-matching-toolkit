@@ -4,7 +4,7 @@ use crate::{
 };
 use std::path::PathBuf;
 use std::sync::RwLock;
-use tauri::AppHandle;
+use tauri::{command, AppHandle};
 
 #[derive(Default)]
 pub struct IntermediatePaths {
@@ -21,7 +21,7 @@ pub struct AppState {
     pub path: IntermediatePaths,
 }
 
-#[tauri::command]
+#[command]
 pub async fn load_matching_rule(
     path: Option<&str>,
     state: tauri::State<'_, AppState>,
@@ -40,4 +40,14 @@ pub async fn load_matching_rule(
     *state.dict.write().unwrap() = dict_handler;
 
     Ok(name)
+}
+
+#[command]
+pub fn load_user_replace(
+    patterns: Vec<(String, String)>,
+    state: tauri::State<'_, AppState>,
+) -> AResult<()> {
+    let mut matching_rule = state.rule.write().unwrap();
+    matching_rule.update_user_replace(patterns)?;
+    Ok(())
 }
