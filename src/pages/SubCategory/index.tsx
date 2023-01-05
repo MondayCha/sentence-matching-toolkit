@@ -80,6 +80,7 @@ const SubCategory: FC = () => {
   // name check
   const [calcList, setCalcList] = useState<SubCategoryItem[]>([]);
   const [noneList, setNoneList] = useState<SubCategoryItem[]>([]);
+  const [doubtList, setDoubtList] = useState<SubCategoryItem[]>([]);
   const [otherList, setOtherList] = useState<SubCategoryItem[]>([]);
   const [recycledNameList, setRecycledNameList] = useState<SubCategoryItem[]>([]);
   const [nameCheckIndex, setNameCheckIndex] = useState(NameCheckIndex.Calc);
@@ -94,7 +95,9 @@ const SubCategory: FC = () => {
   }, [sourceFilePath, appStatus]);
 
   const shouldShowNameCheck = useMemo(() => {
-    return otherList.length > 0 || calcList.length > 0 || noneList.length > 0;
+    return (
+      otherList.length > 0 || calcList.length > 0 || noneList.length > 0 || doubtList.length > 0
+    );
   }, [otherList]);
 
   // list load effect
@@ -172,10 +175,10 @@ const SubCategory: FC = () => {
     if (debouncedSearchKeyword.length > 0) {
       // debug
       if (debouncedSearchKeyword === 'calc') {
-        props.displayList = props.displayList.filter((item) => item.isNameInDict === false);
+        props.displayList = props.displayList.filter((item) => item.nameFlag === 'Calc');
       } else if (debouncedSearchKeyword === 'with') {
         props.displayList = props.displayList.filter(
-          (item) => item.isNameInDict === false && item.sub.name.length > 0
+          (item) => item.nameFlag !== 'Dict' && item.sub.name.length > 0
         );
       } else if (debouncedSearchKeyword === 'without') {
         props.displayList = props.displayList.filter((item) => item.sub.name === '');
@@ -212,6 +215,12 @@ const SubCategory: FC = () => {
           setDisplayList: setCalcList,
         };
         break;
+      case NameCheckIndex.Doubt:
+        props = {
+          displayList: doubtList,
+          setDisplayList: setDoubtList,
+        };
+        break;
       case NameCheckIndex.None:
         props = {
           displayList: noneList,
@@ -240,7 +249,15 @@ const SubCategory: FC = () => {
       );
     }
     return props;
-  }, [nameCheckIndex, calcList, noneList, otherList, recycledNameList, debouncedSearchKeyword]);
+  }, [
+    nameCheckIndex,
+    calcList,
+    noneList,
+    doubtList,
+    otherList,
+    recycledNameList,
+    debouncedSearchKeyword,
+  ]);
 
   const handleSave = () => {
     if (!!currentRecord) {
@@ -350,10 +367,12 @@ const SubCategory: FC = () => {
   const cancelNameHandler = (item: SubCategoryItem) => {
     if (item.sub.name === '') {
       setNoneList((prev) => [item, ...prev]);
-    } else if (item.isNameInDict) {
+    } else if (item.nameFlag === 'Dict') {
       setOtherList((prev) => [item, ...prev]);
-    } else {
+    } else if (item.nameFlag === 'Calc') {
       setCalcList((prev) => [item, ...prev]);
+    } else if (item.nameFlag === 'Doubt') {
+      setDoubtList((prev) => [item, ...prev]);
     }
     setRecycledNameList((prev) => prev.filter((i) => i.raw.index !== item.raw.index));
   };
@@ -371,22 +390,29 @@ const SubCategory: FC = () => {
     });
     let allList = [...normalList, ...incompleteList, ...suspensionList, ...mismatchList];
     if (allList.length > 0) {
-      // map allList to calcList/noneList/otherList
       const tmpCalcList: SubCategoryItem[] = [];
+      const tmpDoubtList: SubCategoryItem[] = [];
       const tmpNoneList: SubCategoryItem[] = [];
       const tmpOtherList: SubCategoryItem[] = [];
+
       allList.forEach((item) => {
         if (item.sub.name.length === 0) {
           tmpNoneList.push(item);
-        } else if (item.isNameInDict) {
+        } else if (item.nameFlag === 'Dict') {
           tmpOtherList.push(item);
+        } else if (item.nameFlag === 'Doubt') {
+          tmpDoubtList.push(item);
         } else {
           tmpCalcList.push(item);
         }
       });
+
       // calcList
       tmpCalcList.sort((a, b) => b.sub.name.length - a.sub.name.length);
       setCalcList(tmpCalcList);
+      // doubtList
+      tmpDoubtList.sort((a, b) => a.sub.name.length - b.sub.name.length);
+      setDoubtList(tmpDoubtList);
       // noneList
       setNoneList(tmpNoneList);
       // otherList
@@ -403,20 +429,26 @@ const SubCategory: FC = () => {
       ...calcList.map((item) => ({
         index: item.raw.index,
         name: item.sub.name,
-        isNameInDict: false,
         matchedClass: item.matchedClass ?? '',
+        nameFlag: item.nameFlag,
+      })),
+      ...doubtList.map((item) => ({
+        index: item.raw.index,
+        name: item.sub.name,
+        matchedClass: item.matchedClass ?? '',
+        nameFlag: item.nameFlag,
       })),
       ...noneList.map((item) => ({
         index: item.raw.index,
         name: item.sub.name,
-        isNameInDict: false,
         matchedClass: item.matchedClass ?? '',
+        nameFlag: item.nameFlag,
       })),
       ...otherList.map((item) => ({
         index: item.raw.index,
         name: item.sub.name,
-        isNameInDict: true,
         matchedClass: item.matchedClass ?? '',
+        nameFlag: item.nameFlag,
       })),
     ];
     receiveModifiedSubCategory(records, uuid, isWin32, autoImport).then((_) => {
@@ -437,6 +469,7 @@ const SubCategory: FC = () => {
               debouncedSearchKeyword.length === 0 ? (
                 <>
                   姓名不在字典中<span className=" mdc-text-heightlight">{calcList.length}</span>
+                  条，可能不完整<span className=" mdc-text-heightlight">{doubtList.length}</span>
                   条，获取失败<span className=" mdc-text-heightlight">{noneList.length}</span>
                   条， 其他<span className=" mdc-text-heightlight">{otherList.length}</span>
                   条，回收站
@@ -493,23 +526,9 @@ const SubCategory: FC = () => {
               setCurrentIndex={setNameCheckIndex}
             />
             <AnimatePresence mode="wait">
-              {nameCheckIndex === NameCheckIndex.Calc ? (
+              {nameCheckIndex !== NameCheckIndex.Recycled ? (
                 <NameCheckWindow
-                  key={'Calc'}
-                  records={nameCheckProps.displayList}
-                  modifyHandler={modifyNameHandler}
-                  deleteHandler={deleteNameHandler}
-                />
-              ) : nameCheckIndex === NameCheckIndex.None ? (
-                <NameCheckWindow
-                  key={'None'}
-                  records={nameCheckProps.displayList}
-                  modifyHandler={modifyNameHandler}
-                  deleteHandler={deleteNameHandler}
-                />
-              ) : nameCheckIndex === NameCheckIndex.Other ? (
-                <NameCheckWindow
-                  key={'Other'}
+                  key={`name-check-${nameCheckIndex}`}
                   records={nameCheckProps.displayList}
                   modifyHandler={modifyNameHandler}
                   deleteHandler={deleteNameHandler}

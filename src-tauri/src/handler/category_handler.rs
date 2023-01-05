@@ -20,7 +20,7 @@ use crate::utils::{
 };
 
 use super::csv_handler::CsvHandler;
-use super::{dict_handler::DictHandler, t2s_handler::T2SHandler};
+use super::t2s_handler::T2SHandler;
 
 pub struct CategoryHandler();
 
@@ -33,7 +33,6 @@ impl CategoryHandler {
         uuid: &str,
         csv_path: &str,
         rule: &MatchingRule,
-        dict_handler: &DictHandler,
         path_resolver: &PathResolver,
     ) -> Result<(CategoryGroup, PathBuf)> {
         // create folder in APP_DATA/history/uuid (history_uuid_dir)
@@ -54,7 +53,7 @@ impl CategoryHandler {
         let t2s_convert = |s: &str| t2s_handler.convert(s);
 
         // create matcher
-        let record_matcher = CategoryMatcher::new(rule, &dict_handler.dict_path)?;
+        let record_matcher = CategoryMatcher::new(rule)?;
         let match_category = |r1: &str, r2: &str| record_matcher.match_category(r1, r2);
 
         // read csv file
@@ -149,11 +148,10 @@ impl CategoryHandler {
         records: Vec<BaseRecord>,
         with_bom: bool,
         rule: &MatchingRule,
-        dict_handler: &DictHandler,
         path_resolver: &PathResolver,
     ) -> Result<PathBuf> {
         // create matcher
-        let record_matcher = CategoryMatcher::new(rule, &dict_handler.dict_path)?;
+        let record_matcher = CategoryMatcher::new(rule)?;
         let match_category = |r1: &str, r2: &str| record_matcher.match_category(r1, r2);
 
         // load records map indexed by index from record_group_path

@@ -42,6 +42,7 @@ export const subCategoryInfo = (showRule: boolean): ButtonInfo<SubCategoryIndex>
 
 export const enum NameCheckIndex {
   Calc = 0,
+  Doubt,
   None,
   Other,
   Recycled,
@@ -51,6 +52,10 @@ export const nameCheckInfo: ButtonInfo<NameCheckIndex>[] = [
   {
     name: '不在字典中',
     index: NameCheckIndex.Calc,
+  },
+  {
+    name: '不完整',
+    index: NameCheckIndex.Doubt,
   },
   {
     name: '无',

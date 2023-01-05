@@ -5,39 +5,20 @@ import { Navigate, RouteObject } from 'react-router-dom';
 /**
  * Suspense fallback components
  */
-// import Loading from "../pages/Loading";
-import Upload from '../pages/Upload';
-import Category from '../pages/Category';
-import SubCategory from '../pages/SubCategory';
-import Download from '../pages/Download';
-import About from '../pages/About';
-import Setting from '../pages/Setting';
+import { Suspense, lazy } from 'react';
 
 /**
  * Lazy loading components.
  * @example const Component = React.lazy(() => import('./Component'));
  */
-// const UploadLazy = lazy(() => import("../pages/Upload"));
-// const AppLazy = lazy(() => import("../App"));
+const UploadLazy = lazy(() => import('../pages/Upload'));
+const CategoryLazy = lazy(() => import('../pages/Category'));
+const SubCategoryLazy = lazy(() => import('../pages/SubCategory'));
+const DownloadLazy = lazy(() => import('../pages/Download'));
+const AboutLazy = lazy(() => import('../pages/About'));
+const SettingLazy = lazy(() => import('../pages/Setting'));
 
-// /**
-//  * Router elements
-//  */
-// const Upload: FC = () => {
-//   return (
-//     <Suspense fallback={<Loading />}>
-//       <UploadLazy />
-//     </Suspense>
-//   );
-// };
-
-// const App: FC = () => {
-//   return (
-//     <Suspense fallback={<Loading />}>
-//       <AppLazy />
-//     </Suspense>
-//   );
-// };
+const Loading = () => <div></div>;
 
 /**
  * Router config
@@ -46,27 +27,63 @@ import Setting from '../pages/Setting';
 export const routerConfig: RouteObject[] = [
   {
     path: '/',
-    element: <Upload />,
+    element: (
+      <>
+        <Suspense fallback={<Loading />}>
+          <UploadLazy />
+        </Suspense>
+      </>
+    ),
   },
   {
     path: '/category',
-    element: <Category />,
+    element: (
+      <>
+        <Suspense fallback={<Loading />}>
+          <CategoryLazy />
+        </Suspense>
+      </>
+    ),
   },
   {
     path: '/subcategory',
-    element: <SubCategory />,
+    element: (
+      <>
+        <Suspense fallback={<Loading />}>
+          <SubCategoryLazy />
+        </Suspense>
+      </>
+    ),
   },
   {
     path: '/download',
-    element: <Download />,
+    element: (
+      <>
+        <Suspense fallback={<Loading />}>
+          <DownloadLazy />
+        </Suspense>
+      </>
+    ),
   },
   {
     path: '/about',
-    element: <About />,
+    element: (
+      <>
+        <Suspense fallback={<Loading />}>
+          <AboutLazy />
+        </Suspense>
+      </>
+    ),
   },
   {
     path: '/setting',
-    element: <Setting />,
+    element: (
+      <>
+        <Suspense fallback={<Loading />}>
+          <SettingLazy />
+        </Suspense>
+      </>
+    ),
   },
   {
     path: '*',

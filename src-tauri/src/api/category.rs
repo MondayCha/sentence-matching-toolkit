@@ -32,15 +32,9 @@ pub fn start_category_matching(
     app_handle: AppHandle,
 ) -> AResult<CategoryGroup> {
     let matching_rule = &state.rule.read().unwrap();
-    let dict_handler = &state.dict.read().unwrap();
 
-    let (category_group, category_group_path) = CategoryHandler::matching(
-        uuid,
-        path,
-        matching_rule,
-        dict_handler,
-        &app_handle.path_resolver(),
-    )?;
+    let (category_group, category_group_path) =
+        CategoryHandler::matching(uuid, path, matching_rule, &app_handle.path_resolver())?;
 
     *state.path.categories_path.write().unwrap() = category_group_path;
     Ok(category_group)
@@ -55,7 +49,6 @@ pub fn receive_modified_records(
     app_handle: AppHandle,
 ) -> AResult<()> {
     let matching_rule = &state.rule.read().unwrap();
-    let dict_handler = &state.dict.read().unwrap();
     let categories_path = &state.path.categories_path.read().unwrap();
 
     let accepted_records_path = CategoryHandler::receiving(
@@ -64,7 +57,6 @@ pub fn receive_modified_records(
         records,
         with_bom,
         matching_rule,
-        dict_handler,
         &app_handle.path_resolver(),
     )?;
 

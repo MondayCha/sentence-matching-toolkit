@@ -11,7 +11,7 @@ const About: FC = () => {
       <div className="mdc-header">
         <h1 className="mdc-title pb-3">关于软件</h1>
         <p className="mdc-text-xs">短文本匹配工具 | Sentence Matching Toolkit</p>
-        <p className="mdc-text-xs">版本 0.1.0</p>
+        <p className="mdc-text-xs">版本 0.2.0</p>
         <p className="mdc-text-xs">Build 20221123114514</p>
         <p className="mdc-text-xs">© 2022 Mondaycha</p>
       </div>
@@ -33,7 +33,7 @@ const About: FC = () => {
             🔗 在 Gitee 上查看项目主页
           </a>
           <a
-            href="https://gitee.com/mondaycha/youth-university-learning-statistical-script"
+            href="https://github.com/MondayCha/sentence-matching-toolkit/releases"
             target="_blank"
             className="mdc-link"
           >
