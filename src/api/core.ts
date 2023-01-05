@@ -45,6 +45,8 @@ export interface BaseCategoryGroup {
   recycledList: BaseRecord[];
 }
 
+type NameFlag = 'Calc' | 'Dict' | 'Doubt';
+
 export interface SubCategoryItem {
   raw: BaseRecord;
   cat: BaseRecord;
@@ -52,7 +54,7 @@ export interface SubCategoryItem {
   matchedClass?: string;
   simularity: number;
   flag: 'Normal' | 'Incomplete' | 'Suspension' | 'Mismatch';
-  isNameInDict: boolean;
+  nameFlag: NameFlag;
 }
 
 export interface SubCategoryGroup {
@@ -72,7 +74,7 @@ export interface ModifiedSubCategoryItem {
   index: number;
   name: string;
   matchedClass?: string;
-  isNameInDict: boolean;
+  nameFlag: NameFlag;
 }
 
 export interface SubCategoyrCSV {

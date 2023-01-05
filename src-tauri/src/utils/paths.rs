@@ -85,12 +85,6 @@ pub fn dictionary_path(path_resolver: &PathResolver) -> Result<PathBuf> {
     Ok(dict_dir.join("dict.txt"))
 }
 
-/// $APP_CACHE/cache/relations.json
-pub fn relations_path(path_resolver: &PathResolver) -> Result<PathBuf> {
-    let dict_dir = cache_dir(path_resolver)?;
-    Ok(dict_dir.join("relations.json"))
-}
-
 /// $APP_DATA/history/2022-11-25-15-00-00/1_sorted_records.json
 pub fn history_sorted_path(path_resolver: &PathResolver, uuid: &str) -> Result<PathBuf> {
     let history_today_dir = history_uuid_dir(path_resolver, uuid)?;

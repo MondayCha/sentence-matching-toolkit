@@ -67,7 +67,7 @@ pub fn rematch_sub_category(
     let mut sub_category =
         SubCategoryHandler::matching_one(&base, name, company, &matching_rule, &dict_handler)?;
 
-    if sub_category.flag == SubCategoryFlag::Normal {
+    if matches!(sub_category.flag, SubCategoryFlag::Normal) {
         let new_user_input_class = sub_category.sub.company.clone();
         let old_user_input_class = old.replace(&sub_category.sub.name, "");
         println!(

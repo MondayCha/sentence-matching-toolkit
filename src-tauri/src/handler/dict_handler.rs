@@ -15,7 +15,7 @@ use tauri::PathResolver;
 /// ns  地名\
 /// nt	机构名\
 /// nw	作品名
-#[derive(Debug, Serialize, Deserialize, Clone, PartialEq, Copy)]
+#[derive(Debug, Serialize, Deserialize, Clone, Copy)]
 pub enum DictType {
     PER,
     ORG,
@@ -124,9 +124,9 @@ impl DictHandler {
             return;
         }
         // if name is not in dict, add it
-        if tag == DictType::PER {
+        if matches!(tag, DictType::PER) {
             self.per_dict.insert(name.to_string().into());
-        } else if tag == DictType::ORG {
+        } else if matches!(tag, DictType::ORG) {
             self.org_dict.insert(name.to_string().into());
         }
     }
@@ -181,9 +181,8 @@ impl DictHandler {
     }
 
     pub fn get_name_from_dict(&self, info: &str) -> Option<String> {
-        println!("info: {}", info);
         for key in self.per_dict.iter() {
-            println!("key: {}", key);
+            // println!("key: {}", key);
             if info.contains(&key.0) {
                 return Some(key.to_string());
             }

@@ -4,10 +4,11 @@ use super::{base::BaseRecord, category::ModifiedCategory};
 use anyhow::Result;
 use serde::{Deserialize, Serialize};
 
-#[derive(Debug, Serialize, Deserialize, PartialEq, Clone)]
+#[derive(Debug, Serialize, Deserialize, Clone, PartialEq, Eq, PartialOrd, Ord)]
 pub enum SubCategoryNameType {
     Calc,
     Dict,
+    Doubt,
 }
 
 impl Default for SubCategoryNameType {
@@ -28,7 +29,7 @@ pub struct CleanedSubCategory {
 }
 
 /// Sub-category flag is used to mark the category result.
-#[derive(Debug, Serialize, Deserialize, PartialEq, Clone)]
+#[derive(Debug, Serialize, Deserialize, Clone)]
 pub enum SubCategoryFlag {
     Normal,
     Incomplete,
@@ -51,8 +52,8 @@ pub struct SubCategory {
     pub matched_class: Option<String>,
     pub simularity: f32,
     pub flag: SubCategoryFlag,
-    #[serde(rename = "isNameInDict")]
-    pub is_name_in_dict: bool,
+    #[serde(rename = "nameFlag")]
+    pub name_flag: SubCategoryNameType,
 }
 
 impl SubCategory {
@@ -79,44 +80,50 @@ impl SubCategory {
             let mut sub_name = "".to_string();
             let mut sub_company = modified_category.new.company.clone();
             let mut sub_flag = SubCategoryFlag::Mismatch;
-            let mut sub_is_name_in_dict = false;
+            let mut sub_name_flag = SubCategoryNameType::Calc;
             let mut matched_class: Option<String> = None;
             let mut simularity = 0.0;
 
-            if result_2.name_type == SubCategoryNameType::Dict {
+            if matches!(
+                result_2.name_type,
+                SubCategoryNameType::Dict | SubCategoryNameType::Doubt
+            ) {
                 sub_name = result_2.name;
-                sub_is_name_in_dict = true;
-            } else if result_1.name_type == SubCategoryNameType::Dict {
+                sub_name_flag = result_2.name_type;
+            } else if matches!(
+                result_1.name_type,
+                SubCategoryNameType::Dict | SubCategoryNameType::Doubt
+            ) {
                 sub_name = result_1.name;
-                sub_is_name_in_dict = true;
+                sub_name_flag = result_1.name_type;
             } else if !result_1.name.is_empty() {
                 sub_name = result_1.name;
             }
 
-            if result_1.flag == SubCategoryFlag::Normal {
+            if matches!(result_1.flag, SubCategoryFlag::Normal) {
                 sub_flag = SubCategoryFlag::Normal;
                 sub_company = result_1.user_input_class;
                 matched_class = Some(result_1.matched_class);
                 simularity = result_1.simularity;
-            } else if result_2.flag == SubCategoryFlag::Normal {
+            } else if matches!(result_2.flag, SubCategoryFlag::Normal) {
                 sub_flag = SubCategoryFlag::Normal;
                 sub_company = result_2.user_input_class;
                 matched_class = Some(result_2.matched_class);
                 simularity = result_2.simularity;
-            } else if result_1.flag == SubCategoryFlag::Suspension {
+            } else if matches!(result_1.flag, SubCategoryFlag::Suspension) {
                 sub_flag = SubCategoryFlag::Suspension;
                 sub_company = result_1.user_input_class;
-            } else if result_2.flag == SubCategoryFlag::Suspension {
+            } else if matches!(result_2.flag, SubCategoryFlag::Suspension) {
                 sub_flag = SubCategoryFlag::Suspension;
                 sub_company = result_2.user_input_class;
-            } else if result_1.flag == SubCategoryFlag::Incomplete {
+            } else if matches!(result_1.flag, SubCategoryFlag::Incomplete) {
                 sub_flag = SubCategoryFlag::Incomplete;
                 sub_company = result_1.user_input_class;
-            } else if result_2.flag == SubCategoryFlag::Incomplete {
+            } else if matches!(result_2.flag, SubCategoryFlag::Incomplete) {
                 sub_flag = SubCategoryFlag::Incomplete;
                 sub_company = result_2.user_input_class;
-            } else if result_1.flag == SubCategoryFlag::Mismatch
-                || result_2.flag == SubCategoryFlag::Mismatch
+            } else if matches!(result_1.flag, SubCategoryFlag::Mismatch)
+                || matches!(result_2.flag, SubCategoryFlag::Mismatch)
             {
                 sub_flag = SubCategoryFlag::Mismatch;
             }
@@ -125,7 +132,7 @@ impl SubCategory {
                 matched_class,
                 simularity,
                 flag: sub_flag,
-                is_name_in_dict: sub_is_name_in_dict,
+                name_flag: sub_name_flag,
                 raw: modified_category.raw.clone(),
                 sub: BaseRecord {
                     name: sub_name,
@@ -157,8 +164,8 @@ pub struct ModifiedSubCategory {
     pub name: String,
     #[serde(rename = "matchedClass")]
     pub matched_class: String,
-    #[serde(rename = "isNameInDict")]
-    pub is_name_in_dict: bool,
+    #[serde(rename = "nameFlag")]
+    pub name_flag: SubCategoryNameType,
 }
 
 impl PartialOrd for ModifiedSubCategory {

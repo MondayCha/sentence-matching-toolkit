@@ -13,6 +13,7 @@ use crate::utils::{
         category::{Category, ModifiedCategory},
         sub_category::{
             ModifiedSubCategory, OutputRecord, SubCategory, SubCategoryFlag, SubCategoryGroup,
+            SubCategoryNameType,
         },
     },
     rules::MatchingRule,
@@ -39,7 +40,7 @@ impl SubCategoryHandler {
         let t2s_convert = |s: &str| t2s_handler.convert(s);
 
         // create matcher
-        let record_matcher = CategoryMatcher::new(rule, &dict_handler.dict_path)?;
+        let record_matcher = CategoryMatcher::new(rule)?;
         let match_category = |r1: &str, r2: &str| record_matcher.match_category(r1, r2);
 
         let category = Category::new(
@@ -59,8 +60,7 @@ impl SubCategoryHandler {
             .sub_category
             .as_ref()
             .ok_or_else(|| anyhow!("未加载分类信息"))?;
-        let sub_category_matcher =
-            SubCategoryMatcher::new(sub_category_rule, &dict_handler.dict_path)?;
+        let sub_category_matcher = SubCategoryMatcher::new(sub_category_rule)?;
         let match_sub_category =
             |r: &str| sub_category_matcher.match_sub_category(r, &get_name_from_dict);
 
@@ -91,8 +91,7 @@ impl SubCategoryHandler {
             .sub_category
             .as_ref()
             .ok_or_else(|| anyhow!("未加载分类信息"))?;
-        let sub_category_matcher =
-            SubCategoryMatcher::new(sub_category_rule, &dict_handler.dict_path)?;
+        let sub_category_matcher = SubCategoryMatcher::new(sub_category_rule)?;
         let match_sub_category =
             |r: &str| sub_category_matcher.match_sub_category(r, &get_name_from_dict);
 
@@ -221,7 +220,8 @@ impl SubCategoryHandler {
             // collect record.name in records which is_name_in_dict is false and name is not empty
             let mut names = vec![];
             for record in records.iter() {
-                if !record.is_name_in_dict && !record.name.is_empty() {
+                if !matches!(record.name_flag, SubCategoryNameType::Dict) && !record.name.is_empty()
+                {
                     names.push(record.name.clone());
                 }
             }

@@ -2,14 +2,10 @@ use anyhow::{Context, Result};
 use indexmap::IndexMap;
 use ngrammatic::{Corpus, CorpusBuilder, Pad};
 use std::cmp::Ordering::Equal;
-use std::path::PathBuf;
 use tauri::regex::Regex;
 
 use crate::{
-    handler::{
-        jieba_handler::JiebaHandler,
-        regex_handler::{RegexMatchHandler, RegexNumHandler},
-    },
+    handler::regex_handler::{RegexMatchHandler, RegexNumHandler},
     utils::classes::{IntermediateClassInfo, SubCategoryCSV, SubCategoryRegex, SubCategoryRule},
     utils::records::category::CategoryResult,
     utils::records::sub_category::{SubCategoryFlag, SubCategoryNameType},
@@ -25,13 +21,13 @@ pub struct CategoryMatcher {
 }
 
 impl CategoryMatcher {
-    pub fn new(rule: &MatchingRule, dict_path: &PathBuf) -> Result<Self> {
+    pub fn new(rule: &MatchingRule) -> Result<Self> {
         Ok(Self {
             // category: rule.rule_name.clone(),
             filter: RegexNumHandler::new()?,
             matcher: RegexMatchHandler::new(rule)?,
             sub_category_matcher: match rule.sub_category {
-                Some(ref sub_category) => Some(SubCategoryMatcher::new(sub_category, dict_path)?),
+                Some(ref sub_category) => Some(SubCategoryMatcher::new(sub_category)?),
                 None => None,
             },
         })
@@ -49,10 +45,9 @@ impl CategoryMatcher {
         if self.matcher.match_accept(&filtered_record) {
             match self.matcher.get_target_and_other(&filtered_record) {
                 Some((target, other)) => {
-                    println!("Matched category: {}", &target);
                     let residues = other.split(split_code).collect::<Vec<&str>>();
                     if residues.len() != 2 {
-                        println!("Residue length is not 2: {:?}", residues);
+                        // println!("Residue length is not 2: {:?}", residues);
                         return CategoryResult::Improbability;
                     }
                     let cleaned_category = CleanedCategory {
@@ -184,7 +179,6 @@ impl SubCategoryExtracter {
 }
 
 pub struct SubCategoryMatcher {
-    jieba: JiebaHandler,
     sub_category_csv: SubCategoryCSV,
     categories: IndexMap<String, Vec<IntermediateClassInfo>>,
     regex: SubCategoryRegex,
@@ -193,7 +187,7 @@ pub struct SubCategoryMatcher {
 }
 
 impl SubCategoryMatcher {
-    pub fn new(rule: &SubCategoryRule, dict_path: &PathBuf) -> Result<Self> {
+    pub fn new(rule: &SubCategoryRule) -> Result<Self> {
         let mut categories: IndexMap<String, Vec<IntermediateClassInfo>> = IndexMap::default();
         for c in rule.csv.classes.iter() {
             let id = match c.identity {
@@ -232,7 +226,6 @@ impl SubCategoryMatcher {
                 .map(|s| s.pattern.as_str()),
         )?;
         Ok(Self {
-            jieba: JiebaHandler::new(&dict_path),
             sub_category_csv: rule.csv.clone(),
             categories,
             regex,
@@ -327,15 +320,13 @@ impl SubCategoryMatcher {
         let record_without_grade = self.extracter.remove_all_grades(&record);
 
         let option_record_sequence_num = self.extracter.get_sequence_num(&record_without_grade);
-        let record_identity = self.extracter.remove_all_sequences(&record_without_grade);
-
-        let results = self.corpus.search(&record_identity, 0.01);
-
-        let mut cleaned_sub_category = CleanedSubCategory::default();
-        cleaned_sub_category.replaced_info = record.clone();
+        let mut record_identity = self.extracter.remove_all_sequences(&record_without_grade);
 
         // try to get name from dict
+        let mut cleaned_sub_category = CleanedSubCategory::default();
+        cleaned_sub_category.replaced_info = record.clone();
         if let Some(author) = get_name_from_dict(&record) {
+            record_identity = record_identity.replace(&author, "");
             cleaned_sub_category.name = author;
             cleaned_sub_category.name_type = SubCategoryNameType::Dict;
         } else {
@@ -343,10 +334,11 @@ impl SubCategoryMatcher {
             cleaned_sub_category.name_type = SubCategoryNameType::Calc;
         };
 
+        let results = self.corpus.search(&record_identity, 0.01);
+
         if results.is_empty() {
-            println!("Mismatch or Incomplete sub category: {:?}", &record);
             if option_record_grade.is_some() || option_record_sequence_num.is_some() {
-                if cleaned_sub_category.name_type == SubCategoryNameType::Dict {
+                if matches!(cleaned_sub_category.name_type, SubCategoryNameType::Dict) {
                     cleaned_sub_category.user_input_class =
                         record.replace(&cleaned_sub_category.name, "");
                 } else {
@@ -406,18 +398,24 @@ impl SubCategoryMatcher {
                 cleaned_sub_category.user_input_class = splitted_class;
                 cleaned_sub_category.simularity = search_result.similarity;
 
-                if cleaned_sub_category.name_type == SubCategoryNameType::Calc {
-                    cleaned_sub_category.name = self.extracter.get_chinese(&splitted_name);
+                let cleaned_splitted_name = self.extracter.get_chinese(&splitted_name);
+                if matches!(cleaned_sub_category.name_type, SubCategoryNameType::Calc) {
+                    cleaned_sub_category.name = cleaned_splitted_name;
+                } else if !cleaned_splitted_name.is_empty()
+                    && !cleaned_splitted_name.eq(&cleaned_sub_category.name)
+                {
+                    println!(
+                        "splitted_name: {} | {}",
+                        cleaned_splitted_name, cleaned_sub_category.name
+                    );
+                    cleaned_sub_category.name_type = SubCategoryNameType::Doubt;
                 }
-
-                println!("Normal sub category: {:?}", &category.name);
                 return Ok(cleaned_sub_category);
             }
             i += 1;
         }
 
-        println!("Suspension sub category: {:?}", &record);
-        if cleaned_sub_category.name_type == SubCategoryNameType::Dict {
+        if matches!(cleaned_sub_category.name_type, SubCategoryNameType::Dict) {
             cleaned_sub_category.user_input_class = record.replace(&cleaned_sub_category.name, "");
         } else {
             cleaned_sub_category.user_input_class = record;
@@ -451,12 +449,3 @@ impl SubCategoryMatcher {
         (ans_cadidates[0].1.clone(), ans_cadidates[0].2.clone())
     }
 }
-
-// create jieba handler
-// let dict_path = paths::dictionary_path(&app_handle.path_resolver()).unwrap_or_default();
-// let jieba_handler = if enable_dict && dict_path.exists() {
-//     JiebaHandler::new(Some(&dict_path))
-// } else {
-//     JiebaHandler::new(None)
-// };
-// let jieba_cut = |s: &str| jieba_handler.cut(s);
