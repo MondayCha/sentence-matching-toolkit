@@ -83,13 +83,6 @@ Sub MarkColor()
         .Weight = xlThin
     End With
 
-    '首行冻结
-    With ActiveWindow
-        .SplitColumn = 0
-        .SplitRow = 1
-    End With
-    ActiveWindow.FreezePanes = True
-
     '设置表头
     Range("A1:F1").Select
     With Selection.Interior
@@ -129,4 +122,12 @@ Sub MarkColor()
             Exit For
         End If
     Next
+
+    '首行冻结
+    Range(""A1"").Select
+    With ActiveWindow
+        .SplitColumn = 0
+        .SplitRow = 1
+    End With
+    ActiveWindow.FreezePanes = True
 End Sub
