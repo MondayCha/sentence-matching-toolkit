@@ -124,7 +124,7 @@ Sub MarkColor()
     Next
 
     '首行冻结
-    Range(""A1"").Select
+    Range("A1").Select
     With ActiveWindow
         .SplitColumn = 0
         .SplitRow = 1

@@ -408,6 +408,7 @@ impl SubCategoryMatcher {
                         "splitted_name: {} | {}",
                         cleaned_splitted_name, cleaned_sub_category.name
                     );
+                    cleaned_sub_category.name_calc = cleaned_splitted_name;
                     cleaned_sub_category.name_type = SubCategoryNameType::Doubt;
                 }
                 return Ok(cleaned_sub_category);

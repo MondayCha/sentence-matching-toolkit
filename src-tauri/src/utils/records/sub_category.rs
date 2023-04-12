@@ -22,6 +22,7 @@ pub struct CleanedSubCategory {
     pub flag: SubCategoryFlag,
     pub replaced_info: String,
     pub name_type: SubCategoryNameType,
+    pub name_calc: String,
     pub name: String,
     pub matched_class: String,
     pub user_input_class: String,
@@ -54,6 +55,8 @@ pub struct SubCategory {
     pub flag: SubCategoryFlag,
     #[serde(rename = "nameFlag")]
     pub name_flag: SubCategoryNameType,
+    #[serde(rename = "nameCalc")]
+    pub name_calc: String,
 }
 
 impl SubCategory {
@@ -81,6 +84,7 @@ impl SubCategory {
             let mut sub_company = modified_category.new.company.clone();
             let mut sub_flag = SubCategoryFlag::Mismatch;
             let mut sub_name_flag = SubCategoryNameType::Calc;
+            let mut sub_name_calc = "".to_string();
             let mut matched_class: Option<String> = None;
             let mut simularity = 0.0;
 
@@ -90,14 +94,17 @@ impl SubCategory {
             ) {
                 sub_name = result_2.name;
                 sub_name_flag = result_2.name_type;
+                sub_name_calc = result_2.name_calc;
             } else if matches!(
                 result_1.name_type,
                 SubCategoryNameType::Dict | SubCategoryNameType::Doubt
             ) {
                 sub_name = result_1.name;
                 sub_name_flag = result_1.name_type;
+                sub_name_calc = result_1.name_calc;
             } else if !result_1.name.is_empty() {
                 sub_name = result_1.name;
+                sub_name_calc = result_1.name_calc;
             }
 
             if matches!(result_1.flag, SubCategoryFlag::Normal) {
@@ -133,6 +140,7 @@ impl SubCategory {
                 simularity,
                 flag: sub_flag,
                 name_flag: sub_name_flag,
+                name_calc: sub_name_calc,
                 raw: modified_category.raw.clone(),
                 sub: BaseRecord {
                     name: sub_name,

@@ -55,6 +55,7 @@ export interface SubCategoryItem {
   simularity: number;
   flag: 'Normal' | 'Incomplete' | 'Suspension' | 'Mismatch';
   nameFlag: NameFlag;
+  nameCalc: string;
 }
 
 export interface SubCategoryGroup {
