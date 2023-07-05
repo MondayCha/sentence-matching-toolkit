@@ -18,7 +18,7 @@ impl From<IntermediateClassInfo> for ClassInfo {
     }
 }
 
-#[derive(Debug, Serialize, Deserialize, Clone)]
+#[derive(Debug, Serialize, Deserialize, Clone, PartialEq, Eq, PartialOrd, Ord)]
 pub struct IntermediateClassInfo {
     pub name: String,
     pub size: usize,

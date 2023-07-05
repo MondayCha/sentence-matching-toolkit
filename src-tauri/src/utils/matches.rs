@@ -196,6 +196,7 @@ impl SubCategoryMatcher {
             };
             if categories.contains_key(id) {
                 categories[id].push(c.clone());
+                categories[id].sort();
             } else {
                 categories.insert(id.to_string(), vec![c.clone()]);
             }
