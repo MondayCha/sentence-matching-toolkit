@@ -2,7 +2,22 @@
 
 A Chinese short text matching tool.
 
-This template should help get you started developing with Tauri, React and Typescript in Vite.
+```bash
+# typos
+做物 → 作物
+洒店 → 酒店
+保肓 → 保育
+```
+
+Powered by Tauri, React and Typescript in Vite.
+
+## Preview
+
+![home](assets/home.png)
+
+![work](assets/work.png)
+
+![setting](assets/setting.png)
 
 ## Recommended IDE Setup
 
